@@ -1,0 +1,1 @@
+C:\Projects\WpfCopyApplication\WpfCopyApplication\bin\Debug\WpfCopyApplication.exe.config

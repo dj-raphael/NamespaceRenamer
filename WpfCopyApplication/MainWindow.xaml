@@ -1,0 +1,22 @@
+﻿<Window x:Class="WpfCopyApplication.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="350" Width="525">
+    <Grid Margin="0,0,0,-1">
+        <Button Content="Start" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Margin="30,276,0,0"/>
+        <Label Content=" From" HorizontalAlignment="Left" Margin="66,67,0,0" VerticalAlignment="Top" Width="45" Height="28"/>
+        <Label Content="Namespace" HorizontalAlignment="Left" Margin="36,34,0,0" VerticalAlignment="Top" Width="77"/>
+        <Label Content="Namespace" HorizontalAlignment="Left" Margin="32,119,0,0" VerticalAlignment="Top" Width="73"/>
+        <Label Content="To" HorizontalAlignment="Left" Margin="78,160,0,0" VerticalAlignment="Top" Width="27" Height="28"/>
+        <Button Content="Stop" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Margin="122,276,0,0"/>
+        <WrapPanel HorizontalAlignment="Left" Height="28" Margin="122,67,0,0" VerticalAlignment="Top" Width="365">
+            <TextBox Height="23" TextWrapping="Wrap" Text="TextBox" Width="288"/>
+            <Button Content="Browise" Width="76" Click="Browise_Click"/>
+        </WrapPanel>
+        <WrapPanel HorizontalAlignment="Left" Height="28" Margin="122,160,0,0" VerticalAlignment="Top" Width="365">
+            <TextBox Height="23" TextWrapping="Wrap" Text="TextBox" Width="288"/>
+            <Button Content="Browise" Width="76" Click="Browise_Click"/>
+        </WrapPanel>
+        <TextBox HorizontalAlignment="Left" Height="23" Margin="122,37,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="287" RenderTransformOrigin="0.489,4.725"/>
+    </Grid>
+</Window>
