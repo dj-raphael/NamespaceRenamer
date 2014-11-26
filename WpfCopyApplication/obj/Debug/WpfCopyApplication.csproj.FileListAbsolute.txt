@@ -1,6 +1,7 @@
 C:\Projects\WpfCopyApplication\WpfCopyApplication\bin\Debug\WpfCopyApplication.exe.config
 C:\Projects\WpfCopyApplication\WpfCopyApplication\bin\Debug\WpfCopyApplication.exe
 C:\Projects\WpfCopyApplication\WpfCopyApplication\bin\Debug\WpfCopyApplication.pdb
+C:\Projects\WpfCopyApplication\WpfCopyApplication\obj\Debug\WpfCopyApplication.csprojResolveAssemblyReference.cache
 C:\Projects\WpfCopyApplication\WpfCopyApplication\obj\Debug\MainWindow.baml
 C:\Projects\WpfCopyApplication\WpfCopyApplication\obj\Debug\MainWindow.g.cs
 C:\Projects\WpfCopyApplication\WpfCopyApplication\obj\Debug\App.g.cs
