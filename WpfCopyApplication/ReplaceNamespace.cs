@@ -13,6 +13,8 @@ namespace WpfCopyApplication
         {
             
         }
+        WpfCopyApplication.PageAppearanceSection conf = (WpfCopyApplication.PageAppearanceSection)System.Configuration.ConfigurationManager.GetSection("pageAppearanceGroup/pageAppearance");
+
         public void CopyFile(string sourceDir, string backupDir)
         {
             try

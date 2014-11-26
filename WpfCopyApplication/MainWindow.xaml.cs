@@ -85,7 +85,8 @@ namespace WpfCopyApplication
                 }
             }
         }
-
+        WpfCopyApplication.PageAppearanceSection _conf = (WpfCopyApplication.PageAppearanceSection)System.Configuration.ConfigurationManager.GetSection("pageAppearanceGroup/pageAppearance");
+        
         void OnPropertyChanged(string propName)
         {
             if (this.PropertyChanged != null)
@@ -116,7 +117,7 @@ namespace WpfCopyApplication
 //            {
 //                SourceDir = openFileDialog.FileName;
 //            }
-
+            
             OpenFileDialog dlg = new OpenFileDialog();
             dlg.FileName = "Document"; // Default file name
             dlg.DefaultExt = ".txt"; // Default file extension
