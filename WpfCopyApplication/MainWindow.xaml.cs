@@ -30,8 +30,6 @@ namespace WpfCopyApplication
         }
         public event PropertyChangedEventHandler PropertyChanged;
 
-        // usual OnPropertyChanged implementation
-
         private string _oldNamespace;
         private string _newNamespace;
         private string _sourceDir;
@@ -85,12 +83,11 @@ namespace WpfCopyApplication
                 }
             }
         }
-       
+       // WpfCopyApplication.PageAppearanceSection _conf = (WpfCopyApplication.PageAppearanceSection)System.Configuration.ConfigurationManager.GetSection("pageAppearanceGroup/pageAppearance");
+        
         void OnPropertyChanged(string propName)
         {
-            if (this.PropertyChanged != null)
-                this.PropertyChanged(
-                    this, new PropertyChangedEventArgs(propName));
+            if (this.PropertyChanged != null) this.PropertyChanged(this, new PropertyChangedEventArgs(propName));
         }
 
 
@@ -116,7 +113,7 @@ namespace WpfCopyApplication
 //            {
 //                SourceDir = openFileDialog.FileName;
 //            }
-            NewNamespace = PageAppearanceSection.GetConfiguration().Namespace;
+            
             OpenFileDialog dlg = new OpenFileDialog();
             dlg.FileName = "Document"; // Default file name
             dlg.DefaultExt = ".txt"; // Default file extension
@@ -156,10 +153,9 @@ namespace WpfCopyApplication
 
         private void Start_Click(object sender, RoutedEventArgs e)
         {
-            NewNamespace = PageAppearanceSection.GetConfiguration().Namespace;
             ReplaceNamespace x = new ReplaceNamespace();
-            x.CopyFile(SourceDir, BackupDir);
-            x.ReplacePartOfFile(BackupDir, OldNamespace, NewNamespace);
+            x.DirectoryCopy(SourceDir,BackupDir, true);
+//            x.ReplacePartOfFile(BackupDir,OldNamespace, NewNamespace);
         }
     }
 }

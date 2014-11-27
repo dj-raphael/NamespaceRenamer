@@ -12,29 +12,20 @@ namespace WpfCopyApplication
     {
         public static PageAppearanceSection GetConfiguration()
         {
-            PageAppearanceSection configuration = ConfigurationManager.GetSection("myConfigurableModule") as PageAppearanceSection;
+            var configuration =
+                 ConfigurationManager
+                 .GetSection("PageAppearanceSection")
+                 as PageAppearanceSection;
 
-            if (configuration != null)
-                return configuration;
-
-            return new PageAppearanceSection();
-        }
-
-        [ConfigurationProperty("namespace",DefaultValue = "Hellow World",IsRequired = false)]
-        public string Namespace
-        {
-            get
-            {
-                return this["namespace"] as string;
-            }
+            return configuration ?? new PageAppearanceSection();
         }
 
         [ConfigurationProperty("sourceDirectory",DefaultValue = @"C:\")]
-        public DirectoryElement SourceDirectory
+        public String DestionDirectory
         {
             get
             {
-                return (DirectoryElement)this["sourceDirectory"];
+                return (String)this["sourceDirectory"];
             }
             set
             {
@@ -42,11 +33,11 @@ namespace WpfCopyApplication
             }
         }
         [ConfigurationProperty("targetDirectory", DefaultValue = @"C:\")]
-        public DirectoryElement TargetDirectory
+        public String Directory
         {
             get
             {
-                return (DirectoryElement)this["targetDirectory"];
+                return (String)this["targetDirectory"];
             }
             set
             {
@@ -55,25 +46,27 @@ namespace WpfCopyApplication
         }
 
         [ConfigurationProperty("sourceNamespace", DefaultValue = "namespace")]
-        public NamespaceElement SourceNamespace
+        public String SourceNamespace
         {
             get
             {
-                return (NamespaceElement)this["sourceNamespace"];
+                return (String)this["sourceNamespace"];
             }
             set
             { this["sourceNamespace"] = value; }
         }
         [ConfigurationProperty("targetNamespace", DefaultValue = "newNamespace")]
-        public NamespaceElement TargetNamespace
+        public String TargetNamespace
         {
             get
             {
-                return (NamespaceElement)this["targetNamespace"];
+                return (String)this["targetNamespace"];
             }
             set
             { this["targetNamespace"] = value; }
         }
+
+
 
         [ConfigurationProperty("ignoreList", IsDefaultCollection = false)]
         [ConfigurationCollection(typeof(IgnoreCollection), CollectionType = ConfigurationElementCollectionType.BasicMapAlternate)]
@@ -86,52 +79,12 @@ namespace WpfCopyApplication
             }
         }
 
-        public class DirectoryElement : ConfigurationElement
-        {
-            [ConfigurationProperty("path", IsRequired = true)]
-            [StringValidator(MinLength = 1, MaxLength = 60)]
-            public String Path
-            {
-                get
-                {
-                    return (String)this["path"];
-                }
-                set
-                {
-                    this["path"] = value;
-                }
-            }
-        }
-        public class NamespaceElement : ConfigurationElement
-        {
-            [ConfigurationProperty("namespace", IsRequired = true)]
-            [StringValidator(MinLength = 1, MaxLength = 60)]
-            public String Namespace
-            {
-                get
-                {
-                    return (String)this["namespace"];
-                }
-                set
-                {
-                    this["namespace"] = value;
-                }
-            }
-        }
-
         public class IgnoreCollection : ConfigurationElementCollection
         {
-//            public IgnoreCollection()
-//            {
-//                IgnoreElement element = (IgnoreElement)CreateNewElement();
-//                Add(element);
-//            }
-
             public override ConfigurationElementCollectionType CollectionType
             {
                 get
                 {
-//                    return ConfigurationElementCollectionType.AddRemoveClearMap;
                     return ConfigurationElementCollectionType.BasicMapAlternate;
                 }
             }
