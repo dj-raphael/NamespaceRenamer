@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -14,8 +13,7 @@ namespace WpfCopyApplication
         {
             
         }
-
-         WpfCopyApplication.PageAppearanceSection messageFromConfiguration = WpfCopyApplication.PageAppearanceSection.GetConfiguration();
+        WpfCopyApplication.PageAppearanceSection conf = (WpfCopyApplication.PageAppearanceSection)System.Configuration.ConfigurationManager.GetSection("pageAppearanceGroup/pageAppearance");
 
         public void CopyFile(string sourceDir, string backupDir)
         {
@@ -26,7 +24,7 @@ namespace WpfCopyApplication
                 // Copy text files.
                 foreach (string f in txtList)
                 {
-                    
+
                     // Remove path from the file name.
                     string fName = f.Substring(sourceDir.Length + 1);
 
@@ -59,9 +57,7 @@ namespace WpfCopyApplication
         public void ReplacePartOfFile(string sourceDir, string oldNamespace, string newNamespace)
         {
             String strFile = File.ReadAllText(sourceDir);
-
             strFile = strFile.Replace(oldNamespace, newNamespace);
-
             File.WriteAllText(sourceDir, strFile);
         }
     }
