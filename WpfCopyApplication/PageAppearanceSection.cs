@@ -14,14 +14,14 @@ namespace WpfCopyApplication
         {
             var configuration =
                  ConfigurationManager
-                 .GetSection("PageAppearanceSection")
+                 .GetSection("pageAppearance")
                  as PageAppearanceSection;
 
             return configuration ?? new PageAppearanceSection();
         }
 
         [ConfigurationProperty("sourceDirectory",DefaultValue = @"C:\")]
-        public String DestionDirectory
+        public String DestinationDirectory
         {
             get
             {
@@ -33,7 +33,7 @@ namespace WpfCopyApplication
             }
         }
         [ConfigurationProperty("targetDirectory", DefaultValue = @"C:\")]
-        public String Directory
+        public String TargetDirectory
         {
             get
             {

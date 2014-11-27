@@ -26,7 +26,7 @@ namespace WpfCopyApplication
         public MainWindow()
         {
             InitializeComponent();
-            this.DataContext = this;
+            this.DataContext = new MainModel();
         }
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -83,7 +83,6 @@ namespace WpfCopyApplication
                 }
             }
         }
-       // WpfCopyApplication.PageAppearanceSection _conf = (WpfCopyApplication.PageAppearanceSection)System.Configuration.ConfigurationManager.GetSection("pageAppearanceGroup/pageAppearance");
         
         void OnPropertyChanged(string propName)
         {
@@ -153,9 +152,10 @@ namespace WpfCopyApplication
 
         private void Start_Click(object sender, RoutedEventArgs e)
         {
+             = PageAppearanceSection.GetConfiguration().TargetNamespace;
+            var ignoreList = PageAppearanceSection.GetConfiguration().IgnoreList;
             ReplaceNamespace x = new ReplaceNamespace();
-            x.DirectoryCopy(SourceDir,BackupDir, true);
-//            x.ReplacePartOfFile(BackupDir,OldNamespace, NewNamespace);
+            x.DirectoryCopy(SourceDir,BackupDir, true, NewNamespace, OldNamespace);
         }
     }
 }

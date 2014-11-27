@@ -10,3 +10,5 @@ C:\Projects\WpfCopyApplication\WpfCopyApplication\obj\Debug\WpfCopyApplication.P
 C:\Projects\WpfCopyApplication\WpfCopyApplication\obj\Debug\WpfCopyApplication.csproj.GenerateResource.Cache
 C:\Projects\WpfCopyApplication\WpfCopyApplication\obj\Debug\WpfCopyApplication.exe
 C:\Projects\WpfCopyApplication\WpfCopyApplication\obj\Debug\WpfCopyApplication.pdb
+C:\Projects\WpfCopyApplication\WpfCopyApplication\obj\Debug\WpfCopyApplication.csprojResolveAssemblyReference.cache
+C:\Projects\WpfCopyApplication\WpfCopyApplication\obj\Debug\WpfCopyApplication_MarkupCompile.lref
