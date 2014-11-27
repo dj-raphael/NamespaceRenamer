@@ -10,6 +10,16 @@ namespace WpfCopyApplication
 {
     public class PageAppearanceSection : ConfigurationSection
     {
+        public static PageAppearanceSection GetConfiguration()
+        {
+            var configuration =
+                 ConfigurationManager
+                 .GetSection("PageAppearanceSection")
+                 as PageAppearanceSection;
+
+            return configuration ?? new PageAppearanceSection();
+        }
+
         [ConfigurationProperty("sourceDirectory",DefaultValue = @"C:\")]
         public String DestionDirectory
         {
@@ -56,121 +66,54 @@ namespace WpfCopyApplication
             { this["targetNamespace"] = value; }
         }
 
-        [ConfigurationProperty("ignoreList", IsDefaultCollection = true)]
-        [ConfigurationCollection(typeof(IgnoreCollection),
-            AddItemName = "add",
-            ClearItemsName = "clear",
-            RemoveItemName = "remove")]
+
+
+        [ConfigurationProperty("ignoreList", IsDefaultCollection = false)]
+        [ConfigurationCollection(typeof(IgnoreCollection), CollectionType = ConfigurationElementCollectionType.BasicMapAlternate)]
         public IgnoreCollection IgnoreList
         {
             get
             {
-                IgnoreCollection ignoreCollection =
-                    (IgnoreCollection)base["ignoreList"];
+                IgnoreCollection ignoreCollection = (IgnoreCollection)base["ignoreList"];
                 return ignoreCollection;
             }
         }
 
         public class IgnoreCollection : ConfigurationElementCollection
         {
-            public IgnoreCollection()
-            {
-                string ignoreDirectory = (string)CreateNewElement();
-                Add(ignoreDirectory);
-            }
-
             public override ConfigurationElementCollectionType CollectionType
             {
                 get
                 {
-                    return ConfigurationElementCollectionType.AddRemoveClearMap;
+                    return ConfigurationElementCollectionType.BasicMapAlternate;
                 }
             }
 
             protected override ConfigurationElement CreateNewElement()
             {
-                return new UrlConfigElement();
+                return new IgnoreElement();
             }
 
             protected override Object GetElementKey(ConfigurationElement element)
             {
-                return ((UrlConfigElement)element).Name;
-            }
-
-            public UrlConfigElement this[int index]
-            {
-                get
-                {
-                    return (UrlConfigElement)BaseGet(index);
-                }
-                set
-                {
-                    if (BaseGet(index) != null)
-                    {
-                        BaseRemoveAt(index);
-                    }
-                    BaseAdd(index, value);
-                }
-            }
-
-            new public UrlConfigElement this[string Name]
-            {
-                get
-                {
-                    return (UrlConfigElement)BaseGet(Name);
-                }
-            }
-
-            public int IndexOf(UrlConfigElement url)
-            {
-                return BaseIndexOf(url);
-            }
-
-            public void Add(UrlConfigElement url)
-            {
-                BaseAdd(url);
-            }
-            protected override void BaseAdd(ConfigurationElement element)
-            {
-                BaseAdd(element, false);
-            }
-
-            public void Remove(UrlConfigElement url)
-            {
-                if (BaseIndexOf(url) >= 0)
-                    BaseRemove(url.Name);
-            }
-
-            public void RemoveAt(int index)
-            {
-                BaseRemoveAt(index);
-            }
-
-            public void Remove(string name)
-            {
-                BaseRemove(name);
-            }
-
-            public void Clear()
-            {
-                BaseClear();
+                return ((IgnoreElement)element).Value;
             }
         }
 
-
-//        [ConfigurationCollection("ignoreList")]
-//        public List<string> IgnoreList
-//        {
-//            get
-//            {
-//                ICollection ignorList = new List<string>()
-//                {
-//                    @"~\Context\"
-//                };
-//                return ignorList;
-//            }
-//            set
-//            { this["ignoreList"] = value; }
-//        }
+        public class IgnoreElement : ConfigurationElement
+        {
+            [ConfigurationProperty("value", IsRequired = true, IsKey = true)]
+            public string Value
+            {
+                get
+                {
+                    return (string)this["value"];
+                }
+                set
+                {
+                    this["value"] = value;
+                }
+            }
+        }
     }
 }
