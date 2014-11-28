@@ -54,6 +54,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="MainModel.cs" />
     <Compile Include="PageAppearanceSection.cs" />
     <Compile Include="ReplaceNamespace.cs" />
     <Page Include="MainWindow.xaml">
