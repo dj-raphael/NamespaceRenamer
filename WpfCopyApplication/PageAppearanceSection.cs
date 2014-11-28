@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Configuration;
 using System.Windows.Documents;
@@ -20,7 +21,7 @@ namespace WpfCopyApplication
             return configuration ?? new PageAppearanceSection();
         }
 
-        [ConfigurationProperty("sourceDirectory",DefaultValue = @"C:\")]
+        [ConfigurationProperty("sourceDirectory", DefaultValue = @"C:\")]
         public String SourceDirectory
         {
             get
@@ -44,7 +45,6 @@ namespace WpfCopyApplication
                 this["targetDirectory"] = value;
             }
         }
-
         [ConfigurationProperty("sourceNamespace", DefaultValue = "namespace")]
         public String SourceNamespace
         {
@@ -67,53 +67,69 @@ namespace WpfCopyApplication
         }
 
 
-
-        [ConfigurationProperty("ignoreList", IsDefaultCollection = false)]
-        [ConfigurationCollection(typeof(IgnoreCollection), CollectionType = ConfigurationElementCollectionType.BasicMapAlternate)]
+        [ConfigurationProperty("ignoreList", IsDefaultCollection = false, IsRequired = true)]
         public IgnoreCollection IgnoreList
         {
             get
             {
-                IgnoreCollection ignoreCollection = (IgnoreCollection)base["ignoreList"];
-                return ignoreCollection;
+                return (IgnoreCollection)base["ignoreList"];
             }
         }
 
-        public class IgnoreCollection : ConfigurationElementCollection
+        [ConfigurationCollection(typeof(Add), AddItemName = "add")]
+        public class IgnoreCollection : ConfigurationElementCollection, IEnumerable<Add>
         {
-            public override ConfigurationElementCollectionType CollectionType
-            {
-                get
-                {
-                    return ConfigurationElementCollectionType.BasicMapAlternate;
-                }
-            }
 
             protected override ConfigurationElement CreateNewElement()
             {
-                return new IgnoreElement();
+                return new Add();
             }
 
-            protected override Object GetElementKey(ConfigurationElement element)
+            protected override object GetElementKey(ConfigurationElement element)
             {
-                return ((IgnoreElement)element).Value;
+                var l_configElement = element as Add;
+                if (l_configElement != null)
+                    return l_configElement.Value;
+                else
+                    return null;
             }
+
+            public Add this[int index]
+            {
+                get
+                {
+                    return BaseGet(index) as Add;
+                }
+            }
+
+            #region IEnumerable<ConfigSubElement> Members
+
+            IEnumerator<Add> IEnumerable<Add>.GetEnumerator()
+            {
+                return (from i in Enumerable.Range(0, this.Count)
+                        select this[i])
+                        .GetEnumerator();
+            }
+
+            #endregion
         }
 
-        public class IgnoreElement : ConfigurationElement
+        public class Add : ConfigurationElement
         {
-            [ConfigurationProperty("value", IsRequired = true, IsKey = true)]
+
+            [ConfigurationProperty("value", IsKey = true, IsRequired = true)]
             public string Value
             {
                 get
                 {
-                    return (string)this["value"];
+                    return base["value"] as string;
                 }
                 set
                 {
-                    this["value"] = value;
+                    base["value"] = value;
                 }
             }
+
         }
     }
 }
