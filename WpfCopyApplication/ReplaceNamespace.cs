@@ -11,6 +11,10 @@ namespace WpfCopyApplication
 {
     public class ReplaceNamespace
     {
+        public void ScanDirectory()
+        {
+            
+        }
         public void ReplaceInFile(string sourceDir, string oldNamespace, string newNamespace)
         {
             String strFile = File.ReadAllText(sourceDir);
@@ -20,6 +24,7 @@ namespace WpfCopyApplication
 
         public void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs, string newNamespace, string oldNamespace)
         {
+
             // Get the subdirectories for the specified directory.
             DirectoryInfo dir = new DirectoryInfo(sourceDirName);
             DirectoryInfo[] dirs = dir.GetDirectories();

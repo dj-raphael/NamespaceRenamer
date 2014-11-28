@@ -15,6 +15,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Microsoft.Win32;
+using WpfCopyApplication.Model;
 
 namespace WpfCopyApplication
 {
@@ -22,6 +23,11 @@ namespace WpfCopyApplication
     {
         public MainWindow()
         {
+            
+//            using (var db = new ReplaceContext())
+//            {
+//                db.Database.Initialize(true);
+//            }
             InitializeComponent();
             this.DataContext = new MainModel(PageAppearanceSection.GetConfiguration());
         }
