@@ -32,5 +32,12 @@ namespace WpfCopyApplication
             get { return (string) GetValue(NewNamespaceProperty); }
             set { SetValue(NewNamespaceProperty, value); }
         }
+        public MainModel(PageAppearanceSection section)
+        {
+            OldNamespace = section.SourceNamespace;
+            NewNamespace = section.TargetNamespace;
+            SourceDir = section.SourceDirectory;
+            BackupDir = section.TargetDirectory;
+        }
     }
 }

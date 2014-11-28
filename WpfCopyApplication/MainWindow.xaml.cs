@@ -21,74 +21,13 @@ namespace WpfCopyApplication
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window, INotifyPropertyChanged
+    public partial class MainWindow : Window
     {
         public MainWindow()
         {
             InitializeComponent();
-            this.DataContext = new MainModel();
+            this.DataContext = new MainModel(PageAppearanceSection.GetConfiguration());
         }
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        private string _oldNamespace;
-        private string _newNamespace;
-        private string _sourceDir;
-        private string _backupDir;
-
-        public string OldNamespace
-        {
-            get { return _oldNamespace; }
-            set
-            {
-                if (value != _oldNamespace)
-                {
-                    _oldNamespace = value;
-                    OnPropertyChanged("OldNamespace");
-                }
-            }
-        }
-        public string NewNamespace
-        {
-            get { return _newNamespace; }
-            set
-            {
-                if (value != _newNamespace)
-                {
-                    _newNamespace = value;
-                    OnPropertyChanged("NewNamespace");
-                }
-            }
-        }
-        public string SourceDir
-        {
-            get { return _sourceDir; }
-            set
-            {
-                if (value != _sourceDir)
-                {
-                    _sourceDir = value;
-                    OnPropertyChanged("SourceDir");
-                }
-            }
-        }
-        public string BackupDir
-        {
-            get { return _backupDir; }
-            set
-            {
-                if (value != _backupDir)
-                {
-                    _backupDir = value;
-                    OnPropertyChanged("BackupDir");
-                }
-            }
-        }
-        
-        void OnPropertyChanged(string propName)
-        {
-            if (this.PropertyChanged != null) this.PropertyChanged(this, new PropertyChangedEventArgs(propName));
-        }
-
 
         private void BrowiseSource_Click(object sender, RoutedEventArgs e)
         {
@@ -126,7 +65,7 @@ namespace WpfCopyApplication
             {
                 // Open document 
 //                string filename = dlg.FileName;
-                SourceDir = dlg.FileName;
+//                SourceDir = dlg.FileName;
             }
         }
 
@@ -146,16 +85,15 @@ namespace WpfCopyApplication
             {
                 // Open document 
                 //                string filename = dlg.FileName;
-                BackupDir = dlg.FileName;
+//                BackupDir = dlg.FileName;
             }
         }
 
         private void Start_Click(object sender, RoutedEventArgs e)
         {
-             = PageAppearanceSection.GetConfiguration().TargetNamespace;
-            var ignoreList = PageAppearanceSection.GetConfiguration().IgnoreList;
             ReplaceNamespace x = new ReplaceNamespace();
-            x.DirectoryCopy(SourceDir,BackupDir, true, NewNamespace, OldNamespace);
+            x.DirectoryCopy(((MainModel)DataContext).SourceDir, ((MainModel)DataContext).BackupDir, true, ((MainModel)DataContext).NewNamespace, ((MainModel)DataContext).OldNamespace);
+
         }
     }
 }

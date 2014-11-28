@@ -21,7 +21,7 @@ namespace WpfCopyApplication
         }
 
         [ConfigurationProperty("sourceDirectory",DefaultValue = @"C:\")]
-        public String DestinationDirectory
+        public String SourceDirectory
         {
             get
             {
