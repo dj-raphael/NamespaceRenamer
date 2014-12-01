@@ -15,7 +15,6 @@ namespace WpfCopyApplication.Model
         protected override void OnModelCreating(DbModelBuilder dbModelBuilder)
         {
             dbModelBuilder.Configurations.Add(new DataReplacementMap());
-
         }
     }
 }
