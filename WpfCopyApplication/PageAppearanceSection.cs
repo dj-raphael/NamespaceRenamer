@@ -77,7 +77,7 @@ namespace WpfCopyApplication
         }
 
         [ConfigurationCollection(typeof(Add), AddItemName = "add")]
-        public class IgnoreCollection : ConfigurationElementCollection, IEnumerable<Add>
+        public class IgnoreCollection : ConfigurationElementCollection
         {
 
             protected override ConfigurationElement CreateNewElement()
@@ -88,30 +88,27 @@ namespace WpfCopyApplication
             protected override object GetElementKey(ConfigurationElement element)
             {
                 var l_configElement = element as Add;
-                if (l_configElement != null)
-                    return l_configElement.Value;
-                else
-                    return null;
+                return l_configElement != null ? l_configElement.Value : null;
             }
 
-            public Add this[int index]
-            {
-                get
-                {
-                    return BaseGet(index) as Add;
-                }
-            }
+//            public Add this[int index]
+//            {
+//                get
+//                {
+//                    return BaseGet(index) as Add;
+//                }
+//            }
 
-            #region IEnumerable<ConfigSubElement> Members
-
-            IEnumerator<Add> IEnumerable<Add>.GetEnumerator()
-            {
-                return (from i in Enumerable.Range(0, this.Count)
-                        select this[i])
-                        .GetEnumerator();
-            }
-
-            #endregion
+//            #region IEnumerable<ConfigSubElement> Members
+//
+//            IEnumerator<Add> IEnumerable<Add>.GetEnumerator()
+//            {
+//                return (from i in Enumerable.Range(0, this.Count)
+//                        select this[i])
+//                        .GetEnumerator();
+//            }
+//
+//            #endregion
         }
 
         public class Add : ConfigurationElement
