@@ -11,8 +11,8 @@ C:\Projects\WpfCopyApplication\WpfCopyApplication\obj\Debug\WpfCopyApplication.c
 C:\Projects\WpfCopyApplication\WpfCopyApplication\obj\Debug\WpfCopyApplication.exe
 C:\Projects\WpfCopyApplication\WpfCopyApplication\obj\Debug\WpfCopyApplication.pdb
 C:\Projects\WpfCopyApplication\WpfCopyApplication\obj\Debug\WpfCopyApplication_MarkupCompile.lref
-C:\Projects\WpfCopyApplication\WpfCopyApplication\obj\Debug\WpfCopyApplication.csprojResolveAssemblyReference.cache
 C:\Projects\WpfCopyApplication\WpfCopyApplication\bin\Debug\EntityFramework.dll
 C:\Projects\WpfCopyApplication\WpfCopyApplication\bin\Debug\EntityFramework.SqlServer.dll
 C:\Projects\WpfCopyApplication\WpfCopyApplication\bin\Debug\EntityFramework.xml
 C:\Projects\WpfCopyApplication\WpfCopyApplication\bin\Debug\EntityFramework.SqlServer.xml
+C:\Projects\WpfCopyApplication\WpfCopyApplication\obj\Debug\WpfCopyApplication.csprojResolveAssemblyReference.cache

@@ -24,10 +24,11 @@ namespace WpfCopyApplication
         public MainWindow()
         {
             
-            using (var db = new ReplaceContext())
-            {
-                db.Database.Initialize(true);
-            }
+//            using (var db = new ReplaceContext())
+//            {
+//                db.Database.Initialize(true);
+//            }
+
             InitializeComponent();
             this.DataContext = new MainModel(PageAppearanceSection.GetConfiguration());
         }

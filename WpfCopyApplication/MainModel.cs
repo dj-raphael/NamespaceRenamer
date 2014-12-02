@@ -34,10 +34,10 @@ namespace WpfCopyApplication
         }
         public MainModel(PageAppearanceSection section)
         {
-            OldNamespace = section.SourceNamespace;
-            NewNamespace = section.TargetNamespace;
-            SourceDir = section.SourceDirectory;
-            BackupDir = section.TargetDirectory;
+            OldNamespace = AddUpdatePrintSection.PrintKey("SourceNamespace");
+            NewNamespace = AddUpdatePrintSection.PrintKey("TargetNamespace");
+            SourceDir = AddUpdatePrintSection.PrintKey("SourceDirectory");
+            BackupDir = AddUpdatePrintSection.PrintKey("TargetDirectory");
         }
     }
 }

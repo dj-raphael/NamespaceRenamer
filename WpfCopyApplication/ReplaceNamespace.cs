@@ -44,7 +44,7 @@ namespace WpfCopyApplication
 
             // Get the files in the directory and copy them to the new location.
             FileInfo[] files = dir.GetFiles();
-            foreach (FileInfo file in files)
+            foreach (var file in files)
             {
                 string temppath = Path.Combine(destDirName, file.Name);
                 file.CopyTo(temppath, false);
@@ -54,7 +54,7 @@ namespace WpfCopyApplication
             // If copying subdirectories, copy them and their contents to new location.
             if (copySubDirs)
             {
-                foreach (DirectoryInfo subdir in dirs)
+                foreach (var subdir in dirs)
                 {
                     string temppath = Path.Combine(destDirName, subdir.Name);
                     DirectoryCopy(subdir.FullName, temppath, copySubDirs, newNamespace, oldNamespace);
