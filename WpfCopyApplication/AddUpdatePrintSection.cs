@@ -99,8 +99,10 @@ namespace WpfCopyApplication
 
              var pageSettings = ConfigurationManager.GetSection("pageAppearance") as NameValueCollection;
              var pageSettings2 = ConfigurationManager.GetSection("pageAppearance");
-          
-            var test = pageSettings;
+             
+
+
+             var test = pageSettings2.ToString();
 
              return (from key in pageSettings.AllKeys where key == attr select pageSettings[key]).FirstOrDefault();
         }
