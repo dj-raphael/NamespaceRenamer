@@ -75,13 +75,15 @@ namespace WpfCopyApplication
 
         private void BrowiseTarget_Click(object sender, RoutedEventArgs e)
         {
+
         }
 
         private void Start_Click(object sender, RoutedEventArgs e)
         {
             var q = PageAppearanceSection.GetConfiguration().IgnoreList;
             ReplaceNamespace x = new ReplaceNamespace();
-            AddUpdateSection.NewConfig(((MainModel)DataContext).SourceDir, ((MainModel)DataContext).BackupDir, ((MainModel)DataContext).NewNamespace, ((MainModel)DataContext).OldNamespace);
+            AddUpdatePrintSection.EditKey(((MainModel)DataContext).SourceDir, ((MainModel)DataContext).BackupDir, ((MainModel)DataContext).NewNamespace, ((MainModel)DataContext).OldNamespace);
+            var qq = AddUpdatePrintSection.ReturnKeys();
             x.DirectoryCopy(((MainModel)DataContext).SourceDir, ((MainModel)DataContext).BackupDir, true, ((MainModel)DataContext).NewNamespace, ((MainModel)DataContext).OldNamespace);
         }
     }

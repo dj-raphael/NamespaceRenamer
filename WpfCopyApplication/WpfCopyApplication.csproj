@@ -67,7 +67,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="AddUpdateSection.cs" />
+    <Compile Include="AddUpdatePrintSection.cs" />
     <Compile Include="MainModel.cs" />
     <Compile Include="Model\DataReplacement.cs" />
     <Compile Include="Model\DataReplacementMap.cs" />
