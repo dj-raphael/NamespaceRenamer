@@ -38,10 +38,6 @@ namespace WpfCopyApplication
             NewNamespace = section.TargetNamespace;
             SourceDir = section.SourceDirectory;
             BackupDir = section.TargetDirectory;
-            AddUpdatePrintSection.PrintKey(OldNamespace);
-            AddUpdatePrintSection.PrintKey(NewNamespace);
-            AddUpdatePrintSection.PrintKey(SourceDir);
-            AddUpdatePrintSection.PrintKey(BackupDir);
         }
     }
 }
