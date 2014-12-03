@@ -24,10 +24,10 @@ namespace WpfCopyApplication
         public MainWindow()
         {
             
-//            using (var db = new ReplaceContext())
-//            {
-//                db.Database.Initialize(true);
-//            }
+            using (var db = new ReplaceContext())
+            {
+                db.Database.Initialize(true);
+            }
 
             InitializeComponent();
             this.DataContext = new MainModel(PageAppearanceSection.GetConfiguration());
@@ -81,7 +81,7 @@ namespace WpfCopyApplication
         {
             var q = PageAppearanceSection.GetConfiguration().IgnoreList;
             ReplaceNamespace x = new ReplaceNamespace();
-            AddUpdatePrintSection.EditKey(((MainModel)DataContext).SourceDir, ((MainModel)DataContext).BackupDir, ((MainModel)DataContext).NewNamespace, ((MainModel)DataContext).OldNamespace);
+            AddUpdateSection.NewConfig(((MainModel)DataContext).SourceDir, ((MainModel)DataContext).BackupDir, ((MainModel)DataContext).NewNamespace, ((MainModel)DataContext).OldNamespace);
             x.DirectoryCopy(((MainModel)DataContext).SourceDir, ((MainModel)DataContext).BackupDir, true, ((MainModel)DataContext).NewNamespace, ((MainModel)DataContext).OldNamespace);
         }
     }

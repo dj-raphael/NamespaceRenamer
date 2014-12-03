@@ -9,7 +9,7 @@ namespace WpfCopyApplication.Model
 {
     public class ReplaceContext: DbContext
     {
-        public ReplaceContext() : base("DefaultConnection") { }
+        public ReplaceContext() : base(AppDomain.CurrentDomain.BaseDirectory.Substring(0, AppDomain.CurrentDomain.BaseDirectory.IndexOf("bin\\Debug\\")) + "App_Data\\data.sdf") { }
         public DbSet<DataReplacement> DataReplacements { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder dbModelBuilder)
