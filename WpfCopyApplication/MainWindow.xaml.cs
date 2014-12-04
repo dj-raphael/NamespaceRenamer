@@ -13,8 +13,9 @@ namespace WpfCopyApplication
         public MainWindow()
         {
 
-//            var db = new ReplaceContext();
-                db.Database.Initialize(true);
+
+            db.Database.Initialize(true);
+            
 
             InitializeComponent();
             this.DataContext = new MainModel(PageAppearanceSection.GetConfiguration());
@@ -36,7 +37,8 @@ namespace WpfCopyApplication
 
         private void Start_Click(object sender, RoutedEventArgs e)
         {
-            var q = PageAppearanceSection.GetConfiguration().IgnoreList;
+//            db.Database.Delete();
+//            var q = PageAppearanceSection.GetConfiguration().IgnoreList;
             ReplaceNamespace x = new ReplaceNamespace(db);
             AddUpdatePrintSection.EditKey(((MainModel)DataContext).SourceDir, ((MainModel)DataContext).BackupDir, ((MainModel)DataContext).NewNamespace, ((MainModel)DataContext).OldNamespace);
             if (!x.IsBlankFolder(((MainModel) DataContext).BackupDir))

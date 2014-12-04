@@ -12,7 +12,7 @@ namespace WpfCopyApplication.Model
         internal DataReplacementMap()
         {
             ToTable("Data replacement");
-            HasKey(x => x.Path);
+            HasKey(x => new{x.Path, x.PathTargetDirectory});
         }
     }
 }

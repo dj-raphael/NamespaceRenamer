@@ -17,9 +17,10 @@ namespace WpfCopyApplication.Repository
         {
             _context = context;
         }
-        public bool NeedReplace(FileInfo file)
+        public bool NeedReplace(FileInfo file, FileInfo destFile)
         {
-            var FoundFile = _context.DataReplacements.FirstOrDefault(x=>x.Path == file.FullName);
+            var FoundFile = _context.DataReplacements.FirstOrDefault(x=>x.Path == file.FullName && x.PathTargetDirectory == destFile.FullName);
+
             if(FoundFile!=null)
             return !Compare(file, FoundFile.Date, FoundFile.Size, FoundFile.Hash);
             return true;
@@ -28,7 +29,7 @@ namespace WpfCopyApplication.Repository
         public void AddDataReplace(FileInfo file, string targetPath)
         {
             var insertFile = new DataReplacement();
-            insertFile.Date = file.LastWriteTime;
+            insertFile.Date = file.LastWriteTime.Ticks;
             insertFile.Path = file.FullName;
             insertFile.Size = file.Length;
             insertFile.Hash = ComputeMD5Checksum(file.FullName);
@@ -51,9 +52,9 @@ namespace WpfCopyApplication.Repository
             }
         }
 
-        static bool Compare(FileInfo comparedFile, DateTime date, long size, string hashMd5)
+        static bool Compare(FileInfo comparedFile, long date, long size, string hashMd5)
         {
-            if (comparedFile.LastWriteTime == date && comparedFile.Length == size)
+            if (comparedFile.LastWriteTime.Ticks == date && comparedFile.Length == size)
             {
                 return true;
             }

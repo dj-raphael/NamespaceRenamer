@@ -31,6 +31,7 @@ namespace WpfCopyApplication
 
             // Get the subdirectories for the specified directory.
             DirectoryInfo dir = new DirectoryInfo(sourceDirName);
+            DirectoryInfo destDir = new DirectoryInfo(destDirName);
             DirectoryInfo[] dirs = dir.GetDirectories();
 
             if (!dir.Exists)
@@ -50,9 +51,14 @@ namespace WpfCopyApplication
             
 //            FileInfo[] files = dir.GetFiles();
 
+            var destFiles = destDir.GetFiles();
+            List<FileInfo> files;
 
-
-            List<FileInfo> files = GetFilteredFiles(dir.GetFiles(), destDirName);
+            if (Directory.EnumerateFileSystemEntries(destDirName).Any())
+            {
+                files = GetFilteredFiles(dir.GetFiles(), destFiles);
+            }
+            else files = dir.GetFiles().ToList();
 
             foreach (FileInfo file in files)
             {
@@ -77,15 +83,15 @@ namespace WpfCopyApplication
             }
         }
 
-        public List<FileInfo> GetFilteredFiles(FileInfo[] files, string destFiles)
+        public List<FileInfo> GetFilteredFiles(FileInfo[] files, FileInfo[] destFiles)
         {
-            DirectoryInfo destDir = new DirectoryInfo(destDirName);
             var filteredFiles = new List<FileInfo>();
+            var conflictFiles = new List<ConflictFiles>();
 
             foreach (FileInfo file in files)
             {
-                string tempPath = Path.Combine(destDirName, file.Name);
-                if ( _repository.NeedReplace(file)) filteredFiles.Add(file);
+                if (destFiles.FirstOrDefault(x => x.Name == file.Name) != null) conflictFiles.Add(new ConflictFiles() { FileFromSource = file, FileFromDest = destFiles.FirstOrDefault(x => x.Name == file.Name) });
+                if (destFiles.FirstOrDefault(x => x.Name == file.Name) == null || _repository.NeedReplace(file, destFiles.FirstOrDefault(x => x.Name == file.Name))) filteredFiles.Add(file);
             }
 
             return filteredFiles;
@@ -102,5 +108,11 @@ namespace WpfCopyApplication
             return !Directory.EnumerateFileSystemEntries(destDirName).Any();
         }
 
+    }
+
+    public class ConflictFiles
+    {
+        public FileInfo FileFromSource { get; set; }
+        public FileInfo FileFromDest { get; set; }
     }
 }
