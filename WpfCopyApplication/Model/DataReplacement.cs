@@ -10,10 +10,8 @@ namespace WpfCopyApplication.Model
     {
         public string Path { get; set; }
         public DateTime Date { get; set; }
-        public long Size { get; set; }
+        public int Size { get; set; }
         public string Hash { get; set; }
         public string PathTargetDirectory { get; set; }
-
-
     }
 }

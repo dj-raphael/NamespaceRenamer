@@ -3,23 +3,16 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using WpfCopyApplication.Model;
-using WpfCopyApplication.Repository;
-
 
 namespace WpfCopyApplication
 {
     public class ReplaceNamespace
     {
-        private DataReplacementRepository _repository;
-
-        public void ScanDirectory()
-        {
-            
-        }
         public void ReplaceInFile(string sourceDir, string oldNamespace, string newNamespace)
         {
             String strFile = File.ReadAllText(sourceDir);
@@ -48,21 +41,14 @@ namespace WpfCopyApplication
             }
 
             // Get the files in the directory and copy them to the new location.
-            
 //            FileInfo[] files = dir.GetFiles();
             List<FileInfo> files = GetFilteredFiles(dir.GetFiles());
-
             foreach (FileInfo file in files)
             {
-
-                string tempPath = Path.Combine(destDirName, file.Name);
-                file.CopyTo(tempPath, false);
-                ReplaceInFile(tempPath, oldNamespace, newNamespace);
-
-                _repository.AddDataReplace(file, tempPath);
+                string temppath = Path.Combine(destDirName, file.Name);
+                file.CopyTo(temppath, false);
+                ReplaceInFile(temppath, oldNamespace, newNamespace);
             }
-
-
 
             // If copying subdirectories, copy them and their contents to new location.
             if (copySubDirs)
@@ -77,16 +63,12 @@ namespace WpfCopyApplication
 
         public List<FileInfo> GetFilteredFiles(FileInfo[] files)
         {
-            var filteredFiles = new List<FileInfo>();
-
+            List<FileInfo> filteredFiles = new List<FileInfo>();
             foreach (FileInfo file in files)
             {
-                if ( _repository.NeedReplace(file)) filteredFiles.Add(file);
+                if ( DataReplacementRepository.NeedReplace(FileInfo file)) filteredFiles.Add(file);
             }
-
             return filteredFiles;
         }
-
-
     }
 }

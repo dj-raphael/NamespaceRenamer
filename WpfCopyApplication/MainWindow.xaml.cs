@@ -1,9 +1,22 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
 using Microsoft.Win32;
-using WpfCopyApplication.Model;
 using System.Windows.Forms;
-using WpfCopyApplication.Repository;
+using WpfCopyApplication.Model;
 
 namespace WpfCopyApplication
 {
@@ -19,31 +32,28 @@ namespace WpfCopyApplication
 
             InitializeComponent();
             this.DataContext = new MainModel(PageAppearanceSection.GetConfiguration());
-            var repository = new DataReplacementRepository();
         }
 
         private void BrowiseSource_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new FolderBrowserDialog();
-            var result = dialog.ShowDialog();
-            ((MainModel)DataContext).SourceDir = dialog.SelectedPath;
+            DialogResult result = dialog.ShowDialog();
+            ((MainModel)DataContext).SourceDir = dialog.SelectedPath;        
         }
 
         private void BrowiseTarget_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new FolderBrowserDialog();
-            var result = dialog.ShowDialog();
-            ((MainModel)DataContext).BackupDir = dialog.SelectedPath;
+            DialogResult result = dialog.ShowDialog();
+            ((MainModel) DataContext).BackupDir = dialog.SelectedPath;
         }
 
         private void Start_Click(object sender, RoutedEventArgs e)
         {
-            var q = PageAppearanceSection.GetConfiguration().IgnoreList;
+//            var q = PageAppearanceSection.GetConfiguration().IgnoreList;
             ReplaceNamespace x = new ReplaceNamespace();
-
             AddUpdatePrintSection.EditKey(((MainModel)DataContext).SourceDir, ((MainModel)DataContext).BackupDir, ((MainModel)DataContext).NewNamespace, ((MainModel)DataContext).OldNamespace);
             x.DirectoryCopy(((MainModel)DataContext).SourceDir, ((MainModel)DataContext).BackupDir, true, ((MainModel)DataContext).NewNamespace, ((MainModel)DataContext).OldNamespace);
-
         }
     }
 }

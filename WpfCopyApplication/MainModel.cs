@@ -34,11 +34,11 @@ namespace WpfCopyApplication
         }
         public MainModel(PageAppearanceSection section)
         {
-            var DefaultData = AddUpdatePrintSection.ReturnKeys();
-            OldNamespace = DefaultData.SourceNamespace;
-            NewNamespace = DefaultData.TargetNamespace;
-            SourceDir = DefaultData.SourceDirectory;
-            BackupDir = DefaultData.TargetDirectory;
+            AddUpdatePrintSection.ReturnKeys();
+            OldNamespace = section.SourceNamespace;
+            NewNamespace = section.TargetNamespace;
+            SourceDir = section.SourceDirectory;
+            BackupDir = section.TargetDirectory;
         }
     }
 }
