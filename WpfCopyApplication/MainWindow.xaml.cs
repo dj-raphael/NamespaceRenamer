@@ -39,15 +39,23 @@ namespace WpfCopyApplication
             var q = PageAppearanceSection.GetConfiguration().IgnoreList;
             ReplaceNamespace x = new ReplaceNamespace(db);
             AddUpdatePrintSection.EditKey(((MainModel)DataContext).SourceDir, ((MainModel)DataContext).BackupDir, ((MainModel)DataContext).NewNamespace, ((MainModel)DataContext).OldNamespace);
-            if (x.IsBlankFolder(((MainModel) DataContext).BackupDir))
+            if (!x.IsBlankFolder(((MainModel) DataContext).BackupDir))
             {
                 string messageBoxText = "The folder is not empty";
                 string caption = "";
-                MessageBoxButton button = MessageBoxButton.YesNoCancel;
-                MessageBoxImage icon = MessageBoxImage.Warning;
-                System.Windows.MessageBox.Show(messageBoxText, caption, button, icon);
+                System.Windows.Forms.MessageBoxButtons button = MessageBoxButtons.OKCancel;
+                System.Windows.Forms.MessageBoxIcon icon = MessageBoxIcon.Information;
+//                MessageBoxButton button = MessageBoxButton.YesNo;
+//                MessageBoxImage icon = MessageBoxImage.Warning;
+                DialogResult result = System.Windows.Forms.MessageBox.Show(messageBoxText, caption, button, icon);
+                if (result == System.Windows.Forms.DialogResult.OK)
+                    x.DirectoryCopy(((MainModel) DataContext).SourceDir, ((MainModel) DataContext).BackupDir, true,
+                        ((MainModel) DataContext).NewNamespace, ((MainModel) DataContext).OldNamespace);
             }
-            x.DirectoryCopy(((MainModel)DataContext).SourceDir, ((MainModel)DataContext).BackupDir, true, ((MainModel)DataContext).NewNamespace, ((MainModel)DataContext).OldNamespace);
+            else
+            {
+                x.DirectoryCopy(((MainModel)DataContext).SourceDir, ((MainModel)DataContext).BackupDir, true, ((MainModel)DataContext).NewNamespace, ((MainModel)DataContext).OldNamespace);                
+            }
 
         }
     }

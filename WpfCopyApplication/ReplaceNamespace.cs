@@ -49,10 +49,10 @@ namespace WpfCopyApplication
             // Get the files in the directory and copy them to the new location.
             
 //            FileInfo[] files = dir.GetFiles();
-            
 
 
-            List<FileInfo> files = GetFilteredFiles(dir.GetFiles());
+
+            List<FileInfo> files = GetFilteredFiles(dir.GetFiles(), destDirName);
 
             foreach (FileInfo file in files)
             {
@@ -77,12 +77,14 @@ namespace WpfCopyApplication
             }
         }
 
-        public List<FileInfo> GetFilteredFiles(FileInfo[] files)
+        public List<FileInfo> GetFilteredFiles(FileInfo[] files, string destFiles)
         {
+            DirectoryInfo destDir = new DirectoryInfo(destDirName);
             var filteredFiles = new List<FileInfo>();
 
             foreach (FileInfo file in files)
             {
+                string tempPath = Path.Combine(destDirName, file.Name);
                 if ( _repository.NeedReplace(file)) filteredFiles.Add(file);
             }
 
@@ -92,10 +94,12 @@ namespace WpfCopyApplication
         public bool IsBlankFolder(string destDirName)
         {
             // todo: check the folder
-            DirectoryInfo destDir = new DirectoryInfo(destDirName);
-            DirectoryInfo[] destDirs = destDir.GetDirectories();
-            if (destDir != null) return false;
-            return true;
+            DirectoryInfo dir = new DirectoryInfo(destDirName);
+            if (!dir.Exists)
+            {
+                return true;
+            }
+            return !Directory.EnumerateFileSystemEntries(destDirName).Any();
         }
 
     }
