@@ -28,7 +28,7 @@ namespace WpfCopyApplication
             ConfigurationManager.RefreshSection("pageAppearance");
         }
 
-        public static void ReturnKeys()
+        public static PageAppearanceSection ReturnKeys()
         {
             var xmlDoc = new XmlDocument();
             var pageAppearance = new PageAppearanceSection();
@@ -36,9 +36,13 @@ namespace WpfCopyApplication
 
             xmlDoc.Load(ConfigFile);
             pageAppearance.SourceDirectory = xmlDoc.SelectSingleNode("//pageAppearance[1]").Attributes["sourceDirectory"].Value.ToString();
-            pageAppearance.SourceDirectory = xmlDoc.SelectSingleNode("//pageAppearance[1]").Attributes["targetDirectory"].Value.ToString();
-            pageAppearance.SourceDirectory = xmlDoc.SelectSingleNode("//pageAppearance[1]").Attributes["sourceNamespace"].Value.ToString();
-            pageAppearance.SourceDirectory = xmlDoc.SelectSingleNode("//pageAppearance[1]").Attributes["targetNamespace"].Value.ToString();
+            pageAppearance.TargetDirectory = xmlDoc.SelectSingleNode("//pageAppearance[1]").Attributes["targetDirectory"].Value.ToString();
+            pageAppearance.SourceNamespace = xmlDoc.SelectSingleNode("//pageAppearance[1]").Attributes["sourceNamespace"].Value.ToString();
+            pageAppearance.TargetNamespace = xmlDoc.SelectSingleNode("//pageAppearance[1]").Attributes["targetNamespace"].Value.ToString();
+            
+
+            return pageAppearance;
+
         }
     }
 }

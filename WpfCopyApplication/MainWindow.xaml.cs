@@ -1,34 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Microsoft.Win32;
-using System.Windows.Forms;
 using WpfCopyApplication.Model;
+using System.Windows.Forms;
+using WpfCopyApplication.Repository;
 
 namespace WpfCopyApplication
 {
     public partial class MainWindow : Window
     {
+        ReplaceContext db = new ReplaceContext();
         public MainWindow()
         {
-            
-            using (var db = new ReplaceContext())
-            {
+
+//            var db = new ReplaceContext();
                 db.Database.Initialize(true);
-            }
 
             InitializeComponent();
             this.DataContext = new MainModel(PageAppearanceSection.GetConfiguration());
@@ -37,23 +23,32 @@ namespace WpfCopyApplication
         private void BrowiseSource_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new FolderBrowserDialog();
-            DialogResult result = dialog.ShowDialog();
-            ((MainModel)DataContext).SourceDir = dialog.SelectedPath;        
+            var result = dialog.ShowDialog();
+            ((MainModel)DataContext).SourceDir = dialog.SelectedPath;
         }
 
         private void BrowiseTarget_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new FolderBrowserDialog();
-            DialogResult result = dialog.ShowDialog();
-            ((MainModel) DataContext).BackupDir = dialog.SelectedPath;
+            var result = dialog.ShowDialog();
+            ((MainModel)DataContext).BackupDir = dialog.SelectedPath;
         }
 
         private void Start_Click(object sender, RoutedEventArgs e)
         {
-//            var q = PageAppearanceSection.GetConfiguration().IgnoreList;
-            ReplaceNamespace x = new ReplaceNamespace();
+            var q = PageAppearanceSection.GetConfiguration().IgnoreList;
+            ReplaceNamespace x = new ReplaceNamespace(db);
             AddUpdatePrintSection.EditKey(((MainModel)DataContext).SourceDir, ((MainModel)DataContext).BackupDir, ((MainModel)DataContext).NewNamespace, ((MainModel)DataContext).OldNamespace);
+            if (x.IsBlankFolder(((MainModel) DataContext).BackupDir))
+            {
+                string messageBoxText = "The folder is not empty";
+                string caption = "";
+                MessageBoxButton button = MessageBoxButton.YesNoCancel;
+                MessageBoxImage icon = MessageBoxImage.Warning;
+                System.Windows.MessageBox.Show(messageBoxText, caption, button, icon);
+            }
             x.DirectoryCopy(((MainModel)DataContext).SourceDir, ((MainModel)DataContext).BackupDir, true, ((MainModel)DataContext).NewNamespace, ((MainModel)DataContext).OldNamespace);
+
         }
     }
 }

@@ -3,16 +3,22 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using WpfCopyApplication.Model;
+using WpfCopyApplication.Repository;
+
 
 namespace WpfCopyApplication
 {
     public class ReplaceNamespace
     {
+        private DataReplacementRepository _repository;
+        public ReplaceNamespace(ReplaceContext context)
+        {
+            _repository = new DataReplacementRepository(context);
+        }
         public void ReplaceInFile(string sourceDir, string oldNamespace, string newNamespace)
         {
             String strFile = File.ReadAllText(sourceDir);
@@ -41,14 +47,24 @@ namespace WpfCopyApplication
             }
 
             // Get the files in the directory and copy them to the new location.
+            
 //            FileInfo[] files = dir.GetFiles();
+            
+
+
             List<FileInfo> files = GetFilteredFiles(dir.GetFiles());
+
             foreach (FileInfo file in files)
             {
-                string temppath = Path.Combine(destDirName, file.Name);
-                file.CopyTo(temppath, false);
-                ReplaceInFile(temppath, oldNamespace, newNamespace);
+
+                string tempPath = Path.Combine(destDirName, file.Name);
+                file.CopyTo(tempPath, false);
+                ReplaceInFile(tempPath, oldNamespace, newNamespace);
+
+                _repository.AddDataReplace(file, tempPath);
             }
+
+
 
             // If copying subdirectories, copy them and their contents to new location.
             if (copySubDirs)
@@ -63,12 +79,24 @@ namespace WpfCopyApplication
 
         public List<FileInfo> GetFilteredFiles(FileInfo[] files)
         {
-            List<FileInfo> filteredFiles = new List<FileInfo>();
+            var filteredFiles = new List<FileInfo>();
+
             foreach (FileInfo file in files)
             {
-                if ( DataReplacementRepository.NeedReplace(FileInfo file)) filteredFiles.Add(file);
+                if ( _repository.NeedReplace(file)) filteredFiles.Add(file);
             }
+
             return filteredFiles;
         }
+
+        public bool IsBlankFolder(string destDirName)
+        {
+            // todo: check the folder
+            DirectoryInfo destDir = new DirectoryInfo(destDirName);
+            DirectoryInfo[] destDirs = destDir.GetDirectories();
+            if (destDir != null) return false;
+            return true;
+        }
+
     }
 }
