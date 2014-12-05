@@ -8,16 +8,17 @@
         Title="MainWindow" Height="350" Width="537" d:DataContext="{d:DesignInstance wpfCopyApplication:MainModel}">
     <Grid Margin="0,0,0,-1">
         <Button Content="Start" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="75" Click="Start_Click" Margin="30,0,0,24"/>
-        <Label Content=" From" HorizontalAlignment="Left" Margin="66,67,0,0" VerticalAlignment="Top" Width="45" Height="28"/>
-        <Label Content="Namespace" HorizontalAlignment="Left" Margin="36,34,0,0" VerticalAlignment="Top" Width="77"/>
-        <Label Content="Namespace" HorizontalAlignment="Left" Margin="32,119,0,0" VerticalAlignment="Top" Width="73"/>
-        <Label Content="To" HorizontalAlignment="Left" Margin="78,160,0,0" VerticalAlignment="Top" Width="27" Height="28"/>
+        <Label Content=" From" HorizontalAlignment="Left" Margin="66,60,0,0" VerticalAlignment="Top" Width="45" Height="28"/>
+        <Label Content="Namespace" HorizontalAlignment="Left" Margin="36,30,0,0" VerticalAlignment="Top" Width="77"/>
+        <Label Content="Namespace" HorizontalAlignment="Left" Margin="32,100,0,0" VerticalAlignment="Top" Width="73"/>
+        <Label Content="To" HorizontalAlignment="Left" Margin="78,130,0,0" VerticalAlignment="Top" Width="27" Height="28"/>
         <Button Content="Stop" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="75" Margin="122,0,0,24"/>
-        <TextBox HorizontalAlignment="Left" Height="23" Margin="122,37,0,0" TextWrapping="Wrap" Text="{Binding Path=OldNamespace}" VerticalAlignment="Top" Width="287" RenderTransformOrigin="0.489,4.725"/>
-        <TextBox TextWrapping="Wrap" Text="{Binding Path=SourceDir}" HorizontalAlignment="Left" Width="288" Margin="122,72,0,0" Height="23" VerticalAlignment="Top"/>
-        <Button Content="Browise" Width="76" Click="BrowiseSource_Click" HorizontalAlignment="Right" Margin="0,72,27,0" Height="23" VerticalAlignment="Top"/>
-        <TextBox TextWrapping="Wrap" Text="{Binding Path=BackupDir}" Width="288" HorizontalAlignment="Left" Margin="122,165,0,0" Height="23" VerticalAlignment="Top"/>
-        <TextBox HorizontalAlignment="Left" Height="23" Margin="122,122,0,0" TextWrapping="Wrap" Text="{Binding Path=NewNamespace}" VerticalAlignment="Top" Width="287" RenderTransformOrigin="0.489,4.725"/>
-        <Button Content="Browise" Width="76" Click="BrowiseTarget_Click" HorizontalAlignment="Right" HorizontalContentAlignment="Center" Margin="0,165,27,0" Height="23" VerticalAlignment="Top"/>
+        <TextBox HorizontalAlignment="Left" Height="23" Margin="122,30,0,0" TextWrapping="Wrap" Text="{Binding Path=OldNamespace}" VerticalAlignment="Top" Width="287" RenderTransformOrigin="0.489,4.725"/>
+        <TextBox TextWrapping="Wrap" Text="{Binding Path=SourceDir}" HorizontalAlignment="Left" Width="288" Margin="122,60,0,0" Height="23" VerticalAlignment="Top"/>
+        <Button Content="Browise" Width="76" Click="BrowiseSource_Click" HorizontalAlignment="Right" Margin="0,60,27,0" Height="23" VerticalAlignment="Top"/>
+        <TextBox TextWrapping="Wrap" Text="{Binding Path=BackupDir}" Width="288" HorizontalAlignment="Left" Margin="121,130,0,0" Height="23" VerticalAlignment="Top"/>
+        <TextBox HorizontalAlignment="Left" Height="23" Margin="122,100,0,0" TextWrapping="Wrap" Text="{Binding Path=NewNamespace}" VerticalAlignment="Top" Width="287" RenderTransformOrigin="0.489,4.725"/>
+        <Button Content="Browise" Width="76" Click="BrowiseTarget_Click" HorizontalAlignment="Right" HorizontalContentAlignment="Center" Margin="0,130,27,0" Height="23" VerticalAlignment="Top"/>
+        <ListBox x:Name="ListBox" HorizontalAlignment="Left" Height="90" Margin="122,170,0,0" VerticalAlignment="Top" Width="288"/>
     </Grid>
 </Window>

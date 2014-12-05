@@ -10,15 +10,16 @@ namespace WpfCopyApplication
     public partial class MainWindow : Window
     {
         ReplaceContext db = new ReplaceContext();
+        private ListBoxOutputter outputter;
+
         public MainWindow()
         {
-
-
             db.Database.Initialize(true);
-            
-
             InitializeComponent();
             this.DataContext = new MainModel(PageAppearanceSection.GetConfiguration());
+            outputter = new ListBoxOutputter(ListBox);
+            Console.SetOut(outputter);
+            Console.WriteLine("Started");
         }
 
         private void BrowiseSource_Click(object sender, RoutedEventArgs e)
@@ -37,7 +38,6 @@ namespace WpfCopyApplication
 
         private void Start_Click(object sender, RoutedEventArgs e)
         {
-//            db.Database.Delete();
 //            var q = PageAppearanceSection.GetConfiguration().IgnoreList;
             ReplaceNamespace x = new ReplaceNamespace(db);
             AddUpdatePrintSection.EditKey(((MainModel)DataContext).SourceDir, ((MainModel)DataContext).BackupDir, ((MainModel)DataContext).NewNamespace, ((MainModel)DataContext).OldNamespace);
@@ -47,8 +47,6 @@ namespace WpfCopyApplication
                 string caption = "";
                 System.Windows.Forms.MessageBoxButtons button = MessageBoxButtons.OKCancel;
                 System.Windows.Forms.MessageBoxIcon icon = MessageBoxIcon.Information;
-//                MessageBoxButton button = MessageBoxButton.YesNo;
-//                MessageBoxImage icon = MessageBoxImage.Warning;
                 DialogResult result = System.Windows.Forms.MessageBox.Show(messageBoxText, caption, button, icon);
                 if (result == System.Windows.Forms.DialogResult.OK)
                     x.DirectoryCopy(((MainModel) DataContext).SourceDir, ((MainModel) DataContext).BackupDir, true,
@@ -58,7 +56,6 @@ namespace WpfCopyApplication
             {
                 x.DirectoryCopy(((MainModel)DataContext).SourceDir, ((MainModel)DataContext).BackupDir, true, ((MainModel)DataContext).NewNamespace, ((MainModel)DataContext).OldNamespace);                
             }
-
         }
     }
 }

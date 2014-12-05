@@ -65,6 +65,7 @@ namespace WpfCopyApplication
 
                 string tempPath = Path.Combine(destDirName, file.Name);
                 file.CopyTo(tempPath, false);
+                Console.WriteLine(file.Name + " was copied to the folder: " + tempPath);
                 ReplaceInFile(tempPath, oldNamespace, newNamespace);
 
                 _repository.AddDataReplace(file, tempPath);
