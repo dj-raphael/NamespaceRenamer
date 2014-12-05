@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -48,8 +49,7 @@ namespace WpfCopyApplication
             }
 
             // Get the files in the directory and copy them to the new location.
-            
-//            FileInfo[] files = dir.GetFiles();
+            // FileInfo[] files = dir.GetFiles();
 
             var destFiles = destDir.GetFiles();
             List<FileInfo> files;
@@ -58,6 +58,7 @@ namespace WpfCopyApplication
             {
                 files = GetFilteredFiles(dir.GetFiles(), destFiles);
             }
+
             else files = dir.GetFiles().ToList();
 
             foreach (FileInfo file in files)
@@ -65,14 +66,11 @@ namespace WpfCopyApplication
 
                 string tempPath = Path.Combine(destDirName, file.Name);
                 file.CopyTo(tempPath, false);
-                Console.WriteLine(file.Name + " was copied to the folder: " + tempPath);
                 ReplaceInFile(tempPath, oldNamespace, newNamespace);
 
-                _repository.AddDataReplace(file, tempPath);
+                _repository.AddDataReplace(file, tempPath,ComputeMD5Checksum(file.FullName));
             }
-
-
-
+            
             // If copying subdirectories, copy them and their contents to new location.
             if (copySubDirs)
             {
@@ -87,14 +85,30 @@ namespace WpfCopyApplication
         public List<FileInfo> GetFilteredFiles(FileInfo[] files, FileInfo[] destFiles)
         {
             var filteredFiles = new List<FileInfo>();
-            var conflictFiles = new List<ConflictFiles>();
+
 
             foreach (FileInfo file in files)
             {
-                if (destFiles.FirstOrDefault(x => x.Name == file.Name) != null) conflictFiles.Add(new ConflictFiles() { FileFromSource = file, FileFromDest = destFiles.FirstOrDefault(x => x.Name == file.Name) });
-                if (destFiles.FirstOrDefault(x => x.Name == file.Name) == null || _repository.NeedReplace(file, destFiles.FirstOrDefault(x => x.Name == file.Name))) filteredFiles.Add(file);
+           //   if (destFiles.FirstOrDefault(x => x.Name == file.Name) != null) conflictFiles.Add(new ConflictFiles() { FileFromSource = file, FileFromDest = destFiles.FirstOrDefault(x => x.Name == file.Name) });
+                if (destFiles.FirstOrDefault(x => x.Name == file.Name) == null || NeedReplace(file, destFiles.FirstOrDefault(x => x.Name == file.Name))) filteredFiles.Add(file);
             }
 
+            foreach (FileInfo file in destFiles)
+            {
+                if (files.FirstOrDefault(x => x.Name == file.Name) == null )
+                {
+                    if (NeedDelete(file))
+                    {
+                        file.Delete();
+                    }
+
+//                 NeedDelete(file);
+//                 + Нужно сделать проверку с базой:
+//                 1) Если данные в БД имеются о файле удалить
+//                 2) Если данные не имеются - добавить в список конфликта и удалить
+                }
+            }
+            
             return filteredFiles;
         }
 
@@ -109,11 +123,69 @@ namespace WpfCopyApplication
             return !Directory.EnumerateFileSystemEntries(destDirName).Any();
         }
 
+        public bool NeedReplace(FileInfo file, FileInfo destFile)
+        {
+            var FoundFile = _repository.GetFileByPaths(file.FullName, destFile.FullName);
+            if (FoundFile != null)
+                return !Compare(file, FoundFile);
+            return true;
+        }
+
+        public bool NeedDelete(FileInfo file)
+        {
+            bool isExist = _repository.IsExist(file.FullName);
+            var FoundFile = _repository.GetFileByTargetDirectory(file.FullName);
+
+            if (_repository.IsExist(file.FullName))
+            {
+                // Just delete file, because we don't have records about this file...
+                return true;
+            }
+
+            if (_repository.IsExist(file.FullName) && FoundFile.Result.DateTarget == file.LastWriteTime.Ticks && FoundFile.Result.Size == file.Length)
+            {
+                if (FoundFile.Result.Hash == ComputeMD5Checksum(file.FullName))
+                {
+                    _repository.RemoveByHash(FoundFile.Result.Hash);
+                    return true;
+                }
+                return true;
+
+            }
+
+            return false;
+        }
+
+        
+
+        private static string ComputeMD5Checksum(string path)
+        {
+            using (FileStream fs = System.IO.File.OpenRead(path))
+            {
+                MD5 md5 = new MD5CryptoServiceProvider();
+                byte[] fileData = new byte[fs.Length];
+                fs.Read(fileData, 0, (int)fs.Length);
+                byte[] checkSum = md5.ComputeHash(fileData);
+                string result = BitConverter.ToString(checkSum).Replace("-", String.Empty);
+                return result;
+            }
+        }
+
+        static bool Compare(FileInfo comparedFile, Task<DataReplacement> foundFile)
+        {
+            
+            if (comparedFile.LastWriteTime.Ticks == foundFile.Result.Date && comparedFile.Length == foundFile.Result.Size)
+            {
+                return true;
+            }
+            else 
+            {
+                if (comparedFile.Length == foundFile.Result.Size && ComputeMD5Checksum(comparedFile.FullName) == foundFile.Result.Hash) return true;
+            }
+
+            return false;
+        }
+
     }
 
-    public class ConflictFiles
-    {
-        public FileInfo FileFromSource { get; set; }
-        public FileInfo FileFromDest { get; set; }
-    }
 }

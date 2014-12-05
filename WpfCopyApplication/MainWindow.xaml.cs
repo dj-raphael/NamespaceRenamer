@@ -10,17 +10,17 @@ namespace WpfCopyApplication
     public partial class MainWindow : Window
     {
         ReplaceContext db = new ReplaceContext();
-        private ListBoxOutputter outputter;
 
         public MainWindow()
         {
             db.Database.Initialize(true);
             InitializeComponent();
-            this.DataContext = new MainModel(PageAppearanceSection.GetConfiguration());
-            outputter = new ListBoxOutputter(ListBox);
-            Console.SetOut(outputter);
+            this.Model = new MainModel(PageAppearanceSection.GetConfiguration());
+            DataContext = Model;
             Console.WriteLine("Started");
         }
+
+        public MainModel Model { get; set; }
 
         private void BrowiseSource_Click(object sender, RoutedEventArgs e)
         {
@@ -36,21 +36,21 @@ namespace WpfCopyApplication
             ((MainModel)DataContext).BackupDir = dialog.SelectedPath;
         }
 
-        private void Start_Click(object sender, RoutedEventArgs e)
+        private async void Start_Click(object sender, RoutedEventArgs e)
         {
 //            var q = PageAppearanceSection.GetConfiguration().IgnoreList;
             ReplaceNamespace x = new ReplaceNamespace(db);
-            AddUpdatePrintSection.EditKey(((MainModel)DataContext).SourceDir, ((MainModel)DataContext).BackupDir, ((MainModel)DataContext).NewNamespace, ((MainModel)DataContext).OldNamespace);
+            await ConfigurationHelper.EditKey(((MainModel)DataContext).SourceDir, ((MainModel)DataContext).BackupDir, ((MainModel)DataContext).NewNamespace, ((MainModel)DataContext).OldNamespace);
             if (!x.IsBlankFolder(((MainModel) DataContext).BackupDir))
             {
                 string messageBoxText = "The folder is not empty";
                 string caption = "";
-                System.Windows.Forms.MessageBoxButtons button = MessageBoxButtons.OKCancel;
+                System.Windows.Forms.MessageBoxButtons button = MessageBoxButtons.YesNo;
                 System.Windows.Forms.MessageBoxIcon icon = MessageBoxIcon.Information;
                 DialogResult result = System.Windows.Forms.MessageBox.Show(messageBoxText, caption, button, icon);
-                if (result == System.Windows.Forms.DialogResult.OK)
+                if (result == System.Windows.Forms.DialogResult.Yes)
                     x.DirectoryCopy(((MainModel) DataContext).SourceDir, ((MainModel) DataContext).BackupDir, true,
-                        ((MainModel) DataContext).NewNamespace, ((MainModel) DataContext).OldNamespace);
+                        ((MainModel) DataContext).NewNamespace, ((MainModel) Model).OldNamespace);
             }
             else
             {

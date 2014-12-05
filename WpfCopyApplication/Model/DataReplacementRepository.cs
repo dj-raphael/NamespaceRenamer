@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -17,55 +18,43 @@ namespace WpfCopyApplication.Repository
         {
             _context = context;
         }
-        public bool NeedReplace(FileInfo file, FileInfo destFile)
-        {
-            var FoundFile = _context.DataReplacements.FirstOrDefault(x=>x.Path == file.FullName && x.PathTargetDirectory == destFile.FullName);
 
-            if(FoundFile!=null)
-            return !Compare(file, FoundFile.Date, FoundFile.Size, FoundFile.Hash);
-            return true;
+        public async Task<DataReplacement> GetFileByPaths(string file, string destFile)
+        {
+            return await _context.DataReplacements.FirstOrDefaultAsync(x => x.Path == file && x.PathTargetDirectory == destFile); 
         }
 
-        public void AddDataReplace(FileInfo file, string targetPath)
+        public bool IsExist(string fileName)
         {
-            var insertFile = new DataReplacement();
-            insertFile.Date = file.LastWriteTime.Ticks;
-            insertFile.Path = file.FullName;
-            insertFile.Size = file.Length;
-            insertFile.Hash = ComputeMD5Checksum(file.FullName);
-            insertFile.PathTargetDirectory = targetPath;
-            
-            _context.DataReplacements.Add(insertFile);
-            _context.SaveChanges();
+            var foundFile = _context.DataReplacements.FirstOrDefaultAsync(x => x.PathTargetDirectory == fileName);
+            return foundFile != null;
         }
 
-        private static string ComputeMD5Checksum(string path)
+        public async Task<DataReplacement> GetFileByTargetDirectory(string fileName)
         {
-            using (FileStream fs = System.IO.File.OpenRead(path))
+            return await _context.DataReplacements.FirstOrDefaultAsync(x => x.PathTargetDirectory == fileName);
+        }
+
+        public void RemoveByHash(string hash)
+        {
+            _context.DataReplacements.Remove(_context.DataReplacements.Find(hash));
+        }
+        public void AddDataReplace(FileInfo file, string targetPath, string hash)
+        {
+            var insertFile = new DataReplacement
             {
-                MD5 md5 = new MD5CryptoServiceProvider();
-                byte[] fileData = new byte[fs.Length];
-                fs.Read(fileData, 0, (int)fs.Length);
-                byte[] checkSum = md5.ComputeHash(fileData);
-                string result = BitConverter.ToString(checkSum).Replace("-", String.Empty);
-                return result;
+                Date = file.LastWriteTime.Ticks,
+                Path = file.FullName,
+                Size = file.Length,
+                Hash = hash,
+                PathTargetDirectory = targetPath
+            };
+
+            if (_context.DataReplacements.FirstOrDefault(x => x.Path == file.FullName && x.PathTargetDirectory == targetPath) == null)
+            {
+                _context.DataReplacements.Add(insertFile);
+                _context.SaveChangesAsync();
             }
         }
-
-        static bool Compare(FileInfo comparedFile, long date, long size, string hashMd5)
-        {
-            if (comparedFile.LastWriteTime.Ticks == date && comparedFile.Length == size)
-            {
-                return true;
-            }
-            else
-            {
-                if (comparedFile.Length == size && ComputeMD5Checksum(comparedFile.FullName) == hashMd5) return true;
-            }
-
-            return false;
-        }
-
-
     }
 }

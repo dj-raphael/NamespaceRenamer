@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Collections.ObjectModel;
+using System.Windows;
 
 namespace WpfCopyApplication
 {
@@ -9,6 +10,19 @@ namespace WpfCopyApplication
         public static readonly DependencyProperty BackupDirProperty = DependencyProperty.Register("BackupDir", typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
         public static readonly DependencyProperty NewNamespaceProperty = DependencyProperty.Register("NewNamespace", typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
 
+        ObservableCollection<string> log = new ObservableCollection<string>();
+        public ObservableCollection<string> Log
+        {
+            get
+            {
+                return log;
+            }
+            set
+            {
+                log = value;
+                
+            }
+        }
         public string OldNamespace
         {
             get { return (string) GetValue(OldNamespaceProperty); }
@@ -34,7 +48,7 @@ namespace WpfCopyApplication
         }
         public MainModel(PageAppearanceSection section)
         {
-            var DefaultData = AddUpdatePrintSection.ReturnKeys();
+            var DefaultData = ConfigurationHelper.ReturnKeys();
             OldNamespace = DefaultData.SourceNamespace;
             NewNamespace = DefaultData.TargetNamespace;
             SourceDir = DefaultData.SourceDirectory;

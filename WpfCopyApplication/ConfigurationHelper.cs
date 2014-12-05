@@ -9,9 +9,9 @@ using System.Xml;
 
 namespace WpfCopyApplication
 {
-    class AddUpdatePrintSection : ConfigurationSection
+    public static class ConfigurationHelper
     {
-        public static void EditKey(string sourceDir, string backupDir, string newNamespace, string oldNamespace)
+        public static async Task EditKey(string sourceDir, string backupDir, string newNamespace, string oldNamespace)
         {
             var xmlDoc = new XmlDocument();
             var ConfigFile = AppDomain.CurrentDomain.SetupInformation.ConfigurationFile;
@@ -23,7 +23,7 @@ namespace WpfCopyApplication
             xmlDoc.SelectSingleNode("//pageAppearance[1]").Attributes["sourceNamespace"].Value = oldNamespace;
             xmlDoc.SelectSingleNode("//pageAppearance[1]").Attributes["targetNamespace"].Value = newNamespace;
 
-            xmlDoc.Save(AppDomain.CurrentDomain.SetupInformation.ConfigurationFile);
+            await Task.Factory.StartNew( () => xmlDoc.Save(AppDomain.CurrentDomain.SetupInformation.ConfigurationFile));
 
             ConfigurationManager.RefreshSection("pageAppearance");
         }
