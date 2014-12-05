@@ -48,7 +48,8 @@ namespace WpfCopyApplication
             }
 
             // Get the files in the directory and copy them to the new location.
-            // FileInfo[] files = dir.GetFiles();
+            
+//            FileInfo[] files = dir.GetFiles();
 
             var destFiles = destDir.GetFiles();
             List<FileInfo> files;
@@ -57,7 +58,6 @@ namespace WpfCopyApplication
             {
                 files = GetFilteredFiles(dir.GetFiles(), destFiles);
             }
-
             else files = dir.GetFiles().ToList();
 
             foreach (FileInfo file in files)
@@ -70,7 +70,9 @@ namespace WpfCopyApplication
 
                 _repository.AddDataReplace(file, tempPath);
             }
-            
+
+
+
             // If copying subdirectories, copy them and their contents to new location.
             if (copySubDirs)
             {
@@ -89,23 +91,10 @@ namespace WpfCopyApplication
 
             foreach (FileInfo file in files)
             {
-           //   if (destFiles.FirstOrDefault(x => x.Name == file.Name) != null) conflictFiles.Add(new ConflictFiles() { FileFromSource = file, FileFromDest = destFiles.FirstOrDefault(x => x.Name == file.Name) });
+                if (destFiles.FirstOrDefault(x => x.Name == file.Name) != null) conflictFiles.Add(new ConflictFiles() { FileFromSource = file, FileFromDest = destFiles.FirstOrDefault(x => x.Name == file.Name) });
                 if (destFiles.FirstOrDefault(x => x.Name == file.Name) == null || _repository.NeedReplace(file, destFiles.FirstOrDefault(x => x.Name == file.Name))) filteredFiles.Add(file);
             }
 
-            foreach (FileInfo file in destFiles)
-            {
-                if (files.FirstOrDefault(x => x.Name == file.Name) == null )
-                {
-                    if(_repository.NeedDelete(file)) file.Delete();
-
-//                 NeedDelete(file);
-//                 + Нужно сделать проверку с базой:
-//                 1) Если данные в БД имеются о файле удалить
-//                 2) Если данные не имеются - добавить в список конфликта и удалить
-                }
-            }
-            
             return filteredFiles;
         }
 

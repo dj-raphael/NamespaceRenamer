@@ -26,34 +26,6 @@ namespace WpfCopyApplication.Repository
             return true;
         }
 
-        public bool NeedDelete(FileInfo file)
-        {
-
-            var FoundFile = _context.DataReplacements.FirstOrDefault(x => x.PathTargetDirectory == file.FullName);
-
-            if (FoundFile != null)
-            {
-
-                // Just delete file, because we don't have records about this file...
-                Console.WriteLine("");
-                return true;
-            }
-
-            if (FoundFile.DateTarget == file.LastWriteTime.Ticks && FoundFile.Size == file.Length)
-            {
-                if (FoundFile.Hash == ComputeMD5Checksum(file.FullName))
-                {
-                    _context.DataReplacements.Remove(_context.DataReplacements.Find(FoundFile.Hash));
-                    return true;
-                }
-                Console.WriteLine("");
-                return true;
-                
-            }
-
-            return false;
-        }
-
         public void AddDataReplace(FileInfo file, string targetPath)
         {
             var insertFile = new DataReplacement();
