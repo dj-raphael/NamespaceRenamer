@@ -39,6 +39,12 @@ namespace WpfCopyApplication.Repository
         {
             _context.DataReplacements.Remove(_context.DataReplacements.Find(hash));
         }
+
+        public bool ConsistRecords(string Path)
+        {
+            return _context.DataReplacements.Any(x => x.PathTargetDirectory.Contains(Path));
+        }
+
         public void AddDataReplace(FileInfo file, string targetPath, string hash)
         {
             var insertFile = new DataReplacement

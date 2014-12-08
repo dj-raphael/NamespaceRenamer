@@ -8,6 +8,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Windows.Controls;
+using System.Windows.Media;
 using WpfCopyApplication.Model;
 using WpfCopyApplication.Repository;
 
@@ -16,12 +18,7 @@ namespace WpfCopyApplication
 {
     public class ReplaceNamespace
     {
-        public static ObservableCollection<string> log = new ObservableCollection<string>();
-
-        public static ObservableCollection<string> getLog()
-        {
-            return log;
-        }
+        public static ObservableCollection<ListBoxItem> Log = new ObservableCollection<ListBoxItem>();
 
         private DataReplacementRepository _repository;
         public ReplaceNamespace(ReplaceContext context)
@@ -73,14 +70,23 @@ namespace WpfCopyApplication
             {
 
                 string tempPath = Path.Combine(destDirName, file.Name);
-                file.CopyTo(tempPath, true);
-                ReplaceInFile(tempPath, oldNamespace, newNamespace);
-                log.Add(tempPath);
-                _repository.AddDataReplace(file, tempPath, ComputeMD5Checksum(file.FullName));
+                var tempDestFile = destFiles.FirstOrDefault(x => x.Name == file.Name);
+                FileInfo checkFile = new FileInfo(tempPath);
                 
+                if (checkFile.Exists)
+                {
+                    Log.Add(new ListBoxItem() { Content = "Warning! File " + tempPath + " was updated, because was found up to date file...", Background = Brushes.Yellow });                        
+                }
+                else
+                {
+                    Log.Add(new ListBoxItem() { Content = "File " + tempPath + " was added.", Background = Brushes.White });
+                }
+
+                file.CopyTo(tempPath, true);
+                ReplaceInFile(tempPath, oldNamespace, newNamespace);      
+                _repository.AddDataReplace(file, tempPath, ComputeMD5Checksum(file.FullName));
             }
 
-           
             // If copying subdirectories, copy them and their contents to new location.
             if (copySubDirs)
             {
@@ -101,6 +107,7 @@ namespace WpfCopyApplication
             {
                 //   if (destFiles.FirstOrDefault(x => x.Name == file.Name) != null) conflictFiles.Add(new ConflictFiles() { FileFromSource = file, FileFromDest = destFiles.FirstOrDefault(x => x.Name == file.Name) });
                 if (destFiles.FirstOrDefault(x => x.Name == file.Name) == null || NeedReplace(file, destFiles.FirstOrDefault(x => x.Name == file.Name))) filteredFiles.Add(file);
+
             }
 
             foreach (FileInfo file in destFiles)
@@ -124,12 +131,18 @@ namespace WpfCopyApplication
 
         public bool IsBlankFolder(string destDirName)
         {
-            // todo: check the folder
             DirectoryInfo dir = new DirectoryInfo(destDirName);
-            if (!dir.Exists)
+
+            if (!_repository.ConsistRecords(destDirName) && !dir.Exists)
             {
                 return true;
             }
+
+            if (!_repository.ConsistRecords(destDirName) && dir.Exists)
+            {
+                return true;
+            }
+
             return !Directory.EnumerateFileSystemEntries(destDirName).Any();
         }
 
@@ -137,7 +150,7 @@ namespace WpfCopyApplication
         {
             var FoundFile = _repository.GetFileByPaths(file.FullName, destFile.FullName);
             if (FoundFile != null)
-                return !Compare(file, FoundFile);
+                return !Compare(file, FoundFile);  
             return true;
         }
 
@@ -148,7 +161,9 @@ namespace WpfCopyApplication
 
             if (_repository.IsExist(file.FullName))
             {
+                
                 // Just delete file, because we don't have records about this file...
+                Log.Add(new ListBoxItem() { Content = "Warning! File " + file.FullName + " was deleted, because we don't have records about this file...", Background = Brushes.Red });
                 return true;
             }
 
@@ -157,6 +172,8 @@ namespace WpfCopyApplication
                 if (FoundFile.Result.Hash == ComputeMD5Checksum(file.FullName))
                 {
                     _repository.RemoveByHash(FoundFile.Result.Hash);
+                    Log.Add(new ListBoxItem() { Content = "Warning! File " + file.FullName + " was deleted, because file already removed...", Background = Brushes.Red });
+                   
                     return true;
                 }
                 return true;

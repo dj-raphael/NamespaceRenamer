@@ -1,6 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows;
+using System.Windows.Forms.VisualStyles;
+using System.Windows.Media;
 
 namespace WpfCopyApplication
 {
@@ -10,21 +14,6 @@ namespace WpfCopyApplication
         public static readonly DependencyProperty SourceDirProperty = DependencyProperty.Register("SourceDir", typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
         public static readonly DependencyProperty BackupDirProperty = DependencyProperty.Register("BackupDir", typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
         public static readonly DependencyProperty NewNamespaceProperty = DependencyProperty.Register("NewNamespace", typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
-
-        public ObservableCollection<string> Log
-        {
-            get
-            {
-                var log = new ObservableCollection<string> {"test1", "test2", "test3"};
-
-                return log;
-            }
-            set
-            {
-                var log = new ObservableCollection<string> {"test1", "test2", "test3"};
-                log = value;
-            }
-        }
 
         public string OldNamespace
         {
@@ -52,11 +41,11 @@ namespace WpfCopyApplication
         public MainModel(PageAppearanceSection section)
         {
             var DefaultData = ConfigurationHelper.ReturnKeys();
-            var test = ReplaceNamespace.getLog();
             OldNamespace = DefaultData.SourceNamespace;
             NewNamespace = DefaultData.TargetNamespace;
             SourceDir = DefaultData.SourceDirectory;
             BackupDir = DefaultData.TargetDirectory;
         }
     }
+
 }

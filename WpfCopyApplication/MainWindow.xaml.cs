@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
 using Microsoft.Win32;
 using WpfCopyApplication.Model;
 using System.Windows.Forms;
@@ -11,7 +14,7 @@ namespace WpfCopyApplication
 {
     public partial class MainWindow : Window
     {
-        ReplaceContext db = new ReplaceContext();
+        private ReplaceContext db = new ReplaceContext();
 
         public MainWindow()
         {
@@ -19,7 +22,7 @@ namespace WpfCopyApplication
             InitializeComponent();
             this.Model = new MainModel(PageAppearanceSection.GetConfiguration());
             DataContext = Model;
-            
+
         }
 
         public MainModel Model { get; set; }
@@ -28,22 +31,28 @@ namespace WpfCopyApplication
         {
             var dialog = new FolderBrowserDialog();
             var result = dialog.ShowDialog();
-            ((MainModel)DataContext).SourceDir = dialog.SelectedPath;
+            Model.SourceDir = dialog.SelectedPath;
         }
 
         private void BrowiseTarget_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new FolderBrowserDialog();
             var result = dialog.ShowDialog();
-            ((MainModel)DataContext).BackupDir = dialog.SelectedPath;
+            Model.BackupDir = dialog.SelectedPath;
         }
 
         private async void Start_Click(object sender, RoutedEventArgs e)
         {
+            
+
             //  var q = PageAppearanceSection.GetConfiguration().IgnoreList;
             var x = new ReplaceNamespace(db);
-            await ConfigurationHelper.EditKey(((MainModel)DataContext).SourceDir, ((MainModel)DataContext).BackupDir, ((MainModel)DataContext).NewNamespace, ((MainModel)DataContext).OldNamespace);
-            if (!x.IsBlankFolder(((MainModel) DataContext).BackupDir))
+            ReplaceNamespace.Log.Clear();
+
+            await
+                ConfigurationHelper.EditKey(Model.SourceDir, Model.BackupDir,
+                    Model.NewNamespace, Model.OldNamespace);
+            if (!x.IsBlankFolder(Model.BackupDir))
             {
                 string messageBoxText = "The folder is not empty";
                 string caption = "";
@@ -51,16 +60,25 @@ namespace WpfCopyApplication
                 System.Windows.Forms.MessageBoxIcon icon = MessageBoxIcon.Information;
                 DialogResult result = System.Windows.Forms.MessageBox.Show(messageBoxText, caption, button, icon);
                 if (result == System.Windows.Forms.DialogResult.Yes)
-                    x.DirectoryCopy(((MainModel) DataContext).SourceDir, ((MainModel) DataContext).BackupDir, true,
-                        ((MainModel) DataContext).NewNamespace, ((MainModel) Model).OldNamespace);
+                    x.DirectoryCopy(Model.SourceDir, Model.BackupDir, true,
+                        Model.NewNamespace, ((MainModel) Model).OldNamespace);
             }
             else
             {
-                x.DirectoryCopy(((MainModel)DataContext).SourceDir, ((MainModel)DataContext).BackupDir, true, ((MainModel)DataContext).NewNamespace, ((MainModel)DataContext).OldNamespace);                
+                x.DirectoryCopy(Model.SourceDir, Model.BackupDir, true, Model.NewNamespace, Model.OldNamespace);
             }
 
-                Log.ItemsSource = ReplaceNamespace.log;
+            
+            Log.ItemsSource = ReplaceNamespace.Log;
 
         }
+
+        private void ListBox_ScrollChanged(object sender, ScrollChangedEventArgs e)
+        {
+            if (e.ExtentHeightChange > 0.0)
+                ((ScrollViewer)e.OriginalSource).ScrollToEnd();
+        }
+
     }
+
 }
