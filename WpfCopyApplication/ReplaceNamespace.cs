@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Configuration;
 using System.IO;
 using System.Linq;
@@ -15,6 +16,13 @@ namespace WpfCopyApplication
 {
     public class ReplaceNamespace
     {
+        public static ObservableCollection<string> log;
+
+        public static ObservableCollection<string> getLog()
+        {
+            return log;
+        }
+
         private DataReplacementRepository _repository;
         public ReplaceNamespace(ReplaceContext context)
         {
@@ -29,7 +37,9 @@ namespace WpfCopyApplication
 
         public void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs, string newNamespace, string oldNamespace)
         {
+            log = new ObservableCollection<string>();
 
+            log.Add();getLog();
             // Get the subdirectories for the specified directory.
             DirectoryInfo dir = new DirectoryInfo(sourceDirName);
             DirectoryInfo destDir = new DirectoryInfo(destDirName);
@@ -65,12 +75,14 @@ namespace WpfCopyApplication
             {
 
                 string tempPath = Path.Combine(destDirName, file.Name);
-                file.CopyTo(tempPath, false);
+                file.CopyTo(tempPath, true);
                 ReplaceInFile(tempPath, oldNamespace, newNamespace);
+                log.Add(tempPath);
+                _repository.AddDataReplace(file, tempPath, ComputeMD5Checksum(file.FullName));
 
-                _repository.AddDataReplace(file, tempPath,ComputeMD5Checksum(file.FullName));
+
             }
-            
+
             // If copying subdirectories, copy them and their contents to new location.
             if (copySubDirs)
             {
@@ -89,26 +101,26 @@ namespace WpfCopyApplication
 
             foreach (FileInfo file in files)
             {
-           //   if (destFiles.FirstOrDefault(x => x.Name == file.Name) != null) conflictFiles.Add(new ConflictFiles() { FileFromSource = file, FileFromDest = destFiles.FirstOrDefault(x => x.Name == file.Name) });
+                //   if (destFiles.FirstOrDefault(x => x.Name == file.Name) != null) conflictFiles.Add(new ConflictFiles() { FileFromSource = file, FileFromDest = destFiles.FirstOrDefault(x => x.Name == file.Name) });
                 if (destFiles.FirstOrDefault(x => x.Name == file.Name) == null || NeedReplace(file, destFiles.FirstOrDefault(x => x.Name == file.Name))) filteredFiles.Add(file);
             }
 
             foreach (FileInfo file in destFiles)
             {
-                if (files.FirstOrDefault(x => x.Name == file.Name) == null )
+                if (files.FirstOrDefault(x => x.Name == file.Name) == null)
                 {
                     if (NeedDelete(file))
                     {
                         file.Delete();
                     }
 
-//                 NeedDelete(file);
-//                 + Нужно сделать проверку с базой:
-//                 1) Если данные в БД имеются о файле удалить
-//                 2) Если данные не имеются - добавить в список конфликта и удалить
+                    //                 NeedDelete(file);
+                    //                 + Нужно сделать проверку с базой:
+                    //                 1) Если данные в БД имеются о файле удалить
+                    //                 2) Если данные не имеются - добавить в список конфликта и удалить
                 }
             }
-            
+
             return filteredFiles;
         }
 
@@ -156,7 +168,7 @@ namespace WpfCopyApplication
             return false;
         }
 
-        
+
 
         private static string ComputeMD5Checksum(string path)
         {
@@ -173,18 +185,19 @@ namespace WpfCopyApplication
 
         static bool Compare(FileInfo comparedFile, Task<DataReplacement> foundFile)
         {
-            
+
             if (comparedFile.LastWriteTime.Ticks == foundFile.Result.Date && comparedFile.Length == foundFile.Result.Size)
             {
                 return true;
             }
-            else 
+            else
             {
                 if (comparedFile.Length == foundFile.Result.Size && ComputeMD5Checksum(comparedFile.FullName) == foundFile.Result.Hash) return true;
             }
 
             return false;
         }
+
 
     }
 

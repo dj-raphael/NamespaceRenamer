@@ -18,3 +18,4 @@ C:\Projects\WpfCopyApplication\WpfCopyApplication\bin\Debug\EntityFramework.SqlS
 C:\Projects\WpfCopyApplication\WpfCopyApplication\bin\Debug\EntityFramework.SqlServerCompact.dll
 C:\Projects\WpfCopyApplication\WpfCopyApplication\bin\Debug\System.Data.SqlServerCe.dll
 C:\Projects\WpfCopyApplication\WpfCopyApplication\bin\Debug\EntityFramework.SqlServerCompact.xml
+C:\Projects\WpfCopyApplication\WpfCopyApplication\obj\Debug\WpfCopyApplication.csprojResolveAssemblyReference.cache

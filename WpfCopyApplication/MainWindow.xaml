@@ -19,6 +19,6 @@
         <TextBox TextWrapping="Wrap" Text="{Binding Path=BackupDir}" Margin="121,130,120,0" Height="23" VerticalAlignment="Top"/>
         <TextBox Height="23" Margin="122,100,120,0" TextWrapping="Wrap" Text="{Binding Path=NewNamespace}" VerticalAlignment="Top" RenderTransformOrigin="0.489,4.725"/>
         <Button Content="Browise" Width="76" Click="BrowiseTarget_Click" HorizontalAlignment="Right" HorizontalContentAlignment="Center" Margin="0,130,27,0" Height="23" VerticalAlignment="Top"/>
-        <ListBox x:Name="ListBox" Margin="122,170,119,60" ItemsSource="{Binding Path=Log}"/>
+        <ListBox x:Name="Log" Margin="122,170,119,60" ItemsSource="{Binding Path=Log}"/>
     </Grid>
 </Window>

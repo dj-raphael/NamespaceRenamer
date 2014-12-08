@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.ObjectModel;
 using System.Windows;
 using Microsoft.Win32;
 using WpfCopyApplication.Model;
@@ -17,7 +19,7 @@ namespace WpfCopyApplication
             InitializeComponent();
             this.Model = new MainModel(PageAppearanceSection.GetConfiguration());
             DataContext = Model;
-            Console.WriteLine("Started");
+            
         }
 
         public MainModel Model { get; set; }
@@ -38,8 +40,8 @@ namespace WpfCopyApplication
 
         private async void Start_Click(object sender, RoutedEventArgs e)
         {
-//            var q = PageAppearanceSection.GetConfiguration().IgnoreList;
-            ReplaceNamespace x = new ReplaceNamespace(db);
+            //  var q = PageAppearanceSection.GetConfiguration().IgnoreList;
+            var x = new ReplaceNamespace(db);
             await ConfigurationHelper.EditKey(((MainModel)DataContext).SourceDir, ((MainModel)DataContext).BackupDir, ((MainModel)DataContext).NewNamespace, ((MainModel)DataContext).OldNamespace);
             if (!x.IsBlankFolder(((MainModel) DataContext).BackupDir))
             {
@@ -56,6 +58,12 @@ namespace WpfCopyApplication
             {
                 x.DirectoryCopy(((MainModel)DataContext).SourceDir, ((MainModel)DataContext).BackupDir, true, ((MainModel)DataContext).NewNamespace, ((MainModel)DataContext).OldNamespace);                
             }
+
+            foreach (var log in ReplaceNamespace.log)
+            {
+                Log.ItemsSource = log;
+            }
+            ;
         }
     }
 }
