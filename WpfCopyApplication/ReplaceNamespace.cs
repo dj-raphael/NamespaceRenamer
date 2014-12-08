@@ -16,7 +16,7 @@ namespace WpfCopyApplication
 {
     public class ReplaceNamespace
     {
-        public static ObservableCollection<string> log;
+        public static ObservableCollection<string> log = new ObservableCollection<string>();
 
         public static ObservableCollection<string> getLog()
         {
@@ -37,9 +37,7 @@ namespace WpfCopyApplication
 
         public void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs, string newNamespace, string oldNamespace)
         {
-            log = new ObservableCollection<string>();
-
-            log.Add();getLog();
+                      
             // Get the subdirectories for the specified directory.
             DirectoryInfo dir = new DirectoryInfo(sourceDirName);
             DirectoryInfo destDir = new DirectoryInfo(destDirName);
@@ -79,10 +77,10 @@ namespace WpfCopyApplication
                 ReplaceInFile(tempPath, oldNamespace, newNamespace);
                 log.Add(tempPath);
                 _repository.AddDataReplace(file, tempPath, ComputeMD5Checksum(file.FullName));
-
-
+                
             }
 
+           
             // If copying subdirectories, copy them and their contents to new location.
             if (copySubDirs)
             {

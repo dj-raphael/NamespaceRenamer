@@ -59,11 +59,8 @@ namespace WpfCopyApplication
                 x.DirectoryCopy(((MainModel)DataContext).SourceDir, ((MainModel)DataContext).BackupDir, true, ((MainModel)DataContext).NewNamespace, ((MainModel)DataContext).OldNamespace);                
             }
 
-            foreach (var log in ReplaceNamespace.log)
-            {
-                Log.ItemsSource = log;
-            }
-            ;
+                Log.ItemsSource = ReplaceNamespace.log;
+
         }
     }
 }
