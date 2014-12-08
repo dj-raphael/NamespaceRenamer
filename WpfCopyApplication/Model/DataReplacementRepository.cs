@@ -19,9 +19,9 @@ namespace WpfCopyApplication.Repository
             _context = context;
         }
 
-        public async Task<DataReplacement> GetFileByPaths(string file, string destFile)
+        public  DataReplacement GetFileByPaths(string file, string destFile)
         {
-            return await _context.DataReplacements.FirstOrDefaultAsync(x => x.Path == file && x.PathTargetDirectory == destFile); 
+            return _context.DataReplacements.FirstOrDefault(x => x.Path == file && x.PathTargetDirectory == destFile); 
         }
 
         public bool IsExist(string fileName)
@@ -42,7 +42,9 @@ namespace WpfCopyApplication.Repository
 
         public bool ConsistRecords(string Path)
         {
-            return _context.DataReplacements.Any(x => x.PathTargetDirectory.Contains(Path));
+            var consist = (bool) _context.DataReplacements.Any(x => x.PathTargetDirectory.Contains(Path));
+
+            return consist;
         }
 
         public void AddDataReplace(FileInfo file, string targetPath, string hash)
