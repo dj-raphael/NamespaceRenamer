@@ -52,7 +52,7 @@ namespace WpfCopyApplication
             await
                 ConfigurationHelper.EditKey(Model.SourceDir, Model.BackupDir,
                     Model.NewNamespace, Model.OldNamespace);
-            if (x.IsBlankFolder(Model.BackupDir))
+            if (!x.IsBlankFolder(Model.BackupDir))
             {
                 string messageBoxText = "The folder is not empty";
                 string caption = "";
