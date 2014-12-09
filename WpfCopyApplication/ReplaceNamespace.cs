@@ -147,17 +147,19 @@ namespace WpfCopyApplication
 
             if (!_repository.ConsistRecords(destDirName))
             {
-                if (!dir.Exists)
+                var existFiles = Directory.EnumerateFileSystemEntries(destDirName).Any();
+
+                if (dir.Exists && existFiles)
                 {
                     return true;
                 }
-
+                
                 return false;
             }
 
             return false;
 
-//            return !Directory.EnumerateFileSystemEntries(destDirName).Any();
+            //            return !Directory.EnumerateFileSystemEntries(destDirName).Any();
         }
 
         public bool NeedReplace(FileInfo file, FileInfo destFile)
