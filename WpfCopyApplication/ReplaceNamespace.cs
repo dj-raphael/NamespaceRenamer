@@ -59,8 +59,8 @@ namespace WpfCopyApplication
 
             var destFiles = destDir.GetFiles();
             List<FileInfo> files;
-
-            if (Directory.EnumerateFileSystemEntries(destDirName).Any())
+            bool isEmptyDirectory = Directory.EnumerateFileSystemEntries(destDirName).Any();
+            if (isEmptyDirectory)
             {
                 files = await GetFilteredFiles(dir.GetFiles(), destFiles);
             }
@@ -69,7 +69,7 @@ namespace WpfCopyApplication
 
             foreach (FileInfo file in files)
             {
-
+                if (!isEmptyDirectory) Log.Add(new ListBoxItem() { Content = "File" + file.Name + " was added.", Background = Brushes.White });
                 string tempPath = Path.Combine(destDirName, file.Name);
                 var tempDestFile = destFiles.FirstOrDefault(x => x.Name == file.Name);
                 FileInfo checkFile = new FileInfo(tempPath);
@@ -125,7 +125,7 @@ namespace WpfCopyApplication
             {
                 if (files.FirstOrDefault(x => x.Name == file.Name) == null)
                 {
-                    Log.Add(new ListBoxItem() { Content = "File " + file.Name + " is not in the source folder", Background = Brushes.DarkGoldenrod });
+//                    Log.Add(new ListBoxItem() { Content = "File " + file.Name + " is not in the source folder", Background = Brushes.Yellow });
                     if (await NeedDelete(file))
                     {
                         file.Delete();
@@ -147,20 +147,18 @@ namespace WpfCopyApplication
 
             if (!_repository.ConsistRecords(destDirName))
             {
-                if (!dir.Exists)
+                if (dir.Exists)
                 {
-                    return true;
+                    if (Directory.EnumerateFileSystemEntries(destDirName).Any())
+                    {
+                        return true;
+                    }
                 }
-
-                return false;
             }
-
-            return false;
-
-//            return !Directory.EnumerateFileSystemEntries(destDirName).Any();
         }
 
-        public bool NeedReplace(FileInfo file, FileInfo destFile)
+        public
+             bool NeedReplace(FileInfo file, FileInfo destFile)
         {
             var FoundFile = _repository.GetFileByPaths(file.FullName, destFile.FullName);
             if (FoundFile != null)
