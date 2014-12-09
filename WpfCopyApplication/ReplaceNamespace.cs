@@ -32,7 +32,7 @@ namespace WpfCopyApplication
             File.WriteAllText(sourceDir, strFile);
         }
 
-        public async Task DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs, string newNamespace, string oldNamespace)
+        public void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs, string newNamespace, string oldNamespace)
         {
                       
             // Get the subdirectories for the specified directory.
@@ -61,7 +61,7 @@ namespace WpfCopyApplication
 
             if (Directory.EnumerateFileSystemEntries(destDirName).Any())
             {
-                files = await GetFilteredFiles(dir.GetFiles(), destFiles);
+                files = GetFilteredFiles(dir.GetFiles(), destFiles);
             }
 
             else files = dir.GetFiles().ToList();
@@ -98,7 +98,7 @@ namespace WpfCopyApplication
             }
         }
 
-        public async Task<List<FileInfo>> GetFilteredFiles(FileInfo[] files, FileInfo[] destFiles)
+        public List<FileInfo> GetFilteredFiles(FileInfo[] files, FileInfo[] destFiles)
         {
             var filteredFiles = new List<FileInfo>();
 
@@ -106,15 +106,15 @@ namespace WpfCopyApplication
             foreach (FileInfo file in files)
             {
                 //   if (destFiles.FirstOrDefault(x => x.Name == file.Name) != null) conflictFiles.Add(new ConflictFiles() { FileFromSource = file, FileFromDest = destFiles.FirstOrDefault(x => x.Name == file.Name) });
-                if (destFiles.FirstOrDefault(x => x.Name == file.Name) == null || NeedReplace(file, destFiles.FirstOrDefault(x => x.Name == file.Name))) filteredFiles.Add(file);
-
+                if (destFiles.FirstOrDefault(x => x.Name == file.Name) == null ||
+                    NeedReplace(file, destFiles.FirstOrDefault(x => x.Name == file.Name))) filteredFiles.Add(file);
             }
 
             foreach (FileInfo file in destFiles)
             {
                 if (files.FirstOrDefault(x => x.Name == file.Name) == null)
                 {
-                    if (await NeedDelete(file))
+                    if (NeedDelete(file))
                     {
                         file.Delete();
                     }
@@ -135,53 +135,46 @@ namespace WpfCopyApplication
 
             if (!_repository.ConsistRecords(destDirName))
             {
-                if (!dir.Exists)
-                {
-                    return true;
-                }
-
-                return false;
+                return true;
             }
 
-            return false;
-
-//            return !Directory.EnumerateFileSystemEntries(destDirName).Any();
+            return !Directory.EnumerateFileSystemEntries(destDirName).Any();
         }
 
         public bool NeedReplace(FileInfo file, FileInfo destFile)
         {
-            var FoundFile = _repository.GetFileByPaths(file.FullName, destFile.FullName);
-            if (FoundFile != null)
-                return !Compare(file, FoundFile);  
+            var foundFile = _repository.GetFileByPaths(file.FullName, destFile.FullName);
+            if (foundFile != null)
+                return !Compare(file, foundFile);  
             return true;
         }
 
-        public async Task<bool> NeedDelete(FileInfo file)
+        public bool NeedDelete(FileInfo file)
         {
             bool isExist = _repository.IsExist(file.FullName);
-            var FoundFile = await _repository.GetFileByTargetDirectory(file.FullName);
-           
+            var FoundFile = _repository.GetFileByTargetDirectory(file.FullName);
 
-//            if (_repository.IsExist(file.FullName))
-//            {
-//                
-//                // Just delete file, because we don't have records about this file...
-//                Log.Add(new ListBoxItem() { Content = "Warning! File " + file.FullName + " was deleted, because we don't have records about this file...", Background = Brushes.Red });
-//                return true;
-//            }              
-            
-
-            if (FoundFile != null && _repository.IsExist(file.FullName) && FoundFile.DateTarget == file.LastWriteTime.Ticks && FoundFile.Size == file.Length)
+            if (_repository.IsExist(file.FullName))
             {
-                if (FoundFile.Hash == ComputeMD5Checksum(file.FullName))
+                
+                // Just delete file, because we don't have records about this file...
+                Log.Add(new ListBoxItem() { Content = "Warning! File " + file.FullName + " was deleted, because we don't have records about this file...", Background = Brushes.Red });
+                return true;
+            }
+
+            if (_repository.IsExist(file.FullName) && FoundFile.Result.DateTarget == file.LastWriteTime.Ticks && FoundFile.Result.Size == file.Length)
+            {
+                if (FoundFile.Result.Hash == ComputeMD5Checksum(file.FullName))
                 {
-                    _repository.RemoveByHash(FoundFile.Hash);
+                    _repository.RemoveByHash(FoundFile.Result.Hash);
                     Log.Add(new ListBoxItem() { Content = "Warning! File " + file.FullName + " was deleted, because file already removed...", Background = Brushes.Red });
                    
                     return true;
                 }
                 return true;
+
             }
+
             return false;
         }
 
@@ -202,7 +195,6 @@ namespace WpfCopyApplication
 
         static bool Compare(FileInfo comparedFile, DataReplacement foundFile)
         {
-
             if (comparedFile.LastWriteTime.Ticks == foundFile.Date && comparedFile.Length == foundFile.Size)
             {
                 return true;
@@ -211,7 +203,6 @@ namespace WpfCopyApplication
             {
                 if (comparedFile.Length == foundFile.Size && ComputeMD5Checksum(comparedFile.FullName) == foundFile.Hash) return true;
             }
-
             return false;
         }
 

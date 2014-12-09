@@ -46,6 +46,7 @@ namespace WpfCopyApplication
             
 
             //  var q = PageAppearanceSection.GetConfiguration().IgnoreList;
+            
             var x = new ReplaceNamespace(db);
             ReplaceNamespace.Log.Clear();
 
@@ -60,12 +61,12 @@ namespace WpfCopyApplication
                 System.Windows.Forms.MessageBoxIcon icon = MessageBoxIcon.Information;
                 DialogResult result = System.Windows.Forms.MessageBox.Show(messageBoxText, caption, button, icon);
                 if (result == System.Windows.Forms.DialogResult.Yes)
-                   await x.DirectoryCopy(Model.SourceDir, Model.BackupDir, true,
-                        Model.NewNamespace, Model.OldNamespace);
+                    x.DirectoryCopy(Model.SourceDir, Model.BackupDir, true,
+                        Model.NewNamespace, ((MainModel) Model).OldNamespace);
             }
             else
             {
-                await x.DirectoryCopy(Model.SourceDir, Model.BackupDir, true, Model.NewNamespace, Model.OldNamespace);
+                x.DirectoryCopy(Model.SourceDir, Model.BackupDir, true, Model.NewNamespace, Model.OldNamespace);
             }
 
             
