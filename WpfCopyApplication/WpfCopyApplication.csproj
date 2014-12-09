@@ -72,6 +72,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="ConfigurationHelper.cs" />
+    <Compile Include="Conflict.cs" />
     <Compile Include="MainModel.cs" />
     <Compile Include="Model\DataReplacement.cs" />
     <Compile Include="Model\DataReplacementMap.cs" />
