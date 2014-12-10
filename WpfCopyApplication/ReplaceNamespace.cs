@@ -71,9 +71,10 @@ namespace WpfCopyApplication
             {
                 if (!isEmptyDirectory) Log.Add(new ListBoxItem() { Content = "File" + file.Name + " was added.", Background = Brushes.White });
                 string tempPath = Path.Combine(destDirName, file.Name);
-                var tempDestFile = destFiles.FirstOrDefault(x => x.Name == file.Name);
-                FileInfo checkFile = new FileInfo(tempPath);
-                
+
+//                var tempDestFile = destFiles.FirstOrDefault(x => x.Name == file.Name);
+//                FileInfo checkFile = new FileInfo(tempPath);
+//                
 //                if (checkFile.Exists)
 //                {
 //                    Log.Add(new ListBoxItem() { Content = "Warning! File " + tempPath + " was updated, because was found up to date file...", Background = Brushes.Yellow });                        
@@ -84,8 +85,10 @@ namespace WpfCopyApplication
 //                }
 
                 file.CopyTo(tempPath, true);
-                ReplaceInFile(tempPath, oldNamespace, newNamespace);      
-                _repository.AddDataReplace(file, tempPath, ComputeMD5Checksum(file.FullName));
+                ReplaceInFile(tempPath, oldNamespace, newNamespace);
+                destFiles = destDir.GetFiles();
+
+                _repository.AddDataReplace(file, tempPath, ComputeMD5Checksum(file.FullName), destFiles.FirstOrDefault(x => x.Name == file.Name), ComputeMD5Checksum(tempPath));
             }
 
             // If copying subdirectories, copy them and their contents to new location.
@@ -110,11 +113,22 @@ namespace WpfCopyApplication
                 if (destFiles.FirstOrDefault(x => x.Name == file.Name) == null)
                 {
                     filteredFiles.Add(file);
-                    Log.Add(new ListBoxItem() { Content = "File" + file.Name + " was added.", Background = Brushes.White });
+                    Log.Add(new ListBoxItem() { Content = "File" + file.Name + " has been added.", Background = Brushes.White });
                 }
-                else if (NeedReplace(file, destFiles.FirstOrDefault(x => x.Name == file.Name)))
+                else if (MergeFile(file, destFiles.FirstOrDefault(x => x.Name == file.Name)))
                 {
-                    Log.Add(new ListBoxItem() { Content = "File " + file.Name + " was added to conflict list, because was found up to date file...", Background = Brushes.Red });
+                    Log.Add(new ListBoxItem() { Content = "File " + file.Name + " need to merge", Background = Brushes.Red });
+                    ConflictList.Add(new Conflict() { SourcePath = file.FullName, DestPath = destFiles.FirstOrDefault(x => x.Name == file.Name).FullName });
+                }
+                else if (NeedReplace(file, destFiles.FirstOrDefault(x => x.Name == file.Name), true))
+                {
+                    filteredFiles.Add(file);
+                    Log.Add(new ListBoxItem() { Content = "File " + file.Name + " has been updated, because was found up to date file...", Background = Brushes.Yellow });
+//                    ConflictList.Add(new Conflict() { SourcePath = file.FullName, DestPath = destFiles.FirstOrDefault(x => x.Name == file.Name).FullName });
+                }  
+                else if (NeedReplace(file, destFiles.FirstOrDefault(x => x.Name == file.Name), false))
+                {
+                    Log.Add(new ListBoxItem() { Content = "File " + file.Name + " has been added to conflict list, because was found up to date file...", Background = Brushes.Red });
                     ConflictList.Add(new Conflict() { SourcePath = file.FullName, DestPath = destFiles.FirstOrDefault(x => x.Name == file.Name).FullName });
                 }
 //                if (destFiles.FirstOrDefault(x => x.Name == file.Name) == null || NeedReplace(file, destFiles.FirstOrDefault(x => x.Name == file.Name))) filteredFiles.Add(file);
@@ -154,15 +168,26 @@ namespace WpfCopyApplication
                         return true;
                     }
                 }
+                return false;
             }
+
+            return false;
+
+            // return !Directory.EnumerateFileSystemEntries(destDirName).Any();
         }
 
-        public
-             bool NeedReplace(FileInfo file, FileInfo destFile)
+        bool MergeFile(FileInfo file, FileInfo destFile)
         {
-            var FoundFile = _repository.GetFileByPaths(file.FullName, destFile.FullName);
-            if (FoundFile != null)
-                return !Compare(file, FoundFile);  
+            var foundFile = _repository.GetFileByPaths(file.FullName, destFile.FullName);
+            return !Compare(file, destFile, foundFile);
+        }
+        public bool NeedReplace(FileInfo file, FileInfo destFile, bool isReplace)
+        {
+            var foundFile = _repository.GetFileByPaths(file.FullName, destFile.FullName);
+            if (foundFile != null && isReplace)
+                return !Compare(file, foundFile, true);
+            if(foundFile != null && !isReplace)
+                return !Compare(destFile, foundFile, false);
             return true;
         }
 
@@ -210,19 +235,51 @@ namespace WpfCopyApplication
             }
         }
 
-        static bool Compare(FileInfo comparedFile, DataReplacement foundFile)
+        bool Compare(FileInfo sourceFile, FileInfo destFile, DataReplacement foundFile)
         {
-
-            if (comparedFile.LastWriteTime.Ticks == foundFile.Date && comparedFile.Length == foundFile.Size)
+            if (sourceFile.LastWriteTime.Ticks == foundFile.Date && sourceFile.Length == foundFile.Size &&
+                destFile.LastWriteTime.Ticks == foundFile.DateTarget && destFile.Length == foundFile.Size)
             {
                 return true;
             }
             else
             {
-                if (comparedFile.Length == foundFile.Size && ComputeMD5Checksum(comparedFile.FullName) == foundFile.Hash) return true;
+                if (sourceFile.Length == foundFile.Size && ComputeMD5Checksum(sourceFile.FullName) == foundFile.Hash &&
+                    destFile.Length == foundFile.SizeTarget && ComputeMD5Checksum(destFile.FullName) == foundFile.HashTarget) return true;
             }
 
             return false;
+        }
+        bool Compare(FileInfo comparedFile, DataReplacement foundFile, bool isReplace)
+        {
+            if (isReplace)
+            {
+                if (comparedFile.LastWriteTime.Ticks == foundFile.Date && comparedFile.Length == foundFile.Size)
+                {
+                    return true;
+                }
+                else
+                {
+                    if (comparedFile.Length == foundFile.Size &&
+                        ComputeMD5Checksum(comparedFile.FullName) == foundFile.Hash) return true;
+                }
+
+                return false;
+            }
+            else
+            {
+                if (comparedFile.LastWriteTime.Ticks == foundFile.DateTarget && comparedFile.Length == foundFile.Size)
+                {
+                    return true;
+                }
+                else
+                {
+                    if (comparedFile.Length == foundFile.SizeTarget && ComputeMD5Checksum(comparedFile.FullName) == foundFile.HashTarget) return true;
+                }
+
+                return false;
+            }
+            
         }
 
 

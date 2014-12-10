@@ -47,15 +47,18 @@ namespace WpfCopyApplication.Repository
             return consist;
         }
 
-        public void AddDataReplace(FileInfo file, string targetPath, string hash)
+        public void AddDataReplace(FileInfo file, string targetPath, string sourceHash, FileInfo destFile, string destHash)
         {
             var insertFile = new DataReplacement
             {
                 Date = file.LastWriteTime.Ticks,
                 Path = file.FullName,
                 Size = file.Length,
-                Hash = hash,
-                PathTargetDirectory = targetPath
+                Hash = sourceHash,
+                PathTargetDirectory = targetPath,
+                DateTarget = destFile.LastWriteTime.Ticks,
+                SizeTarget = destFile.Length,
+                HashTarget = destHash
             };
 
             if (_context.DataReplacements.FirstOrDefault(x => x.Path == file.FullName && x.PathTargetDirectory == targetPath) == null)
