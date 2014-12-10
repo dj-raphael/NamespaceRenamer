@@ -222,7 +222,7 @@ namespace WpfCopyApplication
 
 
 
-        private static string ComputeMD5Checksum(string path)
+        private string ComputeMD5Checksum(string path)
         {
             using (FileStream fs = System.IO.File.OpenRead(path))
             {
