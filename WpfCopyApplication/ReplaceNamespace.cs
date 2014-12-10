@@ -154,7 +154,10 @@ namespace WpfCopyApplication
                         return true;
                     }
                 }
+                return false;
             }
+
+            return false;
         }
 
         public
