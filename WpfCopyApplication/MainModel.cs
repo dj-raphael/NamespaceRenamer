@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Forms.VisualStyles;
 using System.Windows.Media;
+using WpfCopyApplication.Model;
 
 namespace WpfCopyApplication
 {
@@ -14,6 +15,8 @@ namespace WpfCopyApplication
         public static readonly DependencyProperty SourceDirProperty = DependencyProperty.Register("SourceDir", typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
         public static readonly DependencyProperty BackupDirProperty = DependencyProperty.Register("BackupDir", typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
         public static readonly DependencyProperty NewNamespaceProperty = DependencyProperty.Register("NewNamespace", typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
+
+        public ObservableCollection<Grid> CollectionsGrids  = new ObservableCollection<Grid>();
 
         public string OldNamespace
         {

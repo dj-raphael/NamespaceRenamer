@@ -79,6 +79,16 @@ namespace WpfCopyApplication
                 ((ScrollViewer)e.OriginalSource).ScrollToEnd();
         }
 
+        private void AddButton_Click(object sender, RoutedEventArgs routedEventArgs)
+        {
+
+
+        }
+        private void DeleteButton_Click(object sender, RoutedEventArgs routedEventArgs)
+        {
+            
+        }
+
     }
 
 }

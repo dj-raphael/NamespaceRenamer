@@ -69,7 +69,7 @@ namespace WpfCopyApplication
 
             foreach (FileInfo file in files)
             {
-                if (!isEmptyDirectory) Log.Add(new ListBoxItem() { Content = "File" + file.Name + " was added.", Background = Brushes.White });
+                if (!isEmptyDirectory) Log.Add(new ListBoxItem() { Content = "File " + file.Name + " was added.", Background = Brushes.White });
                 string tempPath = Path.Combine(destDirName, file.Name);
                 var tempDestFile = destFiles.FirstOrDefault(x => x.Name == file.Name);
                 FileInfo checkFile = new FileInfo(tempPath);

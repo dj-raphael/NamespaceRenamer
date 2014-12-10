@@ -53,6 +53,7 @@
     <Reference Include="System.Data.SqlServerCe, Version=4.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -62,9 +63,11 @@
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
+    <Reference Include="UIAutomationProvider" />
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -76,6 +79,7 @@
     <Compile Include="MainModel.cs" />
     <Compile Include="Model\DataReplacement.cs" />
     <Compile Include="Model\DataReplacementMap.cs" />
+    <Compile Include="Model\Grid.cs" />
     <Compile Include="Model\ReplaceContext.cs" />
     <Compile Include="PageAppearanceSection.cs" />
     <Compile Include="ReplaceNamespace.cs" />
