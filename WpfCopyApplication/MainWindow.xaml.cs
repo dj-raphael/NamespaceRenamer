@@ -22,7 +22,7 @@ namespace WpfCopyApplication
             InitializeComponent();
             this.Model = new MainModel(PageAppearanceSection.GetConfiguration());
             DataContext = Model;
-
+            
         }
 
         public MainModel Model { get; set; }
@@ -43,8 +43,6 @@ namespace WpfCopyApplication
 
         private async void Start_Click(object sender, RoutedEventArgs e)
         {
-            
-
             //  var q = PageAppearanceSection.GetConfiguration().IgnoreList;
             var x = new ReplaceNamespace(db);
             ReplaceNamespace.Log.Clear();
@@ -68,7 +66,10 @@ namespace WpfCopyApplication
                 await x.DirectoryCopy(Model.SourceDir, Model.BackupDir, true, Model.NewNamespace, Model.OldNamespace);
             }
 
-            
+//            Model.CollectionReplaceItems 
+
+            var item =  ReplaceList.Items.Add(new ReplaceItem(){Path = @"C:\"});   
+
             Log.ItemsSource = ReplaceNamespace.Log;
 
         }

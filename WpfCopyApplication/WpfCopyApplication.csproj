@@ -79,7 +79,7 @@
     <Compile Include="MainModel.cs" />
     <Compile Include="Model\DataReplacement.cs" />
     <Compile Include="Model\DataReplacementMap.cs" />
-    <Compile Include="Model\Grid.cs" />
+    <Compile Include="Model\ReplaceItem.cs" />
     <Compile Include="Model\ReplaceContext.cs" />
     <Compile Include="PageAppearanceSection.cs" />
     <Compile Include="ReplaceNamespace.cs" />
@@ -129,6 +129,12 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="delete.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="add.jpg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
