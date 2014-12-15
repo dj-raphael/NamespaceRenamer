@@ -38,12 +38,21 @@ namespace WpfCopyApplication
         {
             var dialog = new FolderBrowserDialog();
             var result = dialog.ShowDialog();
+            Model.SourceDir = dialog.SelectedPath;
         }
 
         private void BrowiseTarget_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new FolderBrowserDialog();
             var result = dialog.ShowDialog();
+            Model.BackupDir = dialog.SelectedPath;
         }
+
+        private void DeleteButton_Click(object sender, RoutedEventArgs e)
+        {
+            
+        }
+
+
     }
 }

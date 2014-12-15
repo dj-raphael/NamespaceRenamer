@@ -13,5 +13,10 @@
         <TextBox TextWrapping="Wrap" Text="{Binding NewNamespace}" Margin="530,0,70,0"/>
         <TextBox Margin="410,0,290,0" TextWrapping="Wrap" Text="{Binding BackupDir}" RenderTransformOrigin="0.489,4.725"/>
         <Button Content=". . . " Click="BrowiseTarget_Click" HorizontalContentAlignment="Center" Margin="750,0,0,0"/>
+        <Button Height="24" Width="24" Click="DeleteButton_Click" HorizontalAlignment="Right" HorizontalContentAlignment="Center" Margin="0,0,-41,0" VerticalAlignment="Top">
+            <StackPanel>
+                <Image Source="delete.jpg" />
+            </StackPanel>
+        </Button>
     </Grid>
 </UserControl>
