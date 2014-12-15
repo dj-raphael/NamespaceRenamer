@@ -8,6 +8,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("app_data/data.sdf")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("delete.jpg")]
 
 
