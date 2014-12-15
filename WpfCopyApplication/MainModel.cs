@@ -16,40 +16,21 @@ namespace WpfCopyApplication
         public static readonly DependencyProperty BackupDirProperty = DependencyProperty.Register("BackupDir", typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
         public static readonly DependencyProperty NewNamespaceProperty = DependencyProperty.Register("NewNamespace", typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
 
-        public static readonly DependencyProperty ReplaceItemProperty = DependencyProperty.Register("ReplaceItem", typeof(ReplaceItem), typeof(MainModel), new PropertyMetadata(default(string)));
+        public static readonly DependencyProperty _collectionReplaceItemsProperty = DependencyProperty.Register("collectionReplaceItems", typeof(ObservableCollection<ReplaceItem>), typeof(MyUserControl));
 
-        public static readonly DependencyProperty NameSpaceProperty = DependencyProperty.Register("NameSpace", typeof(string), typeof(MainModel), new PropertyMetadata(default(string)));
-        public static readonly DependencyProperty PathProperty = DependencyProperty.Register("Path", typeof(string), typeof(MainModel), new PropertyMetadata(default(string)));
-        public static readonly DependencyProperty NameSpaceTargetProperty = DependencyProperty.Register("NameSpaceTarget", typeof(string), typeof(MainModel), new PropertyMetadata(default(string)));
-        public static readonly DependencyProperty PathTargetProperty = DependencyProperty.Register("PathTarget", typeof(string), typeof(MainModel), new PropertyMetadata(default(string)));
-
-
-        private ObservableCollection<ReplaceItem> CollectionReplaceItems  = new ObservableCollection<ReplaceItem>();
-
-
-        public ObservableCollection<ReplaceItem> _CollectionReplaceItems
+        public ObservableCollection<ReplaceItem> CollectionReplaceItems
         {
-            get { return CollectionReplaceItems; }
-            set { CollectionReplaceItems = value; }
+            get { return (ObservableCollection<ReplaceItem>)GetValue(_collectionReplaceItemsProperty); }
+            set { SetValue(_collectionReplaceItemsProperty, value); }
         }
 
-        public ReplaceItem Item
-        {
-            get { return new ReplaceItem() { NameSpace = (string)GetValue(NameSpaceProperty), Path = (string)GetValue(PathProperty), NameSpaceTarget = (string)GetValue(NameSpaceTargetProperty), PathTarget = (string)GetValue(PathTargetProperty)};}
-            set
-            {
-                SetValue(ReplaceItemProperty,
-                    new ReplaceItem()
-                    {
-                        NameSpace = (string) GetValue(NameSpaceProperty),
-                        Path = (string) GetValue(PathProperty),
-                        NameSpaceTarget = (string) GetValue(NameSpaceTargetProperty),
-                        PathTarget = (string) GetValue(PathTargetProperty)
-                    });
-            }
-   
-        }
+//        public ObservableCollection<ReplaceItem> _collectionReplaceItems = new ObservableCollection<ReplaceItem>();
 
+//        public ObservableCollection<ReplaceItem> CollectionReplaceItems
+//        {
+//            get { return _collectionReplaceItems; }
+//            set { _collectionReplaceItems = value; }
+//        }
         public string OldNamespace
         {
             get { return (string) GetValue(OldNamespaceProperty); }
@@ -73,14 +54,26 @@ namespace WpfCopyApplication
             get { return (string) GetValue(NewNamespaceProperty); }
             set { SetValue(NewNamespaceProperty, value); }
         }
-
         public MainModel(PageAppearanceSection section)
         {
-            var defaultData = ConfigurationHelper.ReturnKeys();
-            OldNamespace = defaultData.SourceNamespace;
-            NewNamespace = defaultData.TargetNamespace;
-            SourceDir = defaultData.SourceDirectory;
-            BackupDir = defaultData.TargetDirectory;
+            var DefaultData = ConfigurationHelper.ReturnKeys();
+            OldNamespace = DefaultData.SourceNamespace;
+            NewNamespace = DefaultData.TargetNamespace;
+            SourceDir = DefaultData.SourceDirectory;
+            BackupDir = DefaultData.TargetDirectory;
+
+            var replaceCollection = new ObservableCollection<ReplaceItem>
+            {
+                new ReplaceItem()
+                {
+                    SourceDir = DefaultData.SourceDirectory,
+                    BackupDir = DefaultData.TargetDirectory,
+                    OldNamespace = DefaultData.SourceNamespace,
+                    NewNamespace = DefaultData.TargetNamespace
+                }
+            };
+
+            CollectionReplaceItems = replaceCollection;
         }
     }
 

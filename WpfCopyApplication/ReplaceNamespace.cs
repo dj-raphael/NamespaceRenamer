@@ -72,18 +72,6 @@ namespace WpfCopyApplication
                 if (!isEmptyDirectory) Log.Add(new ListBoxItem() { Content = "File" + file.Name + " was added.", Background = Brushes.White });
                 string tempPath = Path.Combine(destDirName, file.Name);
 
-//                var tempDestFile = destFiles.FirstOrDefault(x => x.Name == file.Name);
-//                FileInfo checkFile = new FileInfo(tempPath);
-//                
-//                if (checkFile.Exists)
-//                {
-//                    Log.Add(new ListBoxItem() { Content = "Warning! File " + tempPath + " was updated, because was found up to date file...", Background = Brushes.Yellow });                        
-//                }
-//                else
-//                {
-//                    Log.Add(new ListBoxItem() { Content = "File " + tempPath + " was added.", Background = Brushes.White });
-//                }
-
                 file.CopyTo(tempPath, true);
                 ReplaceInFile(tempPath, oldNamespace, newNamespace);
                 destFiles = destDir.GetFiles();
@@ -97,7 +85,7 @@ namespace WpfCopyApplication
                 foreach (DirectoryInfo subdir in dirs)
                 {
                     string temppath = Path.Combine(destDirName, subdir.Name);
-                    DirectoryCopy(subdir.FullName, temppath, copySubDirs, newNamespace, oldNamespace);
+                    await DirectoryCopy(subdir.FullName, temppath, copySubDirs, newNamespace, oldNamespace);
                 }
             }
         }

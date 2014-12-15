@@ -81,8 +81,7 @@ namespace WpfCopyApplication
         }
 
         private void AddButton_Click(object sender, RoutedEventArgs routedEventArgs)
-        {
-
+        { 
 
         }
         private void DeleteButton_Click(object sender, RoutedEventArgs routedEventArgs)
