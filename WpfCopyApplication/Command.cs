@@ -20,11 +20,13 @@ namespace WpfCopyApplication
         {
             return true;
         }
+
         public event EventHandler CanExecuteChanged
         {
             add { CommandManager.RequerySuggested += value; }
             remove { CommandManager.RequerySuggested -= value; }
         }
+
         public void Execute(object parameter)
         {
             _action(parameter);

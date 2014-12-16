@@ -23,6 +23,8 @@ namespace WpfCopyApplication
             InitializeComponent();
             this.Model = new MainModel(PageAppearanceSection.GetConfiguration());
             DataContext = Model;
+
+
         }
 
         public MainModel Model { get; set; }
@@ -47,9 +49,13 @@ namespace WpfCopyApplication
             var x = new ReplaceNamespace(db);
             ReplaceNamespace.Log.Clear();
 
+            var test = Model.CollectionReplaceItems;
+
+
             await
                 ConfigurationHelper.EditKey(Model.SourceDir, Model.BackupDir,
                     Model.NewNamespace, Model.OldNamespace);
+
             if (x.IsBlankFolder(Model.BackupDir))
             {
                 string messageBoxText = "The folder is not empty";
@@ -92,6 +98,7 @@ namespace WpfCopyApplication
                };
 
             Model.Add.Execute(newItem);
+
         }
     }
 

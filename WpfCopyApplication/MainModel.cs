@@ -12,6 +12,7 @@ namespace WpfCopyApplication
 {
     public class MainModel : DependencyObject
     {
+
         public static readonly DependencyProperty OldNamespaceProperty = DependencyProperty.Register("OldNamespace",typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
         public static readonly DependencyProperty SourceDirProperty = DependencyProperty.Register("SourceDir",typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
         public static readonly DependencyProperty BackupDirProperty = DependencyProperty.Register("BackupDir",typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
@@ -25,13 +26,6 @@ namespace WpfCopyApplication
             set { SetValue(_collectionReplaceItemsProperty, value); }
         }
 
-//        public ObservableCollection<ReplaceItem> _collectionReplaceItems = new ObservableCollection<ReplaceItem>();
-
-//        public ObservableCollection<ReplaceItem> CollectionReplaceItems
-//        {
-//            get { return _collectionReplaceItems; }
-//            set { _collectionReplaceItems = value; }
-//        }
         public string OldNamespace
         {
             get { return (string) GetValue(OldNamespaceProperty); }
@@ -55,7 +49,9 @@ namespace WpfCopyApplication
             get { return (string) GetValue(NewNamespaceProperty); }
             set { SetValue(NewNamespaceProperty, value); }
         }
+
         public Command Add { get; set; }
+        
         public MainModel(PageAppearanceSection section)
         {
             var DefaultData = ConfigurationHelper.ReturnKeys();
@@ -63,6 +59,7 @@ namespace WpfCopyApplication
             NewNamespace = DefaultData.TargetNamespace;
             SourceDir = DefaultData.SourceDirectory;
             BackupDir = DefaultData.TargetDirectory;
+
             Add = new Command(AddItem);
 
             var replaceCollection = new ObservableCollection<ReplaceItem>
