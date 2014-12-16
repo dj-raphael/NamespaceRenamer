@@ -26,27 +26,27 @@ namespace WpfCopyApplication.Model
         public static readonly DependencyProperty NewNamespaceProperty = DependencyProperty.Register("NewNamespace", typeof (object), typeof (ReplaceItem), new PropertyMetadata(default(object)));
         public static readonly DependencyProperty BackupDirProperty = DependencyProperty.Register("BackupDir", typeof (object), typeof (ReplaceItem), new PropertyMetadata(default(object)));
 
-        public object OldNamespace
+        public string OldNamespace
         {
-            get { return (object) GetValue(OldNamespaceProperty); }
+            get { return (string)GetValue(OldNamespaceProperty); }
             set { SetValue(OldNamespaceProperty, value); }
         }
 
-        public object SourceDir
+        public string SourceDir
         {
-            get { return (object) GetValue(SourceDirProperty); }
+            get { return (string)GetValue(SourceDirProperty); }
             set { SetValue(SourceDirProperty, value); }
         }
 
-        public object NewNamespace
+        public string NewNamespace
         {
-            get { return (object) GetValue(NewNamespaceProperty); }
+            get { return (string)GetValue(NewNamespaceProperty); }
             set { SetValue(NewNamespaceProperty, value); }
         }
 
-        public object BackupDir
+        public string BackupDir
         {
-            get { return (object) GetValue(BackupDirProperty); }
+            get { return (string) GetValue(BackupDirProperty); }
             set { SetValue(BackupDirProperty, value); }
         }
 

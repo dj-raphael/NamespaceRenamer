@@ -26,11 +26,18 @@ namespace WpfCopyApplication
         {
             _repository = new DataReplacementRepository(context);
         }
+
         public void ReplaceInFile(string sourceDir, string oldNamespace, string newNamespace)
         {
             String strFile = File.ReadAllText(sourceDir);
             strFile = strFile.Replace(oldNamespace, newNamespace);
             File.WriteAllText(sourceDir, strFile);
+        }
+
+        public void AddHistory(ReplaceRequest item)
+        {
+            _repository.AddHistory(item);
+            
         }
 
         public async Task DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs, string newNamespace, string oldNamespace)
@@ -78,7 +85,17 @@ namespace WpfCopyApplication
 
                 _repository.AddDataReplace(file, tempPath, ComputeMD5Checksum(file.FullName), destFiles.FirstOrDefault(x => x.Name == file.Name), ComputeMD5Checksum(tempPath));
             }
-
+//            if ()
+//            {
+//                _repository.AddHistory(new ReplaceRequest()
+//                {
+//                    OldNamespace = oldNamespace,
+//                    NewNamespace = newNamespace,
+//                    BackupDir = destDirName,
+//                    SourceDir = sourceDirName
+//                });
+//            }
+            
             // If copying subdirectories, copy them and their contents to new location.
             if (copySubDirs)
             {

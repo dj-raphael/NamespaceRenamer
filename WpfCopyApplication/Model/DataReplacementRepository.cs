@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data.Entity;
 using System.IO;
 using System.Linq;
@@ -66,6 +67,12 @@ namespace WpfCopyApplication.Repository
                 _context.DataReplacements.Add(insertFile);
                 _context.SaveChangesAsync();
             }
+        }
+
+        public void AddHistory(ReplaceRequest item)
+        {
+                _context.ReplaceRequests.Add(item);
+                _context.SaveChanges();
         }
     }
 }

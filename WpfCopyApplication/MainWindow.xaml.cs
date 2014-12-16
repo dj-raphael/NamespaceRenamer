@@ -5,6 +5,7 @@ using System.Data;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Forms.VisualStyles;
 using System.Windows.Media;
 using Microsoft.Win32;
 using System.Windows.Input;
@@ -21,7 +22,7 @@ namespace WpfCopyApplication
         {
             db.Database.Initialize(true);
             InitializeComponent();
-            this.Model = new MainModel(PageAppearanceSection.GetConfiguration());
+            this.Model = new MainModel(PageAppearanceSection.GetConfiguration(), db);
             DataContext = Model;
         }
 
@@ -45,26 +46,54 @@ namespace WpfCopyApplication
         {
             //  var q = PageAppearanceSection.GetConfiguration().IgnoreList;
             var x = new ReplaceNamespace(db);
+            
             ReplaceNamespace.Log.Clear();
+            
+            foreach (var item in Model.CollectionReplaceItems)
+            {
+                if (x.IsBlankFolder(item.BackupDir))
+                {
+                    string messageBoxText = "The folder is not empty";
+                    string caption = "";
+                    System.Windows.Forms.MessageBoxButtons button = MessageBoxButtons.YesNo;
+                    System.Windows.Forms.MessageBoxIcon icon = MessageBoxIcon.Information;
+                    DialogResult result = System.Windows.Forms.MessageBox.Show(messageBoxText, caption, button, icon);
+                    if (result == System.Windows.Forms.DialogResult.Yes)
+                        await x.DirectoryCopy(item.SourceDir, item.BackupDir, true, item.NewNamespace, item.OldNamespace);
+                }
+                else
+                {
+                    await x.DirectoryCopy(item.SourceDir, item.BackupDir, true, item.NewNamespace, item.OldNamespace);
+                }
 
-            await
-                ConfigurationHelper.EditKey(Model.SourceDir, Model.BackupDir,
-                    Model.NewNamespace, Model.OldNamespace);
-            if (x.IsBlankFolder(Model.BackupDir))
-            {
-                string messageBoxText = "The folder is not empty";
-                string caption = "";
-                System.Windows.Forms.MessageBoxButtons button = MessageBoxButtons.YesNo;
-                System.Windows.Forms.MessageBoxIcon icon = MessageBoxIcon.Information;
-                DialogResult result = System.Windows.Forms.MessageBox.Show(messageBoxText, caption, button, icon);
-                if (result == System.Windows.Forms.DialogResult.Yes)
-                    await x.DirectoryCopy(Model.SourceDir, Model.BackupDir, true,
-                         Model.NewNamespace, Model.OldNamespace);
+                x.AddHistory(new ReplaceRequest()
+                {
+                    NewNamespace = item.NewNamespace,
+                    OldNamespace = item.OldNamespace,
+                    BackupDir = item.BackupDir,
+                    SourceDir = item.SourceDir
+                });
             }
-            else
-            {
-                await x.DirectoryCopy(Model.SourceDir, Model.BackupDir, true, Model.NewNamespace, Model.OldNamespace);
-            }
+
+            
+
+//            await ConfigurationHelper.EditKey(Model.SourceDir, Model.BackupDir,
+//                    Model.NewNamespace, Model.OldNamespace);
+//            if (x.IsBlankFolder(Model.BackupDir))
+//            {
+//                string messageBoxText = "The folder is not empty";
+//                string caption = "";
+//                System.Windows.Forms.MessageBoxButtons button = MessageBoxButtons.YesNo;
+//                System.Windows.Forms.MessageBoxIcon icon = MessageBoxIcon.Information;
+//                DialogResult result = System.Windows.Forms.MessageBox.Show(messageBoxText, caption, button, icon);
+//                if (result == System.Windows.Forms.DialogResult.Yes)
+//                    await x.DirectoryCopy(Model.SourceDir, Model.BackupDir, true,
+//                         Model.NewNamespace, Model.OldNamespace);
+//            }
+//            else
+//            {
+//                await x.DirectoryCopy(Model.SourceDir, Model.BackupDir, true, Model.NewNamespace, Model.OldNamespace);
+//            }
 
 
             Log.ItemsSource = ReplaceNamespace.Log;
@@ -78,9 +107,7 @@ namespace WpfCopyApplication
 
         private void AddButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
-
             var DefaultData = ConfigurationHelper.ReturnKeys();
-
             ReplaceItem newItem =
                 new ReplaceItem()
                 {
@@ -90,7 +117,6 @@ namespace WpfCopyApplication
                     NewNamespace = DefaultData.TargetNamespace,
                     Delete = new Command(Model.Delete)
                };
-
             Model.Add.Execute(newItem);
         }
     }
