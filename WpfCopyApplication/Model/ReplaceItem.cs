@@ -5,6 +5,18 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 
+//namespace WpfCopyApplication.Model
+//{
+//    public class ReplaceItem
+//    {
+//        public string NameSpace { get; set; }
+//        public string Path { get; set; }
+//        public string NameSpaceTarget { get; set; }
+//        public string PathTarget { get; set; }
+//    }
+//}
+
+    
 namespace WpfCopyApplication.Model
 {
     public class ReplaceItem: DependencyObject
@@ -37,5 +49,8 @@ namespace WpfCopyApplication.Model
             get { return (object) GetValue(BackupDirProperty); }
             set { SetValue(BackupDirProperty, value); }
         }
+
+        public Command Delete { get; set; }
     }
 }
+

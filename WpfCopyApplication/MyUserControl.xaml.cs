@@ -48,9 +48,11 @@ namespace WpfCopyApplication
             Model.BackupDir = dialog.SelectedPath;
         }
 
-        private void DeleteButton_Click(object sender, RoutedEventArgs routedEventArgs)
+        private void DeleteButton_Click(object sender, RoutedEventArgs e)
         {
-            
+            Model.Delete.Execute(Model);
         }
+
+
     }
 }

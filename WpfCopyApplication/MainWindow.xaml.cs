@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.ObjectModel;
+using System.Data;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Microsoft.Win32;
+using System.Windows.Input;
 using WpfCopyApplication.Model;
 using System.Windows.Forms;
 using WpfCopyApplication.Repository;
@@ -15,14 +17,12 @@ namespace WpfCopyApplication
     public partial class MainWindow : Window
     {
         private ReplaceContext db = new ReplaceContext();
-
         public MainWindow()
         {
             db.Database.Initialize(true);
             InitializeComponent();
             this.Model = new MainModel(PageAppearanceSection.GetConfiguration());
             DataContext = Model;
-
         }
 
         public MainModel Model { get; set; }
@@ -43,8 +43,6 @@ namespace WpfCopyApplication
 
         private async void Start_Click(object sender, RoutedEventArgs e)
         {
-            
-
             //  var q = PageAppearanceSection.GetConfiguration().IgnoreList;
             var x = new ReplaceNamespace(db);
             ReplaceNamespace.Log.Clear();
@@ -60,19 +58,18 @@ namespace WpfCopyApplication
                 System.Windows.Forms.MessageBoxIcon icon = MessageBoxIcon.Information;
                 DialogResult result = System.Windows.Forms.MessageBox.Show(messageBoxText, caption, button, icon);
                 if (result == System.Windows.Forms.DialogResult.Yes)
-                   await x.DirectoryCopy(Model.SourceDir, Model.BackupDir, true,
-                        Model.NewNamespace, Model.OldNamespace);
+                    await x.DirectoryCopy(Model.SourceDir, Model.BackupDir, true,
+                         Model.NewNamespace, Model.OldNamespace);
             }
             else
             {
                 await x.DirectoryCopy(Model.SourceDir, Model.BackupDir, true, Model.NewNamespace, Model.OldNamespace);
             }
 
-            
+
             Log.ItemsSource = ReplaceNamespace.Log;
 
         }
-
         private void ListBox_ScrollChanged(object sender, ScrollChangedEventArgs e)
         {
             if (e.ExtentHeightChange > 0.0)
@@ -81,12 +78,20 @@ namespace WpfCopyApplication
 
         private void AddButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
-            
-        }
 
-        public void DeleteItem(int index)
-        {
-            Model.CollectionReplaceItems.RemoveAt(index);
+            var DefaultData = ConfigurationHelper.ReturnKeys();
+
+            ReplaceItem newItem =
+                new ReplaceItem()
+                {
+                    SourceDir = DefaultData.SourceDirectory,
+                    BackupDir = DefaultData.TargetDirectory,
+                    OldNamespace = DefaultData.SourceNamespace,
+                    NewNamespace = DefaultData.TargetNamespace,
+                    Delete = new Command(Model.Delete)
+               };
+
+            Model.Add.Execute(newItem);
         }
     }
 

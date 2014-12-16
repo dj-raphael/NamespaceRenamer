@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Forms.VisualStyles;
+using System.Windows.Input;
 using System.Windows.Media;
 using WpfCopyApplication.Model;
 
@@ -11,16 +12,16 @@ namespace WpfCopyApplication
 {
     public class MainModel : DependencyObject
     {
-        public static readonly DependencyProperty OldNamespaceProperty = DependencyProperty.Register("OldNamespace", typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
-        public static readonly DependencyProperty SourceDirProperty = DependencyProperty.Register("SourceDir", typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
-        public static readonly DependencyProperty BackupDirProperty = DependencyProperty.Register("BackupDir", typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
-        public static readonly DependencyProperty NewNamespaceProperty = DependencyProperty.Register("NewNamespace", typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
+        public static readonly DependencyProperty OldNamespaceProperty = DependencyProperty.Register("OldNamespace",typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
+        public static readonly DependencyProperty SourceDirProperty = DependencyProperty.Register("SourceDir",typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
+        public static readonly DependencyProperty BackupDirProperty = DependencyProperty.Register("BackupDir",typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
+        public static readonly DependencyProperty NewNamespaceProperty = DependencyProperty.Register("NewNamespace",typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
 
-        public static readonly DependencyProperty _collectionReplaceItemsProperty = DependencyProperty.Register("collectionReplaceItems", typeof(ObservableCollection<ReplaceItem>), typeof(MyUserControl));
+        public static readonly DependencyProperty _collectionReplaceItemsProperty = DependencyProperty.Register("collectionReplaceItems", typeof (ObservableCollection<ReplaceItem>),typeof (MyUserControl));
 
         public ObservableCollection<ReplaceItem> CollectionReplaceItems
         {
-            get { return (ObservableCollection<ReplaceItem>)GetValue(_collectionReplaceItemsProperty); }
+            get { return (ObservableCollection<ReplaceItem>) GetValue(_collectionReplaceItemsProperty); }
             set { SetValue(_collectionReplaceItemsProperty, value); }
         }
 
@@ -54,6 +55,7 @@ namespace WpfCopyApplication
             get { return (string) GetValue(NewNamespaceProperty); }
             set { SetValue(NewNamespaceProperty, value); }
         }
+        public Command Add { get; set; }
         public MainModel(PageAppearanceSection section)
         {
             var DefaultData = ConfigurationHelper.ReturnKeys();
@@ -61,6 +63,7 @@ namespace WpfCopyApplication
             NewNamespace = DefaultData.TargetNamespace;
             SourceDir = DefaultData.SourceDirectory;
             BackupDir = DefaultData.TargetDirectory;
+            Add = new Command(AddItem);
 
             var replaceCollection = new ObservableCollection<ReplaceItem>
             {
@@ -69,12 +72,23 @@ namespace WpfCopyApplication
                     SourceDir = DefaultData.SourceDirectory,
                     BackupDir = DefaultData.TargetDirectory,
                     OldNamespace = DefaultData.SourceNamespace,
-                    NewNamespace = DefaultData.TargetNamespace
+                    NewNamespace = DefaultData.TargetNamespace,
+                    Delete = new Command(Delete)
                 }
             };
 
             CollectionReplaceItems = replaceCollection;
         }
-    }
 
+        public void Delete(object param)
+        {
+            CollectionReplaceItems.Remove((ReplaceItem) param);
+        }
+
+        private void AddItem(object param)
+        {
+            CollectionReplaceItems.Add((ReplaceItem) param);
+        }
+
+    }
 }
