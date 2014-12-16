@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using System.Windows.Controls;
 using WpfCopyApplication.Model;
 
-namespace WpfCopyApplication.Repository
+namespace WpfCopyApplication.Model
 {
     public class DataReplacementRepository 
     {
@@ -29,6 +29,11 @@ namespace WpfCopyApplication.Repository
         {
             var foundFile = _context.DataReplacements.FirstOrDefaultAsync(x => x.PathTargetDirectory == fileName);
             return foundFile != null;
+        }
+
+        public bool IsDbEmpty()
+        {
+            return _context.DataReplacements.Any();
         }
 
         public async Task<DataReplacement> GetFileByTargetDirectory(string fileName)

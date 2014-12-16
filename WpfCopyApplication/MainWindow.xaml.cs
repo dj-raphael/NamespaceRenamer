@@ -11,7 +11,6 @@ using Microsoft.Win32;
 using System.Windows.Input;
 using WpfCopyApplication.Model;
 using System.Windows.Forms;
-using WpfCopyApplication.Repository;
 
 namespace WpfCopyApplication
 {
@@ -44,6 +43,7 @@ namespace WpfCopyApplication
 
         private async void Start_Click(object sender, RoutedEventArgs e)
         {
+            db.ReplaceRequests.RemoveRange(db.ReplaceRequests);
             //  var q = PageAppearanceSection.GetConfiguration().IgnoreList;
             var x = new ReplaceNamespace(db);
             
@@ -65,7 +65,7 @@ namespace WpfCopyApplication
                 {
                     await x.DirectoryCopy(item.SourceDir, item.BackupDir, true, item.NewNamespace, item.OldNamespace);
                 }
-
+                
                 x.AddHistory(new ReplaceRequest()
                 {
                     NewNamespace = item.NewNamespace,
@@ -73,6 +73,7 @@ namespace WpfCopyApplication
                     BackupDir = item.BackupDir,
                     SourceDir = item.SourceDir
                 });
+                if (ReplaceNamespace.Log.Any() && (string)ReplaceNamespace.Log.Last().Content != "==================================================") ReplaceNamespace.Log.Add(new ListBoxItem() { Content = "==================================================", Background = Brushes.PaleGreen });
             }
 
             

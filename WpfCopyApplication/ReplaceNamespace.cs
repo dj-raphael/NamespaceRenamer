@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Media;
 using WpfCopyApplication.Model;
-using WpfCopyApplication.Repository;
 
 
 namespace WpfCopyApplication
@@ -80,7 +79,7 @@ namespace WpfCopyApplication
                 string tempPath = Path.Combine(destDirName, file.Name);
 
                 file.CopyTo(tempPath, true);
-                ReplaceInFile(tempPath, oldNamespace, newNamespace);
+                ReplaceInFile(tempPath, "namespace " + oldNamespace, "namespace " + newNamespace);
                 destFiles = destDir.GetFiles();
 
                 _repository.AddDataReplace(file, tempPath, ComputeMD5Checksum(file.FullName), destFiles.FirstOrDefault(x => x.Name == file.Name), ComputeMD5Checksum(tempPath));
@@ -118,7 +117,7 @@ namespace WpfCopyApplication
                 if (destFiles.FirstOrDefault(x => x.Name == file.Name) == null)
                 {
                     filteredFiles.Add(file);
-                    Log.Add(new ListBoxItem() { Content = "File" + file.Name + " has been added.", Background = Brushes.White });
+                    Log.Add(new ListBoxItem() { Content = "File " + file.Name + " has been added.", Background = Brushes.White });
                 }
                 else if (MergeFile(file, destFiles.FirstOrDefault(x => x.Name == file.Name)))
                 {
@@ -183,8 +182,12 @@ namespace WpfCopyApplication
 
         bool MergeFile(FileInfo file, FileInfo destFile)
         {
-            var foundFile = _repository.GetFileByPaths(file.FullName, destFile.FullName);
+            if (_repository.IsDbEmpty())
+            {
+                var foundFile = _repository.GetFileByPaths(file.FullName, destFile.FullName);
             return !Compare(file, destFile, foundFile);
+            }
+            return true;
         }
         public bool NeedReplace(FileInfo file, FileInfo destFile, bool isReplace)
         {
@@ -198,7 +201,6 @@ namespace WpfCopyApplication
 
         public async Task<bool> NeedDelete(FileInfo file)
         {
-            bool isExist = _repository.IsExist(file.FullName);
             var FoundFile = await _repository.GetFileByTargetDirectory(file.FullName);
            
 
