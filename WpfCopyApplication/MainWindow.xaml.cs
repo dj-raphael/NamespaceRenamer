@@ -73,9 +73,8 @@ namespace WpfCopyApplication
                     BackupDir = item.BackupDir,
                     SourceDir = item.SourceDir
                 });
-            }
 
-            
+            }  
 
 //            await ConfigurationHelper.EditKey(Model.SourceDir, Model.BackupDir,
 //                    Model.NewNamespace, Model.OldNamespace);

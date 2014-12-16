@@ -55,10 +55,13 @@ namespace WpfCopyApplication
             get { return (string) GetValue(NewNamespaceProperty); }
             set { SetValue(NewNamespaceProperty, value); }
         }
+
         public Command Add { get; set; }
+
         public MainModel(PageAppearanceSection section, ReplaceContext db)
         {
             var DefaultData = ConfigurationHelper.ReturnKeys();
+
             OldNamespace = DefaultData.SourceNamespace;
             NewNamespace = DefaultData.TargetNamespace;
             SourceDir = DefaultData.SourceDirectory;
@@ -81,8 +84,7 @@ namespace WpfCopyApplication
             {
                 foreach (var row in db.ReplaceRequests)
                 {
-                    ReplaceItem newItem =
-                    new ReplaceItem()
+                    var newItem = new ReplaceItem()
                     {
                         SourceDir = row.SourceDir,
                         BackupDir = row.BackupDir,
@@ -93,10 +95,9 @@ namespace WpfCopyApplication
                     Add.Execute(newItem);
                 }
             }
-
             CollectionReplaceItems = replaceCollection;
         }
-
+        
         public void Delete(object param)
         {
             CollectionReplaceItems.Remove((ReplaceItem) param);
