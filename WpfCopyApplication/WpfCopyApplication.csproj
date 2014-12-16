@@ -82,12 +82,14 @@
     <Compile Include="Model\DataReplacementMap.cs" />
     <Compile Include="Model\ReplaceItem.cs" />
     <Compile Include="Model\ReplaceContext.cs" />
+    <Compile Include="Model\ReplaceRequestMap.cs" />
     <Compile Include="PageAppearanceSection.cs" />
     <Compile Include="ReplaceNamespace.cs" />
     <Compile Include="Model\DataReplacementRepository.cs" />
     <Compile Include="MyUserControl.xaml.cs">
       <DependentUpon>MyUserControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Model\ReplaceRequest.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

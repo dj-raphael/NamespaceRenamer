@@ -12,7 +12,6 @@ namespace WpfCopyApplication
 {
     public class MainModel : DependencyObject
     {
-
         public static readonly DependencyProperty OldNamespaceProperty = DependencyProperty.Register("OldNamespace",typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
         public static readonly DependencyProperty SourceDirProperty = DependencyProperty.Register("SourceDir",typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
         public static readonly DependencyProperty BackupDirProperty = DependencyProperty.Register("BackupDir",typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
@@ -26,6 +25,13 @@ namespace WpfCopyApplication
             set { SetValue(_collectionReplaceItemsProperty, value); }
         }
 
+//        public ObservableCollection<ReplaceItem> _collectionReplaceItems = new ObservableCollection<ReplaceItem>();
+
+//        public ObservableCollection<ReplaceItem> CollectionReplaceItems
+//        {
+//            get { return _collectionReplaceItems; }
+//            set { _collectionReplaceItems = value; }
+//        }
         public string OldNamespace
         {
             get { return (string) GetValue(OldNamespaceProperty); }
@@ -49,30 +55,44 @@ namespace WpfCopyApplication
             get { return (string) GetValue(NewNamespaceProperty); }
             set { SetValue(NewNamespaceProperty, value); }
         }
-
         public Command Add { get; set; }
-        
-        public MainModel(PageAppearanceSection section)
+        public MainModel(PageAppearanceSection section, ReplaceContext db)
         {
             var DefaultData = ConfigurationHelper.ReturnKeys();
             OldNamespace = DefaultData.SourceNamespace;
             NewNamespace = DefaultData.TargetNamespace;
             SourceDir = DefaultData.SourceDirectory;
             BackupDir = DefaultData.TargetDirectory;
-
             Add = new Command(AddItem);
 
-            var replaceCollection = new ObservableCollection<ReplaceItem>
+            var replaceCollection = new ObservableCollection<ReplaceItem>();
+            if (!db.ReplaceRequests.Any())
             {
-                new ReplaceItem()
+                replaceCollection.Add(new ReplaceItem()
                 {
                     SourceDir = DefaultData.SourceDirectory,
                     BackupDir = DefaultData.TargetDirectory,
                     OldNamespace = DefaultData.SourceNamespace,
                     NewNamespace = DefaultData.TargetNamespace,
                     Delete = new Command(Delete)
+                });
+            }
+            else
+            {
+                foreach (var row in db.ReplaceRequests)
+                {
+                    ReplaceItem newItem =
+                    new ReplaceItem()
+                    {
+                        SourceDir = row.SourceDir,
+                        BackupDir = row.BackupDir,
+                        OldNamespace = row.OldNamespace,
+                        NewNamespace = row.NewNamespace,
+                        Delete = new Command(Delete)
+                    };
+                    Add.Execute(newItem);
                 }
-            };
+            }
 
             CollectionReplaceItems = replaceCollection;
         }
