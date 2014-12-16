@@ -11,16 +11,16 @@ namespace WpfCopyApplication
 {
     public class MainModel : DependencyObject
     {
-        public static readonly DependencyProperty OldNamespaceProperty = DependencyProperty.Register("OldNamespace",typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
-        public static readonly DependencyProperty SourceDirProperty = DependencyProperty.Register("SourceDir",typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
-        public static readonly DependencyProperty BackupDirProperty = DependencyProperty.Register("BackupDir",typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
-        public static readonly DependencyProperty NewNamespaceProperty = DependencyProperty.Register("NewNamespace",typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
+        public static readonly DependencyProperty OldNamespaceProperty = DependencyProperty.Register("OldNamespace", typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
+        public static readonly DependencyProperty SourceDirProperty = DependencyProperty.Register("SourceDir", typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
+        public static readonly DependencyProperty BackupDirProperty = DependencyProperty.Register("BackupDir", typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
+        public static readonly DependencyProperty NewNamespaceProperty = DependencyProperty.Register("NewNamespace", typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
 
-        public static readonly DependencyProperty _collectionReplaceItemsProperty = DependencyProperty.Register("collectionReplaceItems", typeof (ObservableCollection<ReplaceItem>),typeof (MyUserControl));
+        public static readonly DependencyProperty _collectionReplaceItemsProperty = DependencyProperty.Register("collectionReplaceItems", typeof(ObservableCollection<ReplaceItem>), typeof(MyUserControl));
 
         public ObservableCollection<ReplaceItem> CollectionReplaceItems
         {
-            get { return (ObservableCollection<ReplaceItem>) GetValue(_collectionReplaceItemsProperty); }
+            get { return (ObservableCollection<ReplaceItem>)GetValue(_collectionReplaceItemsProperty); }
             set { SetValue(_collectionReplaceItemsProperty, value); }
         }
 
@@ -54,7 +54,6 @@ namespace WpfCopyApplication
             get { return (string) GetValue(NewNamespaceProperty); }
             set { SetValue(NewNamespaceProperty, value); }
         }
-
         public MainModel(PageAppearanceSection section)
         {
             var DefaultData = ConfigurationHelper.ReturnKeys();
@@ -76,7 +75,6 @@ namespace WpfCopyApplication
 
             CollectionReplaceItems = replaceCollection;
         }
-
-
     }
+
 }

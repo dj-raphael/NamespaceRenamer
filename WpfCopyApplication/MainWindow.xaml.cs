@@ -43,6 +43,8 @@ namespace WpfCopyApplication
 
         private async void Start_Click(object sender, RoutedEventArgs e)
         {
+            
+
             //  var q = PageAppearanceSection.GetConfiguration().IgnoreList;
             var x = new ReplaceNamespace(db);
             ReplaceNamespace.Log.Clear();
@@ -58,15 +60,15 @@ namespace WpfCopyApplication
                 System.Windows.Forms.MessageBoxIcon icon = MessageBoxIcon.Information;
                 DialogResult result = System.Windows.Forms.MessageBox.Show(messageBoxText, caption, button, icon);
                 if (result == System.Windows.Forms.DialogResult.Yes)
-                    await x.DirectoryCopy(Model.SourceDir, Model.BackupDir, true,
-                         Model.NewNamespace, Model.OldNamespace);
+                   await x.DirectoryCopy(Model.SourceDir, Model.BackupDir, true,
+                        Model.NewNamespace, Model.OldNamespace);
             }
             else
             {
                 await x.DirectoryCopy(Model.SourceDir, Model.BackupDir, true, Model.NewNamespace, Model.OldNamespace);
             }
 
-
+            
             Log.ItemsSource = ReplaceNamespace.Log;
 
         }
@@ -79,25 +81,13 @@ namespace WpfCopyApplication
 
         private void AddButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
-            var DefaultData = ConfigurationHelper.ReturnKeys();
-
-            ReplaceItem replaceCollection =
-                new ReplaceItem()
-                {
-                    SourceDir = DefaultData.SourceDirectory,
-                    BackupDir = DefaultData.TargetDirectory,
-                    OldNamespace = DefaultData.SourceNamespace,
-                    NewNamespace = DefaultData.TargetNamespace
-               };
-
-            Model.CollectionReplaceItems.Add(replaceCollection);
-
+            
         }
-        private void DeleteButton_Click(object sender, RoutedEventArgs routedEventArgs)
+
+        public void DeleteItem(int index)
         {
-
+            Model.CollectionReplaceItems.RemoveAt(index);
         }
-
     }
 
 }
