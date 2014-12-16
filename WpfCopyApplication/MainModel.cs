@@ -66,7 +66,7 @@ namespace WpfCopyApplication
             Add = new Command(AddItem);
 
             var replaceCollection = new ObservableCollection<ReplaceItem>();
-            if (!db.ReplaceRequests.Any())
+            if(!db.ReplaceRequests.Any())
             {
                 replaceCollection.Add(new ReplaceItem()
                 {
@@ -90,10 +90,9 @@ namespace WpfCopyApplication
                         NewNamespace = row.NewNamespace,
                         Delete = new Command(Delete)
                     };
-                    Add.Execute(newItem);
+                    replaceCollection.Add(newItem);
                 }
-            }
-
+            }          
             CollectionReplaceItems = replaceCollection;
         }
 
