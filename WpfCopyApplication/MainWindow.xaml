@@ -23,7 +23,7 @@
         <Button Content="Start" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="179" Click="Start_Click" Margin="265,0,0,12" Height="34"/>
         <Label Content=" From" HorizontalAlignment="Left" Margin="265,50,0,0" VerticalAlignment="Top" Width="45" Height="28"/>
 
-        <ListView Height="350" Margin="20,90,62,0" ItemsSource="{Binding Path=CollectionReplaceItems}" Name="ReplaceListView" VerticalAlignment="Top" >
+        <ListView Height="350" Margin="20,90,62,0" ItemsSource="{Binding Path=CollectionReplaceItems}" Name="ReplaceListView" VerticalAlignment="Top" HorizontalContentAlignment="Stretch">
             <ListView.ItemTemplate >
                 <DataTemplate>
                     <wpfCopyApplication:MyUserControl Model="{Binding}"/>
