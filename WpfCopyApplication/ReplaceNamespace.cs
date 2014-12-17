@@ -26,22 +26,28 @@ namespace WpfCopyApplication
             _repository = new DataReplacementRepository(context);
         }
 
-        public void ReplaceInFile(string sourceDir, string oldNamespace, string newNamespace)
+        public void ReplaceInFile(FileInfo file, string sourceDir, string oldNamespace, string newNamespace)
         {
+            file.CopyTo(sourceDir, true);
+            FileInfo destFile = new FileInfo(sourceDir);
+            var q = destFile.Attributes;
+            //            destFile.Attributes &= ~FileAttributes.Hidden;
+            destFile.Attributes = FileAttributes.Archive;
             String strFile = File.ReadAllText(sourceDir);
             strFile = strFile.Replace(oldNamespace, newNamespace);
             File.WriteAllText(sourceDir, strFile);
+//          destFile.Attributes |= FileAttributes.Hidden;
+            destFile.Attributes = q;
+            
         }
 
         public void AddHistory(ReplaceRequest item)
         {
-            _repository.AddHistory(item);
-            
+            _repository.AddHistory(item);        
         }
 
         public async Task DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs, string newNamespace, string oldNamespace)
-        {
-                      
+        {                    
             // Get the subdirectories for the specified directory.
             DirectoryInfo dir = new DirectoryInfo(sourceDirName);
             DirectoryInfo destDir = new DirectoryInfo(destDirName);
@@ -77,31 +83,11 @@ namespace WpfCopyApplication
             {
                 if (!isEmptyDirectory) Log.Add(new ListBoxItem() { Content = "File" + file.Name + " was added.", Background = Brushes.White });
                 string tempPath = Path.Combine(destDirName, file.Name);
-
                 file.CopyTo(tempPath, true);
-                try
-                {
-                    ReplaceInFile(tempPath, "namespace " + oldNamespace, "namespace " + newNamespace);
-                }
-                catch
-                {
-                    Log.Add(new ListBoxItem() { Content = "File access denied: " + file.Name, Background = Brushes.Red });
-                }
-                
+                ReplaceInFile(file, tempPath, "namespace " + oldNamespace, "namespace " + newNamespace);
                 destFiles = destDir.GetFiles();
-
                 _repository.AddDataReplace(file, tempPath, ComputeMD5Checksum(file.FullName), destFiles.FirstOrDefault(x => x.Name == file.Name), ComputeMD5Checksum(tempPath));
             }
-//            if ()
-//            {
-//                _repository.AddHistory(new ReplaceRequest()
-//                {
-//                    OldNamespace = oldNamespace,
-//                    NewNamespace = newNamespace,
-//                    BackupDir = destDirName,
-//                    SourceDir = sourceDirName
-//                });
-//            }
             
             // If copying subdirectories, copy them and their contents to new location.
             if (copySubDirs)
