@@ -14,7 +14,6 @@
         <Label Content="To" HorizontalAlignment="Left" Margin="718,50,0,0" VerticalAlignment="Top" Width="27" Height="28"/>
         <Button Content="Stop" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="179" Margin="473,0,0,12" Height="34"/>
         <ListBox Name="Log" ItemsSource="{Binding Path=Log}" HorizontalAlignment="Left" Height="176" Margin="17,621,0,0" VerticalAlignment="Top" Width="929"/>
-        
         <Button Height="50" Width="50" Click="AddButton_Click" HorizontalAlignment="Right" HorizontalContentAlignment="Center" Margin="0,25,63,0" VerticalAlignment="Top">
             <StackPanel>
                 <Image Source="add.jpg" />
@@ -24,14 +23,13 @@
         <Button Content="Start" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="179" Click="Start_Click" Margin="265,0,0,12" Height="34"/>
         <Label Content=" From" HorizontalAlignment="Left" Margin="265,50,0,0" VerticalAlignment="Top" Width="45" Height="28"/>
 
-        <ListView Height="350" Margin="20,90,62,0" ItemsSource="{Binding Path=CollectionReplaceItems}" Name="ReplaceListView" HorizontalContentAlignment="Stretch" VerticalAlignment="Top" >
+        <ListView Height="350" Margin="20,90,62,0" ItemsSource="{Binding Path=CollectionReplaceItems}" Name="ReplaceListView" VerticalAlignment="Top" HorizontalContentAlignment="Stretch">
             <ListView.ItemTemplate >
-                <DataTemplate >
+                <DataTemplate>
                     <wpfCopyApplication:MyUserControl Model="{Binding}"/>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
-        
     </Grid>
 
 </Window>

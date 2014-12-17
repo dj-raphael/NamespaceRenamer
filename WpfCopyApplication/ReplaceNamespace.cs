@@ -26,30 +26,29 @@ namespace WpfCopyApplication
             _repository = new DataReplacementRepository(context);
         }
 
-        public void ReplaceInFile(FileInfo file,string sourceDir, string oldNamespace, string newNamespace)
+        public void ReplaceInFile(string sourceDir, string destDir, string oldNamespace, string newNamespace)
         {
-            //   file.CopyTo(sourceDir, true);
+//          file.CopyTo(sourceDir, true);
+            FileInfo sourceFile = new FileInfo(sourceDir);
+            FileInfo destFile = new FileInfo(destDir);
+            var q = sourceFile.Attributes;
+//          destFile.Attributes &= ~FileAttributes.Hidden;
+//            destFile.Attributes = FileAttributes.Archive;
+            String strFile = File.ReadAllText(sourceDir);
+            strFile = strFile.Replace(oldNamespace, newNamespace);
+            File.WriteAllText(destDir, strFile);
+//          destFile.Attributes |= FileAttributes.Hidden;
+            destFile.Attributes = q;
             
-            var file2 = File.Create();
-            var fs = File.Create(file.Name, 1024);
-
-            var strFile = File.ReadAllText(sourceDir);
-            strFile = strFile.Replace(oldNamespace, newNamespace);        
-            
-            File.WriteAllText(sourceDir, strFile);
-
-
         }
 
         public void AddHistory(ReplaceRequest item)
         {
-            _repository.AddHistory(item);
-            
+            _repository.AddHistory(item);        
         }
 
         public async Task DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs, string newNamespace, string oldNamespace)
-        {
-                      
+        {                    
             // Get the subdirectories for the specified directory.
             DirectoryInfo dir = new DirectoryInfo(sourceDirName);
             DirectoryInfo destDir = new DirectoryInfo(destDirName);
@@ -83,14 +82,11 @@ namespace WpfCopyApplication
 
             foreach (FileInfo file in files)
             {
-                if (!isEmptyDirectory) Log.Add(new ListBoxItem() { Content = "File " + file.Name + " was added.", Background = Brushes.White });
+                if (!isEmptyDirectory) Log.Add(new ListBoxItem() { Content = "File" + file.Name + " was added.", Background = Brushes.White });
                 string tempPath = Path.Combine(destDirName, file.Name);
-
-                file.CopyTo(tempPath, true);
-
-                ReplaceInFile(file,tempPath, "namespace " + oldNamespace, "namespace " + newNamespace);
+//                file.CopyTo(tempPath, true);
+                ReplaceInFile(file.FullName, tempPath, "namespace " + oldNamespace, "namespace " + newNamespace);
                 destFiles = destDir.GetFiles();
-
                 _repository.AddDataReplace(file, tempPath, ComputeMD5Checksum(file.FullName), destFiles.FirstOrDefault(x => x.Name == file.Name), ComputeMD5Checksum(tempPath));
             }
             
@@ -103,41 +99,13 @@ namespace WpfCopyApplication
                     await DirectoryCopy(subdir.FullName, temppath, copySubDirs, newNamespace, oldNamespace);
                 }
             }
-
-            if (CheckCopiedFolders(sourceDirName, destDirName))
-            {
-                Log.Add(new ListBoxItem() { Content = "==================================================" , Background = Brushes.PaleGreen });
-            }
-        }
-
-        private static bool CheckCopiedFolders(string fodler1, string folder2)
-        {
-            DirectoryInfo dir = new DirectoryInfo(fodler1);
-            DirectoryInfo destDir = new DirectoryInfo(folder2);
-            DirectoryInfo[] dirs = dir.GetDirectories();
-            DirectoryInfo[] destDirs = destDir.GetDirectories();
-
-            List<FileInfo> filesFolder1 = null;
-            List<FileInfo> filesFolder2 = null ;
-
-            foreach (var dirFolder in dirs)
-            {
-                var files = dirFolder.GetFiles().ToList();
-                filesFolder1.AddRange(files);
-            }
-
-            foreach (var files in destDirs.Select(dirFolder => dirFolder.GetFiles().ToList()))
-            {
-                filesFolder2.AddRange(files);
-            }
-
-            return filesFolder1 == filesFolder2;
         }
 
         public async Task<List<FileInfo>> GetFilteredFiles(FileInfo[] files, FileInfo[] destFiles)
         {
             var filteredFiles = new List<FileInfo>();
-            
+
+
             foreach (FileInfo file in files)
             {
                 //   if (destFiles.FirstOrDefault(x => x.Name == file.Name) != null) conflictFiles.Add(new ConflictFiles() { FileFromSource = file, FileFromDest = destFiles.FirstOrDefault(x => x.Name == file.Name) });
@@ -146,7 +114,11 @@ namespace WpfCopyApplication
                     filteredFiles.Add(file);
                     Log.Add(new ListBoxItem() { Content = "File " + file.Name + " has been added.", Background = Brushes.White });
                 }
-                else if (MergeFile(file, destFiles.FirstOrDefault(x => x.Name == file.Name)))
+                else if (FileUpdated(false, file, destFiles.FirstOrDefault(x => x.Name == file.Name)))
+                {
+                    Log.Add(new ListBoxItem() { Content = "File " + file.Name + " was modified", Background = Brushes.Yellow });
+                }
+                else if (MergeFile(true, file, destFiles.FirstOrDefault(x => x.Name == file.Name)))
                 {
                     Log.Add(new ListBoxItem() { Content = "File " + file.Name + " need to merge", Background = Brushes.Red });
                     ConflictList.Add(new Conflict() { SourcePath = file.FullName, DestPath = destFiles.FirstOrDefault(x => x.Name == file.Name).FullName });
@@ -163,6 +135,7 @@ namespace WpfCopyApplication
                     ConflictList.Add(new Conflict() { SourcePath = file.FullName, DestPath = destFiles.FirstOrDefault(x => x.Name == file.Name).FullName });
                 }
 //                if (destFiles.FirstOrDefault(x => x.Name == file.Name) == null || NeedReplace(file, destFiles.FirstOrDefault(x => x.Name == file.Name))) filteredFiles.Add(file);
+
             }
 
             foreach (FileInfo file in destFiles)
@@ -175,6 +148,10 @@ namespace WpfCopyApplication
                         file.Delete();
                     }
 
+                    //                 NeedDelete(file);
+                    //                 + Нужно сделать проверку с базой:
+                    //                 1) Если данные в БД имеются о файле удалить
+                    //                 2) Если данные не имеются - добавить в список конфликта и удалить
                 }
             }
 
@@ -201,13 +178,23 @@ namespace WpfCopyApplication
 
             // return !Directory.EnumerateFileSystemEntries(destDirName).Any();
         }
-
-        bool MergeFile(FileInfo file, FileInfo destFile)
+        private bool FileUpdated(bool mergeFile, FileInfo file, FileInfo destFile)
         {
             if (_repository.IsDbEmpty())
             {
                 var foundFile = _repository.GetFileByPaths(file.FullName, destFile.FullName);
-            return !Compare(file, destFile, foundFile);
+                return !Compare(mergeFile, file, destFile, foundFile);
+            }
+            return true;
+
+
+        }
+        bool MergeFile(bool mergeFile, FileInfo file, FileInfo destFile)
+        {
+            if (_repository.IsDbEmpty())
+            {
+                var foundFile = _repository.GetFileByPaths(file.FullName, destFile.FullName);
+                return !Compare(mergeFile, file, destFile, foundFile);
             }
             return true;
         }
@@ -264,20 +251,36 @@ namespace WpfCopyApplication
             }
         }
 
-        bool Compare(FileInfo sourceFile, FileInfo destFile, DataReplacement foundFile)
+        bool Compare(bool mergeFile, FileInfo sourceFile, FileInfo destFile, DataReplacement foundFile)
         {
-            if (sourceFile.LastWriteTime.Ticks == foundFile.Date && sourceFile.Length == foundFile.Size &&
-                destFile.LastWriteTime.Ticks == foundFile.DateTarget && destFile.Length == foundFile.Size)
+
+            if (mergeFile)
             {
-                return true;
+                if (sourceFile.LastWriteTime.Ticks == foundFile.Date && sourceFile.Length == foundFile.Size)
+                {
+                    return true;
+                }
+                else
+                {
+                    if (sourceFile.Length == foundFile.Size && ComputeMD5Checksum(sourceFile.FullName) == foundFile.Hash) return true;
+                }
+
+                return false;
             }
             else
             {
-                if (sourceFile.Length == foundFile.Size && ComputeMD5Checksum(sourceFile.FullName) == foundFile.Hash &&
-                    destFile.Length == foundFile.SizeTarget && ComputeMD5Checksum(destFile.FullName) == foundFile.HashTarget) return true;
-            }
+                if (destFile.LastWriteTime.Ticks == foundFile.DateTarget && destFile.Length == foundFile.SizeTarget)
+                {
+                    return true;
+                }
+                else
+                {
+                    if (destFile.Length == foundFile.SizeTarget && ComputeMD5Checksum(destFile.FullName) == foundFile.HashTarget) return true;
+                }
 
-            return false;
+                return false;
+            }
+            
         }
         bool Compare(FileInfo comparedFile, DataReplacement foundFile, bool isReplace)
         {
