@@ -26,11 +26,19 @@ namespace WpfCopyApplication
             _repository = new DataReplacementRepository(context);
         }
 
-        public void ReplaceInFile(string sourceDir, string oldNamespace, string newNamespace)
+        public void ReplaceInFile(FileInfo file,string sourceDir, string oldNamespace, string newNamespace)
         {
-            String strFile = File.ReadAllText(sourceDir);
-            strFile = strFile.Replace(oldNamespace, newNamespace);
+            //   file.CopyTo(sourceDir, true);
+            
+            var file2 = File.Create();
+            var fs = File.Create(file.Name, 1024);
+
+            var strFile = File.ReadAllText(sourceDir);
+            strFile = strFile.Replace(oldNamespace, newNamespace);        
+            
             File.WriteAllText(sourceDir, strFile);
+
+
         }
 
         public void AddHistory(ReplaceRequest item)
@@ -79,7 +87,8 @@ namespace WpfCopyApplication
                 string tempPath = Path.Combine(destDirName, file.Name);
 
                 file.CopyTo(tempPath, true);
-                ReplaceInFile(tempPath, "namespace " + oldNamespace, "namespace " + newNamespace);
+
+                ReplaceInFile(file,tempPath, "namespace " + oldNamespace, "namespace " + newNamespace);
                 destFiles = destDir.GetFiles();
 
                 _repository.AddDataReplace(file, tempPath, ComputeMD5Checksum(file.FullName), destFiles.FirstOrDefault(x => x.Name == file.Name), ComputeMD5Checksum(tempPath));

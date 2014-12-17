@@ -73,7 +73,10 @@ namespace WpfCopyApplication
                     BackupDir = item.BackupDir,
                     SourceDir = item.SourceDir
                 });
+
                 if (ReplaceNamespace.Log.Any() && (string)ReplaceNamespace.Log.Last().Content != "==================================================") ReplaceNamespace.Log.Add(new ListBoxItem() { Content = "==================================================", Background = Brushes.PaleGreen });
+
+
             }
 
             

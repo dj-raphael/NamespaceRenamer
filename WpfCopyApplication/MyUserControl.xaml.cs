@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,6 +27,7 @@ namespace WpfCopyApplication
         public MyUserControl()
         {
             InitializeComponent();
+
         }
 
         public static readonly DependencyProperty ModelProperty = DependencyProperty.Register("Model", typeof(ReplaceItem), typeof(MyUserControl), new PropertyMetadata(default(object)));
