@@ -79,7 +79,15 @@ namespace WpfCopyApplication
                 string tempPath = Path.Combine(destDirName, file.Name);
 
                 file.CopyTo(tempPath, true);
-                ReplaceInFile(tempPath, "namespace " + oldNamespace, "namespace " + newNamespace);
+                try
+                {
+                    ReplaceInFile(tempPath, "namespace " + oldNamespace, "namespace " + newNamespace);
+                }
+                catch
+                {
+                    Log.Add(new ListBoxItem() { Content = "File access denied: " + file.Name, Background = Brushes.Red });
+                }
+                
                 destFiles = destDir.GetFiles();
 
                 _repository.AddDataReplace(file, tempPath, ComputeMD5Checksum(file.FullName), destFiles.FirstOrDefault(x => x.Name == file.Name), ComputeMD5Checksum(tempPath));
