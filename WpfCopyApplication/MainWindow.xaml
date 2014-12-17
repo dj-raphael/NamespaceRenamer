@@ -9,16 +9,10 @@
         Title="MainWindow" Height="900" Width="1000" d:DataContext="{d:DesignInstance wpfCopyApplication:MainModel}">
 
     <Grid Margin="0,0,0,0">
-        <Label Content="Namespace" HorizontalAlignment="Left" Margin="56,11,0,0" VerticalAlignment="Top" Width="77"/>
-        <Label Content="Namespace" HorizontalAlignment="Left" Margin="494,11,0,0" VerticalAlignment="Top" Width="73"/>
-        <Label Content="To" HorizontalAlignment="Left" Margin="718,11,0,0" VerticalAlignment="Top" Width="27" Height="28"/>
+        <Label Content="Namespace" HorizontalAlignment="Left" Margin="56,50,0,0" VerticalAlignment="Top" Width="77"/>
+        <Label Content="Namespace" HorizontalAlignment="Left" Margin="494,50,0,0" VerticalAlignment="Top" Width="73"/>
+        <Label Content="To" HorizontalAlignment="Left" Margin="718,50,0,0" VerticalAlignment="Top" Width="27" Height="28"/>
         <Button Content="Stop" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="179" Margin="473,0,0,12" Height="34"/>
-        <TextBox Height="23" Margin="19,39,818,0" TextWrapping="Wrap" Text="{Binding Path=OldNamespace}" VerticalAlignment="Top" RenderTransformOrigin="0.489,4.725"/>
-        <TextBox TextWrapping="Wrap" Text="{Binding Path=SourceDir}" Margin="179,39,605,0" Height="23" VerticalAlignment="Top"/>
-        <Button Content=". . ." Width="38" Click="BrowiseSource_Click" HorizontalAlignment="Right" Margin="0,39,562,0" Height="23" VerticalAlignment="Top"/>
-        <TextBox TextWrapping="Wrap" Text="{Binding Path=BackupDir}" Margin="617,39,167,0" Height="23" VerticalAlignment="Top"/>
-        <TextBox Height="23" Margin="457,39,380,0" TextWrapping="Wrap" Text="{Binding Path=NewNamespace}" VerticalAlignment="Top" RenderTransformOrigin="0.489,4.725"/>
-        <Button Content=". . . " Width="38" Click="BrowiseTarget_Click" HorizontalAlignment="Right" HorizontalContentAlignment="Center" Margin="0,39,124,0" Height="23" VerticalAlignment="Top"/>
         <ListBox Name="Log" ItemsSource="{Binding Path=Log}" HorizontalAlignment="Left" Height="176" Margin="17,621,0,0" VerticalAlignment="Top" Width="929"/>
         <Button Height="50" Width="50" Click="AddButton_Click" HorizontalAlignment="Right" HorizontalContentAlignment="Center" Margin="0,25,63,0" VerticalAlignment="Top">
             <StackPanel>
@@ -27,10 +21,10 @@
         </Button>
 
         <Button Content="Start" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="179" Click="Start_Click" Margin="265,0,0,12" Height="34"/>
-        <Label Content=" From" HorizontalAlignment="Left" Margin="265,11,0,0" VerticalAlignment="Top" Width="45" Height="28"/>
+        <Label Content=" From" HorizontalAlignment="Left" Margin="265,50,0,0" VerticalAlignment="Top" Width="45" Height="28"/>
 
         <ListView Height="350" Margin="20,90,62,0" ItemsSource="{Binding Path=CollectionReplaceItems}" Name="ReplaceListView" VerticalAlignment="Top" >
-            <ListView.ItemTemplate>
+            <ListView.ItemTemplate >
                 <DataTemplate>
                     <wpfCopyApplication:MyUserControl Model="{Binding}"/>
                 </DataTemplate>
