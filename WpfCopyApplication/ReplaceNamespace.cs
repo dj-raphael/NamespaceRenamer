@@ -76,7 +76,7 @@ namespace WpfCopyApplication
 
             foreach (FileInfo file in files)
             {
-                if (!isEmptyDirectory) Log.Add(new ListBoxItem() { Content = "File" + file.Name + " was added.", Background = Brushes.White });
+                if (!isEmptyDirectory) Log.Add(new ListBoxItem() { Content = "File " + file.Name + " was added.", Background = Brushes.White });
                 string tempPath = Path.Combine(destDirName, file.Name);
 
                 file.CopyTo(tempPath, true);
@@ -85,16 +85,6 @@ namespace WpfCopyApplication
 
                 _repository.AddDataReplace(file, tempPath, ComputeMD5Checksum(file.FullName), destFiles.FirstOrDefault(x => x.Name == file.Name), ComputeMD5Checksum(tempPath));
             }
-//            if ()
-//            {
-//                _repository.AddHistory(new ReplaceRequest()
-//                {
-//                    OldNamespace = oldNamespace,
-//                    NewNamespace = newNamespace,
-//                    BackupDir = destDirName,
-//                    SourceDir = sourceDirName
-//                });
-//            }
             
             // If copying subdirectories, copy them and their contents to new location.
             if (copySubDirs)
@@ -105,13 +95,41 @@ namespace WpfCopyApplication
                     await DirectoryCopy(subdir.FullName, temppath, copySubDirs, newNamespace, oldNamespace);
                 }
             }
+
+            if (CheckCopiedFolders(sourceDirName, destDirName))
+            {
+                Log.Add(new ListBoxItem() { Content = "==================================================" , Background = Brushes.PaleGreen });
+            }
+        }
+
+        private static bool CheckCopiedFolders(string fodler1, string folder2)
+        {
+            DirectoryInfo dir = new DirectoryInfo(fodler1);
+            DirectoryInfo destDir = new DirectoryInfo(folder2);
+            DirectoryInfo[] dirs = dir.GetDirectories();
+            DirectoryInfo[] destDirs = destDir.GetDirectories();
+
+            List<FileInfo> filesFolder1 = null;
+            List<FileInfo> filesFolder2 = null ;
+
+            foreach (var dirFolder in dirs)
+            {
+                var files = dirFolder.GetFiles().ToList();
+                filesFolder1.AddRange(files);
+            }
+
+            foreach (var files in destDirs.Select(dirFolder => dirFolder.GetFiles().ToList()))
+            {
+                filesFolder2.AddRange(files);
+            }
+
+            return filesFolder1 == filesFolder2;
         }
 
         public async Task<List<FileInfo>> GetFilteredFiles(FileInfo[] files, FileInfo[] destFiles)
         {
             var filteredFiles = new List<FileInfo>();
-
-
+            
             foreach (FileInfo file in files)
             {
                 //   if (destFiles.FirstOrDefault(x => x.Name == file.Name) != null) conflictFiles.Add(new ConflictFiles() { FileFromSource = file, FileFromDest = destFiles.FirstOrDefault(x => x.Name == file.Name) });
@@ -137,7 +155,6 @@ namespace WpfCopyApplication
                     ConflictList.Add(new Conflict() { SourcePath = file.FullName, DestPath = destFiles.FirstOrDefault(x => x.Name == file.Name).FullName });
                 }
 //                if (destFiles.FirstOrDefault(x => x.Name == file.Name) == null || NeedReplace(file, destFiles.FirstOrDefault(x => x.Name == file.Name))) filteredFiles.Add(file);
-
             }
 
             foreach (FileInfo file in destFiles)
@@ -150,10 +167,6 @@ namespace WpfCopyApplication
                         file.Delete();
                     }
 
-                    //                 NeedDelete(file);
-                    //                 + Нужно сделать проверку с базой:
-                    //                 1) Если данные в БД имеются о файле удалить
-                    //                 2) Если данные не имеются - добавить в список конфликта и удалить
                 }
             }
 
