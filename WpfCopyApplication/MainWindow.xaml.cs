@@ -43,7 +43,7 @@ namespace WpfCopyApplication
 
         private async void Start_Click(object sender, RoutedEventArgs e)
         {
-            //db.ReplaceRequests.RemoveRange(db.ReplaceRequests);
+            if(db.Database.Exists())  db.ReplaceRequests.RemoveRange(db.ReplaceRequests);
             //  var q = PageAppearanceSection.GetConfiguration().IgnoreList;
             var x = new ReplaceNamespace(db);
             
