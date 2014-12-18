@@ -25,13 +25,6 @@ namespace WpfCopyApplication
             set { SetValue(_collectionReplaceItemsProperty, value); }
         }
 
-//        public ObservableCollection<ReplaceItem> _collectionReplaceItems = new ObservableCollection<ReplaceItem>();
-
-//        public ObservableCollection<ReplaceItem> CollectionReplaceItems
-//        {
-//            get { return _collectionReplaceItems; }
-//            set { _collectionReplaceItems = value; }
-//        }
         public string OldNamespace
         {
             get { return (string) GetValue(OldNamespaceProperty); }

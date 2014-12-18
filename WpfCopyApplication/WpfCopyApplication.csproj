@@ -54,6 +54,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -77,6 +78,7 @@
     <Compile Include="Command.cs" />
     <Compile Include="ConfigurationHelper.cs" />
     <Compile Include="Conflict.cs" />
+    <Compile Include="DiffMatchPatch.cs" />
     <Compile Include="MainModel.cs" />
     <Compile Include="Model\DataReplacement.cs" />
     <Compile Include="Model\DataReplacementMap.cs" />
