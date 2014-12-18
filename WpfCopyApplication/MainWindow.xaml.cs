@@ -59,11 +59,11 @@ namespace WpfCopyApplication
                     System.Windows.Forms.MessageBoxIcon icon = MessageBoxIcon.Information;
                     DialogResult result = System.Windows.Forms.MessageBox.Show(messageBoxText, caption, button, icon);
                     if (result == System.Windows.Forms.DialogResult.Yes)
-                        await x.DirectoryCopy(item.SourceDir, item.BackupDir, true, item.NewNamespace, item.OldNamespace);
+                        await x.DirectoryCopy(item.SourceDir, item.BackupDir, item.NewNamespace, item.OldNamespace);
                 }
                 else
                 {
-                    await x.DirectoryCopy(item.SourceDir, item.BackupDir, true, item.NewNamespace, item.OldNamespace);
+                    await x.DirectoryCopy(item.SourceDir, item.BackupDir, item.NewNamespace, item.OldNamespace);
                 }
                 
                 x.AddHistory(new ReplaceRequest()
@@ -78,27 +78,6 @@ namespace WpfCopyApplication
 
 
             }
-
-            
-
-//            await ConfigurationHelper.EditKey(Model.SourceDir, Model.BackupDir,
-//                    Model.NewNamespace, Model.OldNamespace);
-//            if (x.IsBlankFolder(Model.BackupDir))
-//            {
-//                string messageBoxText = "The folder is not empty";
-//                string caption = "";
-//                System.Windows.Forms.MessageBoxButtons button = MessageBoxButtons.YesNo;
-//                System.Windows.Forms.MessageBoxIcon icon = MessageBoxIcon.Information;
-//                DialogResult result = System.Windows.Forms.MessageBox.Show(messageBoxText, caption, button, icon);
-//                if (result == System.Windows.Forms.DialogResult.Yes)
-//                    await x.DirectoryCopy(Model.SourceDir, Model.BackupDir, true,
-//                         Model.NewNamespace, Model.OldNamespace);
-//            }
-//            else
-//            {
-//                await x.DirectoryCopy(Model.SourceDir, Model.BackupDir, true, Model.NewNamespace, Model.OldNamespace);
-//            }
-
 
             Log.ItemsSource = ReplaceNamespace.Log;
 
@@ -122,6 +101,11 @@ namespace WpfCopyApplication
                     Delete = new Command(Model.Delete)
                };
             Model.Add.Execute(newItem);
+        }
+
+        private void StopButton_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 
