@@ -72,26 +72,37 @@ namespace WpfCopyApplication
 
             var destFiles = destDir.GetFiles();
             List<FileInfo> files;
-            bool isEmptyDirectory = Directory.EnumerateFileSystemEntries(destDirName).Any();
-            if (isEmptyDirectory)
+
+            //Check destination Folder 
+            bool notEmptyDirectory = Directory.EnumerateFileSystemEntries(destDirName).Any();
+            if (notEmptyDirectory)
             {
                 files = await GetFilteredFiles(dir.GetFiles(), destFiles);
             }
 
             else files = dir.GetFiles().ToList();
 
-            foreach (FileInfo file in files)
+            foreach (var file in files)
             {
-                if (!isEmptyDirectory) Log.Add(new ListBoxItem() { Content = "File" + file.Name + " was added.", Background = Brushes.White });
-                string tempPath = Path.Combine(destDirName, file.Name);
-//                file.CopyTo(tempPath, true);
-                ReplaceInFile(file.FullName, tempPath, "namespace " + oldNamespace, "namespace " + newNamespace);
+                //  Situation 1: Folder empty 
+                if (!notEmptyDirectory) Log.Add(new ListBoxItem() { Content = "File" + file.Name + " was added.", Background = Brushes.White });
+                //  Replace name of file
+                var replacedNameFile = file.Name.Replace(oldNamespace, newNamespace);
+                if (file.Name.IndexOf(oldNamespace, System.StringComparison.Ordinal) != -1)
+                {
+                    Log.Add(new ListBoxItem() { Content = "File " + file.Name + " was renamed to " + replacedNameFile, Background = Brushes.Yellow });
+                }
+                
+                //  Replace words inside file
+                var tempPath = Path.Combine(destDirName, replacedNameFile);
+                //  file.CopyTo(tempPath, true);
+                ReplaceInFile(file.FullName, tempPath, oldNamespace, newNamespace);
                 destFiles = destDir.GetFiles();
-                _repository.AddDataReplace(file, tempPath, ComputeMD5Checksum(file.FullName), destFiles.FirstOrDefault(x => x.Name == file.Name), ComputeMD5Checksum(tempPath));
+                _repository.AddDataReplace(file, tempPath, ComputeMD5Checksum(file.FullName), destFiles.FirstOrDefault(x => x.Name == replacedNameFile), ComputeMD5Checksum(tempPath));
             }
             
             // If copying subdirectories, copy them and their contents to new location.
-                foreach (DirectoryInfo subdir in dirs)
+            foreach (DirectoryInfo subdir in dirs)
                 {
                     string temppath = Path.Combine(destDirName, subdir.Name);
                     await DirectoryCopy(subdir.FullName, temppath, newNamespace, oldNamespace);
@@ -105,17 +116,26 @@ namespace WpfCopyApplication
 
             foreach (FileInfo file in files)
             {
+                var destFile = destFiles.FirstOrDefault(x => x.Name == file.Name);
+
+                if (_repository.TargetFileBySource(file.Name) != null)
+                {
+                    var targetPath = _repository.TargetFileBySource(file.Name);
+                    destFile = destFiles.FirstOrDefault(x => x.Name == targetPath);
+                }
+                
+
                 //   if (destFiles.FirstOrDefault(x => x.Name == file.Name) != null) conflictFiles.Add(new ConflictFiles() { FileFromSource = file, FileFromDest = destFiles.FirstOrDefault(x => x.Name == file.Name) });
-                if (destFiles.FirstOrDefault(x => x.Name == file.Name) == null)
+                if (destFile == null)
                 {
                     filteredFiles.Add(file);
                     Log.Add(new ListBoxItem() { Content = "File " + file.Name + " has been added.", Background = Brushes.White });
                 }
-                else if (FileUpdated(file, destFiles.FirstOrDefault(x => x.Name == file.Name)))
+                else if (FileUpdated(file, destFile))
                 {
                     Log.Add(new ListBoxItem() { Content = "File " + file.Name + " was modified", Background = Brushes.Yellow });
                 }
-                else if (MergeFile(file, destFiles.FirstOrDefault(x => x.Name == file.Name)))
+                else if (MergeFile(file, destFile))
                 {
                     Log.Add(new ListBoxItem() { Content = "File " + file.Name + " need to merge", Background = Brushes.Red });
                     ConflictList.Add(new Conflict() { SourcePath = file.FullName, DestPath = destFiles.FirstOrDefault(x => x.Name == file.Name).FullName });
@@ -125,18 +145,16 @@ namespace WpfCopyApplication
 
             foreach (FileInfo file in destFiles)
             {
-                if (files.FirstOrDefault(x => x.Name == file.Name) == null)
+                var sourceFile = files.FirstOrDefault(x => x.Name == file.Name);
+
+                if (sourceFile == null)
                 {
-//                    Log.Add(new ListBoxItem() { Content = "File " + file.Name + " is not in the source folder", Background = Brushes.Yellow });
+//                  Log.Add(new ListBoxItem() { Content = "File " + file.Name + " is not in the source folder", Background = Brushes.Yellow });
                     if (await NeedDelete(file))
                     {
                         file.Delete();
                     }
 
-                    //                 NeedDelete(file);
-                    //                 + Нужно сделать проверку с базой:
-                    //                 1) Если данные в БД имеются о файле удалить
-                    //                 2) Если данные не имеются - добавить в список конфликта и удалить
                 }
             }
 
@@ -217,7 +235,13 @@ namespace WpfCopyApplication
             }
         }
 
-
+        /// <summary>
+        /// Check file's data from db
+        /// </summary>
+        /// <param name="isSourceFile"> Cheking source/noSource file data in db</param>
+        /// <param name="file">File from Source Folder</param>
+        /// <param name="foundFile">Found file's data in bd</param>
+        /// <returns></returns>
         bool Compare(bool isSourceFile, FileInfo file, DataReplacement foundFile)
         {
 

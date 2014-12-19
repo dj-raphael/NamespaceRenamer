@@ -79,5 +79,12 @@ namespace WpfCopyApplication.Model
                 _context.ReplaceRequests.Add(item);
                 _context.SaveChanges();
         }
+
+        public string TargetFileBySource(string sourceFileName)
+        {
+            var fTarget = _context.DataReplacements.First(x => x.Path == sourceFileName);
+
+            return fTarget != null ? fTarget.PathTargetDirectory : null;
+        }
     }
 }

@@ -23,7 +23,7 @@ namespace WpfCopyApplication
             xmlDoc.SelectSingleNode("//pageAppearance[1]").Attributes["sourceNamespace"].Value = oldNamespace;
             xmlDoc.SelectSingleNode("//pageAppearance[1]").Attributes["targetNamespace"].Value = newNamespace;
 
-            await Task.Factory.StartNew( () => xmlDoc.Save(AppDomain.CurrentDomain.SetupInformation.ConfigurationFile));
+            await Task.Factory.StartNew(() => xmlDoc.Save(AppDomain.CurrentDomain.SetupInformation.ConfigurationFile));
 
             ConfigurationManager.RefreshSection("pageAppearance");
         }
@@ -35,11 +35,15 @@ namespace WpfCopyApplication
             var ConfigFile = AppDomain.CurrentDomain.SetupInformation.ConfigurationFile;
 
             xmlDoc.Load(ConfigFile);
-            pageAppearance.SourceDirectory = xmlDoc.SelectSingleNode("//pageAppearance[1]").Attributes["sourceDirectory"].Value.ToString();
-            pageAppearance.TargetDirectory = xmlDoc.SelectSingleNode("//pageAppearance[1]").Attributes["targetDirectory"].Value.ToString();
-            pageAppearance.SourceNamespace = xmlDoc.SelectSingleNode("//pageAppearance[1]").Attributes["sourceNamespace"].Value.ToString();
-            pageAppearance.TargetNamespace = xmlDoc.SelectSingleNode("//pageAppearance[1]").Attributes["targetNamespace"].Value.ToString();
-            
+            pageAppearance.SourceDirectory =
+                xmlDoc.SelectSingleNode("//pageAppearance[1]").Attributes["sourceDirectory"].Value;
+            pageAppearance.TargetDirectory =
+                xmlDoc.SelectSingleNode("//pageAppearance[1]").Attributes["targetDirectory"].Value;
+            pageAppearance.SourceNamespace =
+                xmlDoc.SelectSingleNode("//pageAppearance[1]").Attributes["sourceNamespace"].Value;
+            pageAppearance.TargetNamespace =
+                xmlDoc.SelectSingleNode("//pageAppearance[1]").Attributes["targetNamespace"].Value;
+
 
             return pageAppearance;
 
