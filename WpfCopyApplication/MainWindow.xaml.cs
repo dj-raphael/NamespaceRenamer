@@ -104,7 +104,13 @@ namespace WpfCopyApplication
             Process p = Process.Start(pInfo);
 
             p.WaitForExit();
-            
+
+
+            //            if (((Conflict) item.Content).MessageType == Types.conflict)
+            //            {
+            //                MergeWindow win = new MergeWindow((Conflict)item.Content);
+            //                win.Show();
+            //            }
         }
     }
 
