@@ -24,7 +24,7 @@ namespace WpfCopyApplication.Model
         public static readonly DependencyProperty OldNamespaceProperty = DependencyProperty.Register("OldNamespace", typeof (object), typeof (ReplaceItem), new PropertyMetadata(default(object)));
         public static readonly DependencyProperty SourceDirProperty = DependencyProperty.Register("SourceDir", typeof (object), typeof (ReplaceItem), new PropertyMetadata(default(object)));
         public static readonly DependencyProperty NewNamespaceProperty = DependencyProperty.Register("NewNamespace", typeof (object), typeof (ReplaceItem), new PropertyMetadata(default(object)));
-        public static readonly DependencyProperty BackupDirProperty = DependencyProperty.Register("BackupDir", typeof (object), typeof (ReplaceItem), new PropertyMetadata(default(object)));
+        public static readonly DependencyProperty TargetDirProperty = DependencyProperty.Register("TargetDir", typeof (object), typeof (ReplaceItem), new PropertyMetadata(default(object)));
 
         public string OldNamespace
         {
@@ -44,10 +44,10 @@ namespace WpfCopyApplication.Model
             set { SetValue(NewNamespaceProperty, value); }
         }
 
-        public string BackupDir
+        public string TargetDir
         {
-            get { return (string) GetValue(BackupDirProperty); }
-            set { SetValue(BackupDirProperty, value); }
+            get { return (string) GetValue(TargetDirProperty); }
+            set { SetValue(TargetDirProperty, value); }
         }
 
         public Command Delete { get; set; }

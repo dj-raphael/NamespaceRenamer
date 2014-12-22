@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Controls;
+using System.Windows.Forms;
 using System.Windows.Media;
 using WpfCopyApplication.Model;
 
@@ -17,28 +18,27 @@ namespace WpfCopyApplication
 {
     public class ReplaceNamespace
     {
-        public static ObservableCollection<ListBoxItem> Log = new ObservableCollection<ListBoxItem>();
         public List<Conflict> ConflictList = new List<Conflict>();
- 
+        public IEnumerable<Conflict> ConfList {get { return ConflictList; }} 
         private DataReplacementRepository _repository;
         public ReplaceNamespace(ReplaceContext context)
         {
             _repository = new DataReplacementRepository(context);
         }
 
-        public void ReplaceInFile(string sourceDir, string destDir, string oldNamespace, string newNamespace)
+        public void ReplaceInFile(string sourcePath, string targetPath, string oldNamespace, string newNamespace)
         {
-//          file.CopyTo(sourceDir, true);
-            FileInfo sourceFile = new FileInfo(sourceDir);
-            FileInfo destFile = new FileInfo(destDir);
+//          file.CopyTo(sourcePath, true);
+            FileInfo sourceFile = new FileInfo(sourcePath);
+            FileInfo targetFile = new FileInfo(targetPath);
             var atr = sourceFile.Attributes;
-//          destFile.Attributes &= ~FileAttributes.Hidden;
-//            destFile.Attributes = FileAttributes.Archive;
-            String strFile = File.ReadAllText(sourceDir);
+//          targetFile.Attributes &= ~FileAttributes.Hidden;
+//            targetFile.Attributes = FileAttributes.Archive;
+            String strFile = File.ReadAllText(sourcePath);
             strFile = strFile.Replace(oldNamespace, newNamespace);
-            File.WriteAllText(destDir, strFile);
-//          destFile.Attributes |= FileAttributes.Hidden;
-            destFile.Attributes = atr;
+            File.WriteAllText(targetPath, strFile);
+//          targetFile.Attributes |= FileAttributes.Hidden;
+            targetFile.Attributes = atr;
             
         }
 
@@ -47,83 +47,82 @@ namespace WpfCopyApplication
             _repository.AddHistory(item);        
         }
 
-        public async Task DirectoryCopy(string sourceDirName, string destDirName, string newNamespace, string oldNamespace)
+        public async Task DirectoryCopy(string sourceDirName, string targetDirName, string newNamespace, string oldNamespace)
         {                    
             // Get the subdirectories for the specified directory.
-            DirectoryInfo dir = new DirectoryInfo(sourceDirName);
-            DirectoryInfo destDir = new DirectoryInfo(destDirName);
-            DirectoryInfo[] dirs = dir.GetDirectories();
+            DirectoryInfo sourceDir = new DirectoryInfo(sourceDirName);
+            DirectoryInfo targetDir = new DirectoryInfo(targetDirName);
+            DirectoryInfo[] dirs = sourceDir.GetDirectories();
 
-            if (!dir.Exists)
+            if (!sourceDir.Exists)
             {
                 throw new DirectoryNotFoundException(
                     "Source directory does not exist or could not be found: "
                     + sourceDirName);
             }
 
-            // If the destination directory doesn't exist, create it.
-            if (!Directory.Exists(destDirName))
+            // If the targetination directory doesn't exist, create it.
+            if (!Directory.Exists(targetDirName))
             {
-                Directory.CreateDirectory(destDirName);
+                Directory.CreateDirectory(targetDirName);
             }
 
             // Get the files in the directory and copy them to the new location.
             // FileInfo[] files = dir.GetFiles();
 
-            var destFiles = destDir.GetFiles();
+            var targetFiles = targetDir.GetFiles();
             List<FileInfo> files;
-            bool isEmptyDirectory = Directory.EnumerateFileSystemEntries(destDirName).Any();
-            if (isEmptyDirectory)
+            bool notEmptyDirectory = Directory.EnumerateFileSystemEntries(targetDirName).Any();
+            if (notEmptyDirectory)
             {
-                files = await GetFilteredFiles(dir.GetFiles(), destFiles);
+                files = await GetFilteredFiles(sourceDir.GetFiles(), targetFiles, targetDirName);
             }
 
-            else files = dir.GetFiles().ToList();
-
+            else files = sourceDir.GetFiles().ToList();
+            
             foreach (FileInfo file in files)
             {
-                if (!isEmptyDirectory) Log.Add(new ListBoxItem() { Content = "File" + file.Name + " was added.", Background = Brushes.White });
-                string tempPath = Path.Combine(destDirName, file.Name);
+                string tempPath = Path.Combine(targetDirName, file.Name);
+                if (!notEmptyDirectory) ConflictList.Add(new Conflict(){ MessageType = Types.adding, Message = "File " + file.Name + " has been added",SourcePath = file.FullName, TargetPath = tempPath});;   
 //                file.CopyTo(tempPath, true);
                 ReplaceInFile(file.FullName, tempPath, "namespace " + oldNamespace, "namespace " + newNamespace);
-                destFiles = destDir.GetFiles();
-                _repository.AddDataReplace(file, tempPath, ComputeMD5Checksum(file.FullName), destFiles.FirstOrDefault(x => x.Name == file.Name), ComputeMD5Checksum(tempPath));
+                targetFiles = targetDir.GetFiles();
+                _repository.AddDataReplace(file, tempPath, ComputeMD5Checksum(file.FullName), targetFiles.FirstOrDefault(x => x.Name == file.Name), ComputeMD5Checksum(tempPath));
             }
             
             // If copying subdirectories, copy them and their contents to new location.
                 foreach (DirectoryInfo subdir in dirs)
                 {
-                    string temppath = Path.Combine(destDirName, subdir.Name);
+                    string temppath = Path.Combine(targetDirName, subdir.Name);
                     await DirectoryCopy(subdir.FullName, temppath, newNamespace, oldNamespace);
                 }
         }
 
-        public async Task<List<FileInfo>> GetFilteredFiles(FileInfo[] files, FileInfo[] destFiles)
+        public async Task<List<FileInfo>> GetFilteredFiles(FileInfo[] files, FileInfo[] targetFiles, string targetDirName)
         {
             var filteredFiles = new List<FileInfo>();
-
-
             foreach (FileInfo file in files)
             {
-                //   if (destFiles.FirstOrDefault(x => x.Name == file.Name) != null) conflictFiles.Add(new ConflictFiles() { FileFromSource = file, FileFromDest = destFiles.FirstOrDefault(x => x.Name == file.Name) });
-                if (destFiles.FirstOrDefault(x => x.Name == file.Name) == null)
+                //   if (targetFiles.FirstOrDefault(x => x.Name == file.Name) != null) conflictFiles.Add(new ConflictFiles() { FileFromSource = file, FileFromtarget = targetFiles.FirstOrDefault(x => x.Name == file.Name) });
+                if (targetFiles.FirstOrDefault(x => x.Name == file.Name) == null)
                 {
                     filteredFiles.Add(file);
-                    Log.Add(new ListBoxItem() { Content = "File " + file.Name + " has been added.", Background = Brushes.White });
+                    ConflictList.Add(new Conflict() { MessageType = Types.adding, Message = "File " + file.Name + " has been added to " + targetDirName, SourcePath = file.FullName, TargetPath = Path.Combine(targetDirName, file.Name) });
                 }
-                else if (FileUpdated(file, destFiles.FirstOrDefault(x => x.Name == file.Name)))
+                else if (MergeFile(file, targetFiles.FirstOrDefault(x => x.Name == file.Name)))
                 {
-                    Log.Add(new ListBoxItem() { Content = "File " + file.Name + " was modified", Background = Brushes.Yellow });
+                    ConflictList.Add(new Conflict() { MessageType = Types.conflict, Message = "File " + file.Name + " need to merge", SourcePath = file.FullName, TargetPath = Path.Combine(targetDirName, file.Name) });
                 }
-                else if (MergeFile(file, destFiles.FirstOrDefault(x => x.Name == file.Name)))
+                else if (FileUpdated(file, targetFiles.FirstOrDefault(x => x.Name == file.Name)))
                 {
-                    Log.Add(new ListBoxItem() { Content = "File " + file.Name + " need to merge", Background = Brushes.Red });
-                    ConflictList.Add(new Conflict() { SourcePath = file.FullName, DestPath = destFiles.FirstOrDefault(x => x.Name == file.Name).FullName });
+                    ConflictList.Add(new Conflict() { MessageType = Types.warning, Message = "File " + file.Name + " was modified in " + targetDirName, SourcePath = file.FullName, TargetPath = Path.Combine(targetDirName, file.Name) });
                 }
+
 
             }
+                // todo: add filtering by ignore list
 
-            foreach (FileInfo file in destFiles)
+            foreach (FileInfo file in targetFiles)
             {
                 if (files.FirstOrDefault(x => x.Name == file.Name) == null)
                 {
@@ -131,6 +130,7 @@ namespace WpfCopyApplication
                     if (await NeedDelete(file))
                     {
                         file.Delete();
+                        ConflictList.Add(new Conflict() { MessageType = Types.warning, Message = "Warning! File " + file.FullName + " was deleted, because file already removed...", SourcePath = file.FullName, TargetPath = Path.Combine(targetDirName, file.Name) });
                     }
 
                     //                 NeedDelete(file);
@@ -143,15 +143,15 @@ namespace WpfCopyApplication
             return filteredFiles;
         }
 
-        public bool IsBlankFolder(string destDirName)
+        public bool IsBlankFolder(string targetDirName)
         {
-            DirectoryInfo dir = new DirectoryInfo(destDirName);
+            DirectoryInfo dir = new DirectoryInfo(targetDirName);
 
-            if (!_repository.ConsistRecords(destDirName))
+            if (!_repository.ConsistRecords(targetDirName))
             {
                 if (dir.Exists)
                 {
-                    if (Directory.EnumerateFileSystemEntries(destDirName).Any())
+                    if (Directory.EnumerateFileSystemEntries(targetDirName).Any())
                     {
                         return true;
                     }
@@ -161,24 +161,24 @@ namespace WpfCopyApplication
 
             return false;
 
-            // return !Directory.EnumerateFileSystemEntries(destDirName).Any();
+            // return !Directory.EnumerateFileSystemEntries(targetDirName).Any();
         }
-        private bool FileUpdated(FileInfo file, FileInfo destFile)
+        private bool FileUpdated(FileInfo file, FileInfo targetFile)
         {
-            if(_repository.GetFileByPaths(file.FullName, destFile.FullName) == null) return false;
+            if(_repository.GetFileByPaths(file.FullName, targetFile.FullName) == null) return false;
             if (_repository.IsDbEmpty())
             {
-                var foundFile = _repository.GetFileByPaths(file.FullName, destFile.FullName);
-                return !Compare(false, destFile, foundFile);
+                var foundFile = _repository.GetFileByPaths(file.FullName, targetFile.FullName);
+                return !Compare(false, targetFile, foundFile);
             }
             return true;
 
         }
-        bool MergeFile(FileInfo file, FileInfo destFile)
+        bool MergeFile(FileInfo file, FileInfo targetFile)
         {
-            if (_repository.IsDbEmpty() && _repository.GetFileByPaths(file.FullName, destFile.FullName) != null)
+            if (_repository.IsDbEmpty() && _repository.GetFileByPaths(file.FullName, targetFile.FullName) != null)
             {
-                var foundFile = _repository.GetFileByPaths(file.FullName, destFile.FullName);
+                var foundFile = _repository.GetFileByPaths(file.FullName, targetFile.FullName);
                 return !Compare(true, file, foundFile);
             }
             return true;
@@ -193,16 +193,13 @@ namespace WpfCopyApplication
                 if (FoundFile.Hash == ComputeMD5Checksum(file.FullName))
                 {
                     _repository.RemoveByHash(FoundFile.Hash);
-                    Log.Add(new ListBoxItem() { Content = "Warning! File " + file.FullName + " was deleted, because file already removed...", Background = Brushes.Red });
-                   
+
                     return true;
                 }
                 return true;
             }
             return false;
         }
-
-
 
         private string ComputeMD5Checksum(string path)
         {

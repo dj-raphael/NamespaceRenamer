@@ -21,3 +21,5 @@ C:\Projects\WpfCopyApplication\WpfCopyApplication\bin\Debug\EntityFramework.SqlS
 C:\Projects\WpfCopyApplication\WpfCopyApplication\obj\Debug\MyUserControl.baml
 C:\Projects\WpfCopyApplication\WpfCopyApplication\obj\Debug\MyUserControl.g.cs
 C:\Projects\WpfCopyApplication\WpfCopyApplication\obj\Debug\GeneratedInternalTypeHelper.g.cs
+C:\Projects\WpfCopyApplication\WpfCopyApplication\obj\Debug\MergeWindow.baml
+C:\Projects\WpfCopyApplication\WpfCopyApplication\obj\Debug\MergeWindow.g.cs

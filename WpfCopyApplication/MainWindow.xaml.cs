@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -26,20 +28,7 @@ namespace WpfCopyApplication
         }
 
         public MainModel Model { get; set; }
-
-        private void BrowiseSource_Click(object sender, RoutedEventArgs e)
-        {
-            var dialog = new FolderBrowserDialog();
-            var result = dialog.ShowDialog();
-            Model.SourceDir = dialog.SelectedPath;
-        }
-
-        private void BrowiseTarget_Click(object sender, RoutedEventArgs e)
-        {
-            var dialog = new FolderBrowserDialog();
-            var result = dialog.ShowDialog();
-            Model.BackupDir = dialog.SelectedPath;
-        }
+        public IEnumerable<Conflict> TempConflicts { get; set; }
 
         private async void Start_Click(object sender, RoutedEventArgs e)
         {
@@ -47,11 +36,9 @@ namespace WpfCopyApplication
             //  var q = PageAppearanceSection.GetConfiguration().IgnoreList;
             var x = new ReplaceNamespace(db);
             
-            ReplaceNamespace.Log.Clear();
-            
             foreach (var item in Model.CollectionReplaceItems)
             {
-                if (x.IsBlankFolder(item.BackupDir))
+                if (x.IsBlankFolder(item.TargetDir))
                 {
                     string messageBoxText = "The folder is not empty";
                     string caption = "";
@@ -59,24 +46,26 @@ namespace WpfCopyApplication
                     System.Windows.Forms.MessageBoxIcon icon = MessageBoxIcon.Information;
                     DialogResult result = System.Windows.Forms.MessageBox.Show(messageBoxText, caption, button, icon);
                     if (result == System.Windows.Forms.DialogResult.Yes)
-                        await x.DirectoryCopy(item.SourceDir, item.BackupDir, item.NewNamespace, item.OldNamespace);
+                        await x.DirectoryCopy(item.SourceDir, item.TargetDir, item.NewNamespace, item.OldNamespace);
                 }
                 else
                 {
-                    await x.DirectoryCopy(item.SourceDir, item.BackupDir, item.NewNamespace, item.OldNamespace);
+                    await x.DirectoryCopy(item.SourceDir, item.TargetDir, item.NewNamespace, item.OldNamespace);
                 }
                 
                 x.AddHistory(new ReplaceRequest()
                 {
                     NewNamespace = item.NewNamespace,
                     OldNamespace = item.OldNamespace,
-                    BackupDir = item.BackupDir,
+                    BackupDir = item.TargetDir,
                     SourceDir = item.SourceDir
                 });
-                if (ReplaceNamespace.Log.Any() && (string)ReplaceNamespace.Log.Last().Content != "==================================================") ReplaceNamespace.Log.Add(new ListBoxItem() { Content = "==================================================", Background = Brushes.PaleGreen });
+                if (x.ConflictList.Any() && x.ConflictList.Last().MessageType != Types.delimiter)
+                    x.ConflictList.Add(new Conflict(){ MessageType = Types.adding, Message = "End of the project",SourcePath = null, TargetPath = null});
             }
-
-            Log.ItemsSource = ReplaceNamespace.Log;
+            ListBox.ItemsSource = x.ConfList;
+            TempConflicts = x.ConflictList;
+//            Log.ItemsSource = ReplaceNamespace.Log;
 
         }
         private void ListBox_ScrollChanged(object sender, ScrollChangedEventArgs e)
@@ -92,7 +81,7 @@ namespace WpfCopyApplication
                 new ReplaceItem()
                 {
                     SourceDir = DefaultData.SourceDirectory,
-                    BackupDir = DefaultData.TargetDirectory,
+                    TargetDir = DefaultData.TargetDirectory,
                     OldNamespace = DefaultData.SourceNamespace,
                     NewNamespace = DefaultData.TargetNamespace,
                     Delete = new Command(Model.Delete)
@@ -103,6 +92,19 @@ namespace WpfCopyApplication
         private void StopButton_Click(object sender, RoutedEventArgs e)
         {
 
+        }
+
+        private void ListBoxItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            ListBoxItem item = sender as ListBoxItem;
+
+            ProcessStartInfo pInfo = new ProcessStartInfo("TortoiseMerge.exe");
+            pInfo.WorkingDirectory = @"C:\Program Files\TortoiseSVN\bin";
+            pInfo.Arguments = "\"" + ((Conflict)item.Content).SourcePath + "\"" + " " + "\"" + ((Conflict)item.Content).TargetPath + "\"" + " \\TortoiseMerge ";
+            Process p = Process.Start(pInfo);
+
+            p.WaitForExit();
+            
         }
     }
 

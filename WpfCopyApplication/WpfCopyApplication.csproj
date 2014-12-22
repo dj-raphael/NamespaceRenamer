@@ -92,6 +92,9 @@
       <DependentUpon>MyUserControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Model\ReplaceRequest.cs" />
+    <Compile Include="MergeWindow.xaml.cs">
+      <DependentUpon>MergeWindow.xaml</DependentUpon>
+    </Compile>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -105,6 +108,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="MyUserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="MergeWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
