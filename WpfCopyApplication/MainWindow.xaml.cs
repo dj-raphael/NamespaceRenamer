@@ -19,6 +19,7 @@ namespace WpfCopyApplication
     public partial class MainWindow : Window
     {
         private ReplaceContext db = new ReplaceContext();
+
         public MainWindow()
         {
             db.Database.Initialize(true);
@@ -32,10 +33,13 @@ namespace WpfCopyApplication
 
         private async void Start_Click(object sender, RoutedEventArgs e)
         {
-            if(db.Database.Exists())  db.ReplaceRequests.RemoveRange(db.ReplaceRequests);
-            //  var q = PageAppearanceSection.GetConfiguration().IgnoreList;
+            if (db.Database.Exists()) db.ReplaceRequests.RemoveRange(db.ReplaceRequests);
+
+            var ignoreList = PageAppearanceSection.GetConfiguration().IgnoreList.OfType<Add>().Select(t => t.Value).ToList();
+            var ignoreInnerReplacingList = PageAppearanceSection.GetConfiguration().IgnoreInnerReplacingList.OfType<Add>().Select(t => t.Value).ToList();
+
             var x = new ReplaceNamespace(db);
-            
+
             foreach (var item in Model.CollectionReplaceItems)
             {
                 if (x.IsBlankFolder(item.TargetDir))
@@ -46,13 +50,15 @@ namespace WpfCopyApplication
                     System.Windows.Forms.MessageBoxIcon icon = MessageBoxIcon.Information;
                     DialogResult result = System.Windows.Forms.MessageBox.Show(messageBoxText, caption, button, icon);
                     if (result == System.Windows.Forms.DialogResult.Yes)
-                        await x.DirectoryCopy(item.SourceDir, item.TargetDir, item.NewNamespace, item.OldNamespace);
+                        await
+                            x.DirectoryCopy(item.SourceDir, item.TargetDir, item.NewNamespace, item.OldNamespace, ignoreList, ignoreInnerReplacingList);
                 }
                 else
                 {
-                    await x.DirectoryCopy(item.SourceDir, item.TargetDir, item.NewNamespace, item.OldNamespace);
+                    await
+                        x.DirectoryCopy(item.SourceDir, item.TargetDir, item.NewNamespace, item.OldNamespace, ignoreList, ignoreInnerReplacingList);
                 }
-                
+
                 x.AddHistory(new ReplaceRequest()
                 {
                     NewNamespace = item.NewNamespace,
@@ -61,17 +67,24 @@ namespace WpfCopyApplication
                     SourceDir = item.SourceDir
                 });
                 if (x.ConflictList.Any() && x.ConflictList.Last().MessageType != Types.delimiter)
-                    x.ConflictList.Add(new Conflict(){ MessageType = Types.adding, Message = "End of the project",SourcePath = null, TargetPath = null});
+                    x.ConflictList.Add(new Conflict()
+                    {
+                        MessageType = Types.adding,
+                        Message = "End of the project",
+                        SourcePath = null,
+                        TargetPath = null
+                    });
             }
             ListBox.ItemsSource = x.ConfList;
             TempConflicts = x.ConflictList;
-//            Log.ItemsSource = ReplaceNamespace.Log;
+            //            Log.ItemsSource = ReplaceNamespace.Log;
 
         }
+
         private void ListBox_ScrollChanged(object sender, ScrollChangedEventArgs e)
         {
             if (e.ExtentHeightChange > 0.0)
-                ((ScrollViewer)e.OriginalSource).ScrollToEnd();
+                ((ScrollViewer) e.OriginalSource).ScrollToEnd();
         }
 
         private void AddButton_Click(object sender, RoutedEventArgs routedEventArgs)
@@ -85,7 +98,7 @@ namespace WpfCopyApplication
                     OldNamespace = DefaultData.SourceNamespace,
                     NewNamespace = DefaultData.TargetNamespace,
                     Delete = new Command(Model.Delete)
-               };
+                };
             Model.Add.Execute(newItem);
         }
 
@@ -100,7 +113,8 @@ namespace WpfCopyApplication
 
             ProcessStartInfo pInfo = new ProcessStartInfo("TortoiseMerge.exe");
             pInfo.WorkingDirectory = @"C:\Program Files\TortoiseSVN\bin";
-            pInfo.Arguments = "\"" + ((Conflict)item.Content).SourcePath + "\"" + " " + "\"" + ((Conflict)item.Content).TargetPath + "\"" + " \\TortoiseMerge ";
+            pInfo.Arguments = "\"" + ((Conflict) item.Content).SourcePath + "\"" + " " + "\"" +
+                              ((Conflict) item.Content).TargetPath + "\"" + " \\TortoiseMerge ";
             Process p = Process.Start(pInfo);
 
             p.WaitForExit();

@@ -30,6 +30,7 @@ using System.Windows.Media.TextFormatting;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Shell;
+using WpfCopyApplication.Model;
 
 
 namespace WpfCopyApplication {

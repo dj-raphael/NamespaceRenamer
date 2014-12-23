@@ -76,6 +76,17 @@ namespace WpfCopyApplication
             }
         }
 
+
+
+        [ConfigurationProperty("ignoreInnerReplacingList", IsDefaultCollection = false, IsRequired = true)]
+        public IgnoreCollection IgnoreInnerReplacingList
+        {
+            get
+            {
+                return (IgnoreCollection)base["ignoreInnerReplacingList"];
+            }
+        }
+
         [ConfigurationCollection(typeof(Add), AddItemName = "add")]
         public class IgnoreCollection : ConfigurationElementCollection
         {
@@ -111,22 +122,22 @@ namespace WpfCopyApplication
 //            #endregion
         }
 
-        public class Add : ConfigurationElement
+    }
+    public class Add : ConfigurationElement
+    {
+
+        [ConfigurationProperty("value", IsKey = true, IsRequired = true)]
+        public string Value
         {
-
-            [ConfigurationProperty("value", IsKey = true, IsRequired = true)]
-            public string Value
+            get
             {
-                get
-                {
-                    return base["value"] as string;
-                }
-                set
-                {
-                    base["value"] = value;
-                }
+                return base["value"] as string;
             }
-
+            set
+            {
+                base["value"] = value;
+            }
         }
+
     }
 }
