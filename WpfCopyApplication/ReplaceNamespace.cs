@@ -115,6 +115,13 @@ namespace WpfCopyApplication
             {
                 string tempPath = Path.Combine(targetDirName, file.Name);
 
+                foreach (var ignoreItem in ignoreList)
+                {
+                    
+                }
+                Regex regex = new Regex(@"\d+");
+                Match match = regex.Match("Dot 55 Perls");
+
                 if (ignoreList.FirstOrDefault(g => g == file.Name) == null)
                 {
                     if (!notEmptyDirectory)
@@ -125,7 +132,7 @@ namespace WpfCopyApplication
                             SourcePath = file.FullName,
                             TargetPath = tempPath
                         });
-                    ;
+                    
                     // file.CopyTo(tempPath, true);
                     ReplaceInFile(file.FullName, tempPath, oldNamespace, newNamespace, true);
                     targetFiles = targetDir.GetFiles();

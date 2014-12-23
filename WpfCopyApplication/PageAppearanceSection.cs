@@ -75,9 +75,7 @@ namespace WpfCopyApplication
                 return (IgnoreCollection)base["ignoreList"];
             }
         }
-
-
-
+        
         [ConfigurationProperty("ignoreInnerReplacingList", IsDefaultCollection = false, IsRequired = true)]
         public IgnoreCollection IgnoreInnerReplacingList
         {
@@ -101,27 +99,7 @@ namespace WpfCopyApplication
                 var l_configElement = element as Add;
                 return l_configElement != null ? l_configElement.Value : null;
             }
-
-//            public Add this[int index]
-//            {
-//                get
-//                {
-//                    return BaseGet(index) as Add;
-//                }
-//            }
-
-//            #region IEnumerable<ConfigSubElement> Members
-//
-//            IEnumerator<Add> IEnumerable<Add>.GetEnumerator()
-//            {
-//                return (from i in Enumerable.Range(0, this.Count)
-//                        select this[i])
-//                        .GetEnumerator();
-//            }
-//
-//            #endregion
         }
-
     }
     public class Add : ConfigurationElement
     {
@@ -139,5 +117,18 @@ namespace WpfCopyApplication
             }
         }
 
+        [ConfigurationProperty("isRegularExpression",  DefaultValue = false, IsKey = false, IsRequired = false)]
+        public bool IsRegularExpression
+        {
+            get
+            {
+                return (bool)base["isRegularExpression"];
+            }
+            set
+            {
+                base["isRegularExpression"] = value;
+            }
+        }
     }
+
 }
