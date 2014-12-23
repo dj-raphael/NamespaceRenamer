@@ -47,7 +47,7 @@ namespace WpfCopyApplication
         {
             var dialog = new FolderBrowserDialog();
             var result = dialog.ShowDialog();
-            Model.BackupDir = dialog.SelectedPath;
+            Model.TargetDir = dialog.SelectedPath;
         }
 
         private void DeleteButton_Click(object sender, RoutedEventArgs e)

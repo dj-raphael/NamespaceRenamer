@@ -14,7 +14,7 @@ namespace WpfCopyApplication
     {
         public static readonly DependencyProperty OldNamespaceProperty = DependencyProperty.Register("OldNamespace",typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
         public static readonly DependencyProperty SourceDirProperty = DependencyProperty.Register("SourceDir",typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
-        public static readonly DependencyProperty BackupDirProperty = DependencyProperty.Register("BackupDir",typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
+        public static readonly DependencyProperty BackupDirProperty = DependencyProperty.Register("TargetDir",typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
         public static readonly DependencyProperty NewNamespaceProperty = DependencyProperty.Register("NewNamespace",typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
 
         public static readonly DependencyProperty _collectionReplaceItemsProperty = DependencyProperty.Register("collectionReplaceItems", typeof (ObservableCollection<ReplaceItem>),typeof (MyUserControl));
@@ -64,7 +64,7 @@ namespace WpfCopyApplication
                 replaceCollection.Add(new ReplaceItem()
                 {
                     SourceDir = DefaultData.SourceDirectory,
-                    BackupDir = DefaultData.TargetDirectory,
+                    TargetDir = DefaultData.TargetDirectory,
                     OldNamespace = DefaultData.SourceNamespace,
                     NewNamespace = DefaultData.TargetNamespace,
                     Delete = new Command(Delete)
@@ -78,7 +78,7 @@ namespace WpfCopyApplication
                     new ReplaceItem()
                     {
                         SourceDir = row.SourceDir,
-                        BackupDir = row.BackupDir,
+                        TargetDir = row.BackupDir,
                         OldNamespace = row.OldNamespace,
                         NewNamespace = row.NewNamespace,
                         Delete = new Command(Delete)
