@@ -35,7 +35,7 @@ namespace WpfCopyApplication
         {
             if (db.Database.Exists()) db.ReplaceRequests.RemoveRange(db.ReplaceRequests);
 
-            var ignoreList = PageAppearanceSection.GetConfiguration().IgnoreList.OfType<Add>().Select(t => t.Value).ToList();
+            var ignoreList = PageAppearanceSection.GetConfiguration().IgnoreList.OfType<Add>().ToList();
             var ignoreInnerReplacingList = PageAppearanceSection.GetConfiguration().IgnoreInnerReplacingList.OfType<Add>().Select(t => t.Value).ToList();
 
             var x = new ReplaceNamespace(db);

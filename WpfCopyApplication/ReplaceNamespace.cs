@@ -50,7 +50,7 @@ namespace WpfCopyApplication
             _repository.AddHistory(item);        
         }
 
-        public async Task DirectoryCopy(string sourceDirName, string targetDirName, string newNamespace, string oldNamespace, List<string> ignoreList, List<string> ignoreInnerReplacingList)
+        public async Task DirectoryCopy(string sourceDirName, string targetDirName, string newNamespace, string oldNamespace, List<Add> ignoreList, List<string> ignoreInnerReplacingList)
         {
             // If the targetination directory doesn't exist, create it.
             if (!Directory.Exists(targetDirName))
@@ -115,14 +115,8 @@ namespace WpfCopyApplication
             {
                 string tempPath = Path.Combine(targetDirName, file.Name);
 
-                foreach (var ignoreItem in ignoreList)
-                {
-                    
-                }
-                Regex regex = new Regex(@"\d+");
-                Match match = regex.Match("Dot 55 Perls");
-
-                if (ignoreList.FirstOrDefault(g => g == file.Name) == null)
+                //                  ignoreList.FirstOrDefault(g => g.Value == file.Name) == null
+                if (NotIgnorefile(ignoreList, file ))
                 {
                     if (!notEmptyDirectory)
                         ConflictList.Add(new Conflict()
@@ -157,6 +151,31 @@ namespace WpfCopyApplication
                 string temppath = Path.Combine(targetDirName, subdir.Name);
                 await DirectoryCopy(subdir.FullName, temppath, newNamespace, oldNamespace, ignoreList, ignoreInnerReplacingList);
             }
+        }
+
+        private bool NotIgnorefile(IEnumerable<Add> ignoreList, FileInfo file)
+        {
+            bool ignoreFile;
+            foreach (var ignoreItem in ignoreList)
+            {
+
+                if (ignoreItem.IsRegularExpression)
+                {
+                    Regex regex = new Regex(ignoreItem.Value.ToLower());
+                    Match match = regex.Match(file.FullName.ToLower());
+
+                    if (match.Success) return false; 
+                }
+                else
+                {
+                    var test1 = file.FullName.ToLower();
+                    var test2 = ignoreItem.Value.ToLower();
+                    var test = test1.Contains(test2);
+                    if (test) return false;
+                }
+             }
+
+            return true;
         }
 
         public async Task<List<FileInfo>> GetFilteredFiles(FileInfo[] files, FileInfo[] targetFiles, string targetDirName)
