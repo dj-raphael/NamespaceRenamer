@@ -36,7 +36,7 @@ namespace WpfCopyApplication
             if (db.Database.Exists()) db.ReplaceRequests.RemoveRange(db.ReplaceRequests);
 
             var ignoreList = PageAppearanceSection.GetConfiguration().IgnoreList.OfType<Add>().ToList();
-            var ignoreInnerReplacingList = PageAppearanceSection.GetConfiguration().IgnoreInnerReplacingList.OfType<Add>().Select(t => t.Value).ToList();
+            var ignoreInnerReplacingList = PageAppearanceSection.GetConfiguration().IgnoreInnerReplacingList.OfType<Add>().ToList();
 
             var x = new ReplaceNamespace(db);
 
@@ -66,6 +66,7 @@ namespace WpfCopyApplication
                     BackupDir = item.TargetDir,
                     SourceDir = item.SourceDir
                 });
+
                 if (x.ConflictList.Any() && x.ConflictList.Last().MessageType != Types.delimiter)
                     x.ConflictList.Add(new Conflict()
                     {

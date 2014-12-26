@@ -21,6 +21,9 @@ namespace WpfCopyApplication
         public List<Conflict> ConflictList = new List<Conflict>();
         public IEnumerable<Conflict> ConfList {get { return ConflictList; }} 
         private DataReplacementRepository _repository;
+
+        public List<string> listIgnoreFiles = new List<string>();
+
         public ReplaceNamespace(ReplaceContext context)
         {
             _repository = new DataReplacementRepository(context);
@@ -28,29 +31,75 @@ namespace WpfCopyApplication
 
         public void ReplaceInFile(string sourcePath, string targetPath, string oldNamespace, string newNamespace, bool NeedReplace)
         {
-//          file.CopyTo(sourcePath, true);
+
             FileInfo sourceFile = new FileInfo(sourcePath);
             FileInfo targetFile = new FileInfo(targetPath);
             var atr = sourceFile.Attributes;
-//          targetFile.Attributes &= ~FileAttributes.Hidden;
-//          targetFile.Attributes = FileAttributes.Archive;
             String strFile = File.ReadAllText(sourcePath);
-            if (NeedReplace)
+
+            if (!NeedReplace)
             {
-                strFile = strFile.Replace(oldNamespace, newNamespace);               
+                strFile = strFile.Replace(oldNamespace, newNamespace);
+                File.WriteAllText(targetPath, strFile, GetFileEncoding(sourcePath));
             }
-            File.WriteAllText(targetPath, strFile);
-//          targetFile.Attributes |= FileAttributes.Hidden;
+            else
+            {
+                File.Copy(sourcePath, targetPath);
+            }
+
             targetFile.Attributes = atr;
-            
+        }
+
+        public static Encoding GetFileEncoding(String FileName)
+        {
+            Encoding Result = null;
+            FileInfo FI = new FileInfo(FileName);
+            FileStream FS = null;
+
+            try
+            {
+                FS = FI.OpenRead();
+                Encoding[] UnicodeEncodings = { Encoding.BigEndianUnicode, Encoding.Unicode, Encoding.UTF8 };
+                for (int i = 0; Result == null && i < UnicodeEncodings.Length; i++)
+                {
+                    FS.Position = 0;
+                    byte[] Preamble = UnicodeEncodings[i].GetPreamble();
+                    bool PreamblesAreEqual = true;
+                    for (int j = 0; PreamblesAreEqual && j < Preamble.Length; j++)
+                    {
+                        PreamblesAreEqual = Preamble[j] == FS.ReadByte();
+                    }
+                    if (PreamblesAreEqual)
+                    {
+                        Result = UnicodeEncodings[i];
+                    }
+                }
+            }
+            catch (System.IO.IOException)
+            {
+            }
+            finally
+            {
+                if (FS != null)
+                {
+                    FS.Close();
+                }
+            }
+
+            if (Result == null)
+            {
+                Result = Encoding.Default;
+            }
+
+            return Result;
         }
 
         public void AddHistory(ReplaceRequest item)
         {
-            _repository.AddHistory(item);        
+            _repository.AddHistory(item);     
         }
 
-        public async Task DirectoryCopy(string sourceDirName, string targetDirName, string newNamespace, string oldNamespace, List<Add> ignoreList, List<string> ignoreInnerReplacingList)
+        public async Task DirectoryCopy(string sourceDirName, string targetDirName, string newNamespace, string oldNamespace, List<Add> ignoreList, List<Add> ignoreInnerReplacingList)
         {
             // If the targetination directory doesn't exist, create it.
             if (!Directory.Exists(targetDirName))
@@ -70,7 +119,6 @@ namespace WpfCopyApplication
                     + sourceDirName);
             }
 
-
             // Get the files in the directory and copy them to the new location.
             // FileInfo[] files = dir.GetFiles();
 
@@ -86,54 +134,36 @@ namespace WpfCopyApplication
             }
             else files = sourceFiles;
 
-            foreach (var itemInnerReplacing in ignoreInnerReplacingList)
-            {
-                var fileWithoutReplacing = sourceFiles.FirstOrDefault(g => g.Name == itemInnerReplacing);
-
-                if (fileWithoutReplacing != null)
-                {
-                    string tempPathSource = Path.Combine(sourceDirName, itemInnerReplacing);
-                    string tempPathTarget = Path.Combine(targetDirName, itemInnerReplacing);
-                    
-                    ConflictList.Add(new Conflict()
-                        {
-                            MessageType = Types.adding,
-                            Message = "File " + itemInnerReplacing + " has been added, because file exist in ignoreInnerCoping ",
-                            SourcePath = tempPathSource,
-                            TargetPath = tempPathTarget
-                        });
-
-                    ReplaceInFile(tempPathSource, tempPathTarget, oldNamespace, newNamespace, false);
-
-                    targetFiles = targetDir.GetFiles();
-                    _repository.AddDataReplace(fileWithoutReplacing, tempPathTarget, ComputeMD5Checksum(fileWithoutReplacing.FullName), targetFiles.FirstOrDefault(x => x.Name == itemInnerReplacing), ComputeMD5Checksum(tempPathTarget));
-                    files.Remove(files.Find(q => q.Name == itemInnerReplacing));
-                }
-            }
+//            foreach (var itemInnerReplacing in ignoreInnerReplacingList)
+//            {
+//                var fileWithoutReplacing = sourceFiles.FirstOrDefault(g => g.Name == itemInnerReplacing);
+//
+//                if (fileWithoutReplacing != null)
+//                {
+//                    string tempPathSource = Path.Combine(sourceDirName, itemInnerReplacing);
+//                    string tempPathTarget = Path.Combine(targetDirName, itemInnerReplacing);
+//                    
+//                    ConflictList.Add(new Conflict()
+//                        {
+//                            MessageType = Types.adding,
+//                            Message = "File " + itemInnerReplacing + " has been added, because file exist in ignoreInnerCoping ",
+//                            SourcePath = tempPathSource,
+//                            TargetPath = tempPathTarget
+//                        });
+//
+//                    ReplaceInFile(tempPathSource, tempPathTarget, oldNamespace, newNamespace, false);
+//
+//                    targetFiles = targetDir.GetFiles();
+//                    _repository.AddDataReplace(fileWithoutReplacing, tempPathTarget, ComputeMD5Checksum(fileWithoutReplacing.FullName), targetFiles.FirstOrDefault(x => x.Name == itemInnerReplacing), ComputeMD5Checksum(tempPathTarget));
+//                    files.Remove(files.Find(q => q.Name == itemInnerReplacing));
+//                }
+//            }
 
             foreach (FileInfo file in files)
             {
                 string tempPath = Path.Combine(targetDirName, file.Name);
 
-                //                  ignoreList.FirstOrDefault(g => g.Value == file.Name) == null
-                if (NotIgnorefile(ignoreList, file ))
-                {
-                    if (!notEmptyDirectory)
-                        ConflictList.Add(new Conflict()
-                        {
-                            MessageType = Types.adding,
-                            Message = "File " + file.Name + " has been added",
-                            SourcePath = file.FullName,
-                            TargetPath = tempPath
-                        });
-                    
-                    // file.CopyTo(tempPath, true);
-                    ReplaceInFile(file.FullName, tempPath, oldNamespace, newNamespace, true);
-                    targetFiles = targetDir.GetFiles();
-                    _repository.AddDataReplace(file, tempPath, ComputeMD5Checksum(file.FullName),
-                        targetFiles.FirstOrDefault(x => x.Name == file.Name), ComputeMD5Checksum(tempPath));
-                }
-                else
+                if (!NotIgnorefile(ignoreList, file))
                 {
                     ConflictList.Add(new Conflict()
                     {
@@ -143,14 +173,67 @@ namespace WpfCopyApplication
                         TargetPath = tempPath
                     });
                 }
+                else if (IsMandatoryToCopy(file, ignoreInnerReplacingList))
+                {
+                    string tempPathSource = Path.Combine(sourceDirName, file.Name);
+                    string tempPathTarget = Path.Combine(targetDirName, file.Name);
+
+                    ConflictList.Add(new Conflict()
+                    {
+                        MessageType = Types.adding,
+                        Message = "File " + file.Name + " has been added, because file exist in ignoreInnerCoping ",
+                        SourcePath = tempPathSource,
+                        TargetPath = tempPathTarget
+                    });
+                    //await Task.Delay(100);
+                    ReplaceInFile(tempPathSource, tempPathTarget, oldNamespace, newNamespace, false);
+                    targetFiles = targetDir.GetFiles();
+                    _repository.AddDataReplace(file, tempPathTarget, ComputeMD5Checksum(file.FullName),
+                        targetFiles.FirstOrDefault(x => x.Name == file.Name), ComputeMD5Checksum(tempPathTarget));
+                }
+                else
+                {
+                    if (!notEmptyDirectory)
+                        ConflictList.Add(new Conflict()
+                        {
+                            MessageType = Types.adding,
+                            Message = "File " + file.Name + " has been added",
+                            SourcePath = file.FullName,
+                            TargetPath = tempPath
+                        });
+
+                    // file.CopyTo(tempPath, true);
+                    ReplaceInFile(file.FullName, tempPath, oldNamespace, newNamespace, true);
+                    targetFiles = targetDir.GetFiles();
+                    _repository.AddDataReplace(file, tempPath, ComputeMD5Checksum(file.FullName),
+                        targetFiles.FirstOrDefault(x => x.Name == file.Name), ComputeMD5Checksum(tempPath));
+                }
             }
+
 
             // If copying subdirectories, copy them and their contents to new location.
             foreach (DirectoryInfo subdir in dirs)
             {
                 string temppath = Path.Combine(targetDirName, subdir.Name);
                 await DirectoryCopy(subdir.FullName, temppath, newNamespace, oldNamespace, ignoreList, ignoreInnerReplacingList);
+
+//                if (subdir.GetFiles().Length != 0 && sourceDir.GetDirectories().Length != 0)
+//                {
+//                    await DirectoryCopy(subdir.FullName, temppath, newNamespace, oldNamespace, ignoreList, ignoreInnerReplacingList);
+//                }
+//                else
+//                {
+//                    // If the targetination directory doesn't exist, create it.
+//                    if (!Directory.Exists(targetDirName))
+//                    {
+//                        Directory.CreateDirectory(targetDirName);
+//                    }
+//
+//                    var check = subdir;
+//                }
             }
+
+
         }
 
         private bool NotIgnorefile(IEnumerable<Add> ignoreList, FileInfo file)
@@ -159,23 +242,52 @@ namespace WpfCopyApplication
             foreach (var ignoreItem in ignoreList)
             {
 
+
                 if (ignoreItem.IsRegularExpression)
                 {
                     Regex regex = new Regex(ignoreItem.Value.ToLower());
                     Match match = regex.Match(file.FullName.ToLower());
 
-                    if (match.Success) return false; 
+                    if (match.Success)
+                    {
+                        listIgnoreFiles.Add(file.Name);
+                        return false;
+                    } 
                 }
                 else
                 {
-                    var test1 = file.FullName.ToLower();
-                    var test2 = ignoreItem.Value.ToLower();
-                    var test = test1.Contains(test2);
-                    if (test) return false;
+                    var path = file.FullName.ToLower();
+                    var mask = ignoreItem.Value.ToLower();
+
+                    if (path.Contains(mask))
+                    {
+                       listIgnoreFiles.Add(file.Name);
+                       return false;
+                    }
                 }
              }
 
             return true;
+        }
+
+        public bool IsMandatoryToCopy(FileInfo file, List<Add> ignoreInnerReplacingList)
+        {
+
+            foreach (var item in ignoreInnerReplacingList)
+            {
+                if (item.IsRegularExpression)
+                {
+                    Regex regex = new Regex(item.Value.ToLower());
+                    Match match = regex.Match(file.FullName.ToLower());
+
+                    if (match.Success) return true;
+                }
+                else
+                {
+                    if (file.FullName.ToLower().Contains(item.Value.ToLower())) return true;
+                }
+            }
+            return false;
         }
 
         public async Task<List<FileInfo>> GetFilteredFiles(FileInfo[] files, FileInfo[] targetFiles, string targetDirName)
@@ -196,16 +308,13 @@ namespace WpfCopyApplication
                 {
                     ConflictList.Add(new Conflict() { MessageType = Types.warning, Message = "File " + file.Name + " was modified in " + targetDirName, SourcePath = file.FullName, TargetPath = Path.Combine(targetDirName, file.Name) });
                 }
-
-
             }
-                // todo: add filtering by ignore list
 
             foreach (FileInfo file in targetFiles)
             {
                 if (files.FirstOrDefault(x => x.Name == file.Name) == null)
                 {
-//                  Log.Add(new ListBoxItem() { Content = "File " + file.Name + " is not in the source folder", Background = Brushes.Yellow });
+                    //  Log.Add(new ListBoxItem() { Content = "File " + file.Name + " is not in the source folder", Background = Brushes.Yellow });
                     if (await NeedDelete(file))
                     {
                         file.Delete();
@@ -286,7 +395,6 @@ namespace WpfCopyApplication
         }
         bool Compare(bool isSourceFile, FileInfo file, DataReplacement foundFile)
         {
-
             if (isSourceFile)
             {
                 if (file.LastWriteTime.Ticks == foundFile.Date && file.Length == foundFile.Size)
@@ -297,7 +405,6 @@ namespace WpfCopyApplication
                 {
                     if (file.Length == foundFile.Size && ComputeMD5Checksum(file.FullName) == foundFile.Hash) return true;
                 }
-
                 return false;
             }
             else
