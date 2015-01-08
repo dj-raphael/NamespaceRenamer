@@ -49,7 +49,7 @@ namespace WpfCopyApplication
             set { SetValue(NewNamespaceProperty, value); }
         }
         public Command Add { get; set; }
-        public MainModel(PageAppearanceSection section, ReplaceContext db)
+        public MainModel(PageAppearanceSection section)
         {
             var DefaultData = ConfigurationHelper.ReturnKeys();
             OldNamespace = DefaultData.SourceNamespace;
@@ -59,33 +59,38 @@ namespace WpfCopyApplication
             Add = new Command(AddItem);
 
             var replaceCollection = new ObservableCollection<ReplaceItem>();
-            if(!db.ReplaceRequests.Any())
+            using (ReplaceContext db = new ReplaceContext())
             {
-                replaceCollection.Add(new ReplaceItem()
+                db.Database.Initialize(true);
+                if (!db.ReplaceRequests.Any())
                 {
-                    SourceDir = DefaultData.SourceDirectory,
-                    TargetDir = DefaultData.TargetDirectory,
-                    OldNamespace = DefaultData.SourceNamespace,
-                    NewNamespace = DefaultData.TargetNamespace,
-                    Delete = new Command(Delete)
-                });
-            }
-            else
-            {
-                foreach (var row in db.ReplaceRequests)
-                {
-                    ReplaceItem newItem =
-                    new ReplaceItem()
+                    replaceCollection.Add(new ReplaceItem()
                     {
-                        SourceDir = row.SourceDir,
-                        TargetDir = row.BackupDir,
-                        OldNamespace = row.OldNamespace,
-                        NewNamespace = row.NewNamespace,
+                        SourceDir = DefaultData.SourceDirectory,
+                        TargetDir = DefaultData.TargetDirectory,
+                        OldNamespace = DefaultData.SourceNamespace,
+                        NewNamespace = DefaultData.TargetNamespace,
                         Delete = new Command(Delete)
-                    };
-                    replaceCollection.Add(newItem);
+                    });
                 }
-            }          
+                else
+                {
+                    foreach (var row in db.ReplaceRequests)
+                    {
+                        ReplaceItem newItem =
+                        new ReplaceItem()
+                        {
+                            SourceDir = row.SourceDir,
+                            TargetDir = row.BackupDir,
+                            OldNamespace = row.OldNamespace,
+                            NewNamespace = row.NewNamespace,
+                            Delete = new Command(Delete)
+                        };
+                        replaceCollection.Add(newItem);
+                    }
+                }
+            }
+                      
             CollectionReplaceItems = replaceCollection;
         }
 

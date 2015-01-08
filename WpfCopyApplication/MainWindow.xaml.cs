@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms.VisualStyles;
@@ -18,27 +20,46 @@ namespace WpfCopyApplication
 {
     public partial class MainWindow : Window
     {
-        private ReplaceContext db = new ReplaceContext();
+        
 
         public MainWindow()
         {
-            db.Database.Initialize(true);
             InitializeComponent();
-            this.Model = new MainModel(PageAppearanceSection.GetConfiguration(), db);
+            this.Model = new MainModel(PageAppearanceSection.GetConfiguration());
             DataContext = Model;
         }
 
         public MainModel Model { get; set; }
         public IEnumerable<Conflict> TempConflicts { get; set; }
 
+        private async void Start_Click1(object sender, RoutedEventArgs e)
+        {
+            var l = new ObservableCollection<Conflict>();
+            ListBox.ItemsSource = l;
+            for (int i = 0; i < 1000; i++)
+            {
+
+                l.Add(new Conflict()
+                {
+                    Message = i.ToString()
+                });
+                await Task.Delay(100);
+            }
+        }
         private async void Start_Click(object sender, RoutedEventArgs e)
         {
-            if (db.Database.Exists()) db.ReplaceRequests.RemoveRange(db.ReplaceRequests);
-
+            using (ReplaceContext context = new ReplaceContext())
+            {
+                //переделать, чтобы удаляло все сразу
+                if (context.Database.Exists()) context.ReplaceRequests.RemoveRange(context.ReplaceRequests);
+            }
+            
             var ignoreList = PageAppearanceSection.GetConfiguration().IgnoreList.OfType<Add>().ToList();
+            //var ignoreInnerReplacingList = PageAppearanceSection.GetConfiguration().IgnoreInnerReplacingList.OfType<Add>().Select(t => t.Value).ToList();
             var ignoreInnerReplacingList = PageAppearanceSection.GetConfiguration().IgnoreInnerReplacingList.OfType<Add>().ToList();
 
-            var x = new ReplaceNamespace(db);
+            var x = new ReplaceNamespace();
+            ListBox.ItemsSource = x.ConfList;
 
             foreach (var item in Model.CollectionReplaceItems)
             {
@@ -66,7 +87,6 @@ namespace WpfCopyApplication
                     BackupDir = item.TargetDir,
                     SourceDir = item.SourceDir
                 });
-
                 if (x.ConflictList.Any() && x.ConflictList.Last().MessageType != Types.delimiter)
                     x.ConflictList.Add(new Conflict()
                     {
@@ -76,8 +96,7 @@ namespace WpfCopyApplication
                         TargetPath = null
                     });
             }
-            ListBox.ItemsSource = x.ConfList;
-            TempConflicts = x.ConflictList;
+            //TempConflicts = x.ConflictList;
             //            Log.ItemsSource = ReplaceNamespace.Log;
 
         }
@@ -111,14 +130,17 @@ namespace WpfCopyApplication
         private void ListBoxItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             ListBoxItem item = sender as ListBoxItem;
+            if (((Conflict) item.Content).MessageType == Types.conflict)
+            {
+                ProcessStartInfo pInfo = new ProcessStartInfo("TortoiseMerge.exe");
+                pInfo.WorkingDirectory = @"C:\Program Files\TortoiseSVN\bin";
+                pInfo.Arguments = "\"" + ((Conflict)item.Content).SourcePath + "\"" + " " + "\"" +
+                                  ((Conflict)item.Content).TargetPath + "\"" + " \\TortoiseMerge ";
+                Process p = Process.Start(pInfo);
 
-            ProcessStartInfo pInfo = new ProcessStartInfo("TortoiseMerge.exe");
-            pInfo.WorkingDirectory = @"C:\Program Files\TortoiseSVN\bin";
-            pInfo.Arguments = "\"" + ((Conflict) item.Content).SourcePath + "\"" + " " + "\"" +
-                              ((Conflict) item.Content).TargetPath + "\"" + " \\TortoiseMerge ";
-            Process p = Process.Start(pInfo);
-
-            p.WaitForExit();
+                p.WaitForExit();
+            }
+            
 
 
             //            if (((Conflict) item.Content).MessageType == Types.conflict)
