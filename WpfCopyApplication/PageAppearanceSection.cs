@@ -85,6 +85,15 @@ namespace WpfCopyApplication
             }
         }
 
+        [ConfigurationProperty("needUpdateList", IsDefaultCollection = false, IsRequired = true)]
+        public IgnoreCollection needUpdateList
+        {
+            get
+            {
+                return (IgnoreCollection)base["needUpdateList"];
+            }
+        }
+
         [ConfigurationCollection(typeof(Add), AddItemName = "add")]
         public class IgnoreCollection : ConfigurationElementCollection
         {

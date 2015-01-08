@@ -86,6 +86,7 @@
     <Compile Include="Model\ReplaceContext.cs" />
     <Compile Include="Model\ReplaceRequestMap.cs" />
     <Compile Include="PageAppearanceSection.cs" />
+    <Compile Include="PathAndContent.cs" />
     <Compile Include="ReplaceNamespace.cs" />
     <Compile Include="Model\DataReplacementRepository.cs" />
     <Compile Include="MyUserControl.xaml.cs">
