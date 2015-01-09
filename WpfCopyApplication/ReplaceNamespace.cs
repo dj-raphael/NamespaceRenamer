@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Forms;
+using System.Windows.Forms.VisualStyles;
 using System.Windows.Media;
 using WpfCopyApplication.Model;
 
@@ -101,8 +102,25 @@ namespace WpfCopyApplication
         }
 
         //метод для обхода по всем файлам и заполнения updateListOfFiles
+        public async Task FillingList(string sourceDirName, List<Add> updateList)
+        {
+            DirectoryInfo sourceDir = new DirectoryInfo(sourceDirName);
+            DirectoryInfo[] dirs = sourceDir.GetDirectories();
+            List<FileInfo> files = sourceDir.GetFiles().ToList();
+            foreach (FileInfo file in files)
+            {
+                if (IsExistInList(file, updateList))
+                {
+                    updateListOfFiles.Add(new PathAndContent(){FullPath = file.FullName, Content = File.ReadAllText(file.FullName), Name = file.Name, Path = });
+                }
+            }
+            foreach (DirectoryInfo subdir in dirs)
+            {
+                await FillingList(subdir.FullName, updateList);
+            }
+        }
 
-        public async Task DirectoryCopy(string sourceDirName, string targetDirName, string newNamespace, string oldNamespace, List<Add> ignoreList, List<Add> ignoreInnerReplacingList, List<Add> updateList )
+        public async Task DirectoryCopy(string sourceDirName, string targetDirName, string newNamespace, string oldNamespace, List<Add> ignoreList, List<Add> ignoreInnerReplacingList)
         {
             // If the targetination directory doesn't exist, create it.
             if (!Directory.Exists(targetDirName))
@@ -192,6 +210,7 @@ namespace WpfCopyApplication
                     targetFiles = targetDir.GetFiles();
                     _repository.AddDataReplace(file, tempPath, ComputeMD5Checksum(file.FullName),
                         targetFiles.FirstOrDefault(x => x.Name == file.Name), ComputeMD5Checksum(tempPath));
+                    ReplaceLinks(tempPathSource, tempPath);
                 }
                 else
                 {
@@ -209,6 +228,7 @@ namespace WpfCopyApplication
                     targetFiles = targetDir.GetFiles();
                     _repository.AddDataReplace(file, tempPath, ComputeMD5Checksum(file.FullName),
                         targetFiles.FirstOrDefault(x => x.Name == file.Name), ComputeMD5Checksum(tempPath));
+                    ReplaceLinks(file.FullName, tempPath);
                 }
             }
 
@@ -217,7 +237,7 @@ namespace WpfCopyApplication
             foreach (DirectoryInfo subdir in dirs)
             {
                 string temppath = Path.Combine(targetDirName, subdir.Name.Replace(oldNamespace, newNamespace));
-                await DirectoryCopy(subdir.FullName, temppath, newNamespace, oldNamespace, ignoreList, ignoreInnerReplacingList, updateList);
+                await DirectoryCopy(subdir.FullName, temppath, newNamespace, oldNamespace, ignoreList, ignoreInnerReplacingList);
 
 //                if (subdir.GetFiles().Length != 0 && sourceDir.GetDirectories().Length != 0)
 //                {
@@ -238,9 +258,21 @@ namespace WpfCopyApplication
 
         }
 
+        private void ReplaceLinks(string sourcePath, string targetPath)
+        {
+            int position;
+            //пройтись по списку и найти где встречаются подобные ссылки
+            foreach (var file in updateListOfFiles)
+            {
+                file.Content.Contains(sourcePath.Replace(file.Path, ""));
+
+                file.Content.Contains(sourcePath.Remove(file.Path))
+
+            }
+        }
+
         private bool NotIgnorefile(IEnumerable<Add> ignoreList, FileInfo file)
         {
-            bool ignoreFile;
             foreach (var ignoreItem in ignoreList)
             {
 

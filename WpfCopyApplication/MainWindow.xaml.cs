@@ -42,6 +42,7 @@ namespace WpfCopyApplication
 
             foreach (var item in Model.CollectionReplaceItems)
             {
+                await x.FillingList(item.SourceDir, needUpdateList);
                 if (x.IsBlankFolder(item.TargetDir))
                 {
                     string messageBoxText = "The folder is not empty";
@@ -50,13 +51,11 @@ namespace WpfCopyApplication
                     System.Windows.Forms.MessageBoxIcon icon = MessageBoxIcon.Information;
                     DialogResult result = System.Windows.Forms.MessageBox.Show(messageBoxText, caption, button, icon);
                     if (result == System.Windows.Forms.DialogResult.Yes)
-                        await
-                            x.DirectoryCopy(item.SourceDir, item.TargetDir, item.NewNamespace, item.OldNamespace, ignoreList, ignoreInnerReplacingList, needUpdateList);
+                        await x.DirectoryCopy(item.SourceDir, item.TargetDir, item.NewNamespace, item.OldNamespace, ignoreList, ignoreInnerReplacingList);
                 }
                 else
                 {
-                    await
-                        x.DirectoryCopy(item.SourceDir, item.TargetDir, item.NewNamespace, item.OldNamespace, ignoreList, ignoreInnerReplacingList, needUpdateList);
+                    await x.DirectoryCopy(item.SourceDir, item.TargetDir, item.NewNamespace, item.OldNamespace, ignoreList, ignoreInnerReplacingList);
                 }
 
                 x.AddHistory(new ReplaceRequest()
