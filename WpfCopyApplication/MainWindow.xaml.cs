@@ -42,6 +42,13 @@ namespace WpfCopyApplication
 
             foreach (var item in Model.CollectionReplaceItems)
             {
+                x.AddHistory(new ReplaceRequest()
+                {
+                    NewNamespace = item.NewNamespace,
+                    OldNamespace = item.OldNamespace,
+                    BackupDir = item.TargetDir,
+                    SourceDir = item.SourceDir
+                });
                 await x.FillingList(item.SourceDir, needUpdateList);
                 if (x.IsBlankFolder(item.TargetDir))
                 {
@@ -58,13 +65,9 @@ namespace WpfCopyApplication
                     await x.DirectoryCopy(item.SourceDir, item.TargetDir, item.NewNamespace, item.OldNamespace, ignoreList, ignoreInnerReplacingList);
                 }
 
-                x.AddHistory(new ReplaceRequest()
-                {
-                    NewNamespace = item.NewNamespace,
-                    OldNamespace = item.OldNamespace,
-                    BackupDir = item.TargetDir,
-                    SourceDir = item.SourceDir
-                });
+                await x.SaveUpdateListOfFiles(item.OldNamespace, item.NewNamespace, item.SourceDir, item.TargetDir);
+
+
 
                 if (x.ConflictList.Any() && x.ConflictList.Last().MessageType != Types.delimiter)
                     x.ConflictList.Add(new Conflict()
