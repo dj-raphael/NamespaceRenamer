@@ -38,19 +38,30 @@ namespace WpfCopyApplication
             var ignoreList = PageAppearanceSection.GetConfiguration().IgnoreList.OfType<Add>().ToList();
             var ignoreInnerReplacingList = PageAppearanceSection.GetConfiguration().IgnoreInnerReplacingList.OfType<Add>().ToList();
             var needUpdateList = PageAppearanceSection.GetConfiguration().needUpdateList.OfType<Add>().ToList();
+            
             var x = new ReplaceNamespace(db);
+
 
             foreach (var item in Model.CollectionReplaceItems)
             {
-                x.AddHistory(new ReplaceRequest()
+
+                if (x.Source != "" && x.Target != "")
+                {
+                    x.Source = item.SourceDir;
+                    x.Target = item.TargetDir;
+                }
+                
+                    x.AddHistory(new ReplaceRequest()
                 {
                     NewNamespace = item.NewNamespace,
                     OldNamespace = item.OldNamespace,
                     BackupDir = item.TargetDir,
                     SourceDir = item.SourceDir
                 });
-                await x.FillingList(item.SourceDir, needUpdateList);
-                if (x.IsBlankFolder(item.TargetDir))
+                
+                    await x.FillingList(item.SourceDir, needUpdateList);
+                
+                    if (x.IsBlankFolder(item.TargetDir))
                 {
                     string messageBoxText = "The folder is not empty";
                     string caption = "";

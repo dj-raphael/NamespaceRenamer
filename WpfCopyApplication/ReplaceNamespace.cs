@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Configuration;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -23,8 +24,11 @@ namespace WpfCopyApplication
         private DataReplacementRepository _repository;
 
         public List<string> listIgnoreFiles = new List<string>();
-        public List<PathAndContent> updateListOfFiles = new List<PathAndContent>();   
-
+        public List<PathAndContent> updateListOfFiles = new List<PathAndContent>();
+        
+        public string Source;
+        public string Target;
+        
         public ReplaceNamespace(ReplaceContext context)
         {
             _repository = new DataReplacementRepository(context);
@@ -161,31 +165,6 @@ namespace WpfCopyApplication
                 files = await GetFilteredFiles(sourceDir.GetFiles(), targetFiles, targetDirName);
             }
             else files = sourceFiles;
-
-//            foreach (var itemInnerReplacing in ignoreInnerReplacingList)
-//            {
-//                var fileWithoutReplacing = sourceFiles.FirstOrDefault(g => g.Name == itemInnerReplacing);
-//
-//                if (fileWithoutReplacing != null)
-//                {
-//                    string tempPathSource = Path.Combine(sourceDirName, itemInnerReplacing);
-//                    string tempPathTarget = Path.Combine(targetDirName, itemInnerReplacing);
-//                    
-//                    ConflictList.Add(new Conflict()
-//                        {
-//                            MessageType = Types.adding,
-//                            Message = "File " + itemInnerReplacing + " has been added, because file exist in ignoreInnerCoping ",
-//                            SourcePath = tempPathSource,
-//                            TargetPath = tempPathTarget
-//                        });
-//
-//                    ReplaceInFile(tempPathSource, tempPathTarget, oldNamespace, newNamespace, false);
-//
-//                    targetFiles = targetDir.GetFiles();
-//                    _repository.AddDataReplace(fileWithoutReplacing, tempPathTarget, ComputeMD5Checksum(fileWithoutReplacing.FullName), targetFiles.FirstOrDefault(x => x.Name == itemInnerReplacing), ComputeMD5Checksum(tempPathTarget));
-//                    files.Remove(files.Find(q => q.Name == itemInnerReplacing));
-//                }
-//            }
             
             foreach (FileInfo file in files)
             {
@@ -217,7 +196,7 @@ namespace WpfCopyApplication
                     targetFiles = targetDir.GetFiles();
                     _repository.AddDataReplace(file, tempPath, ComputeMD5Checksum(file.FullName),
                         targetFiles.FirstOrDefault(x => x.Name == file.Name.Replace(oldNamespace, newNamespace)), ComputeMD5Checksum(tempPath));
-                    ReplaceLinks(tempPathSource, tempPath, oldNamespace, newNamespace);
+                    ReplaceLinks(tempPathSource, tempPath, newNamespace, oldNamespace);
                 }
                 else
                 {
@@ -235,7 +214,7 @@ namespace WpfCopyApplication
                     targetFiles = targetDir.GetFiles();
                     _repository.AddDataReplace(file, tempPath, ComputeMD5Checksum(file.FullName),
                         targetFiles.FirstOrDefault(x => x.Name == file.Name.Replace(oldNamespace, newNamespace)), ComputeMD5Checksum(tempPath));
-                    ReplaceLinks(file.FullName, tempPath, oldNamespace, newNamespace);
+                    ReplaceLinks(file.FullName, tempPath, newNamespace, oldNamespace);
                 }
             }
 
@@ -245,46 +224,78 @@ namespace WpfCopyApplication
             {
                 string temppath = Path.Combine(targetDirName, subdir.Name.Replace(oldNamespace, newNamespace));
                 await DirectoryCopy(subdir.FullName, temppath, newNamespace, oldNamespace, ignoreList, ignoreInnerReplacingList);
-
-//                if (subdir.GetFiles().Length != 0 && sourceDir.GetDirectories().Length != 0)
-//                {
-//                    await DirectoryCopy(subdir.FullName, temppath, newNamespace, oldNamespace, ignoreList, ignoreInnerReplacingList);
-//                }
-//                else
-//                {
-//                    // If the targetination directory doesn't exist, create it.
-//                    if (!Directory.Exists(targetDirName))
-//                    {
-//                        Directory.CreateDirectory(targetDirName);
-//                    }
-//
-//                    var check = subdir;
-//                }
             }
         }
 
-        private void ReplaceLinks(string sourcePath, string targetPath, string oldNamespace, string newNamespace)
+        private void ReplaceLinks(string sourcePath, string targetPath, string newNamespace, string oldNamespace)
         {
-            int position, count;
-            string pathToFile, relativeSourcePath, relativeTargetPath, targetFilePath;
+            string partBeforeConfig, relativeSourcePath, relativeTargetPath, targetFilePath;
+            string path1 = " ", path2 = "";
+            var paths = new List<string>();
+            var ConfigFolders = new List<string>();
+
             //пройтись по списку и найти где встречаются подобные ссылки
             foreach (var file in updateListOfFiles)
             {
-                if(sourcePath.LastIndexOf('\\') >= file.Path.LastIndexOf('\\'))
+                //Deleting inner Target and Source folders
+                sourcePath = sourcePath.Replace(Source + "\\", "");
+                targetPath = targetPath.Replace(Target + "\\", "");
+                file.Path = file.Path.Replace(Source + "\\", "");
+
+                //Get the part of Path before .config file.
+                int position = file.Path.LastIndexOf('\\');
+
+                if (position > 0)
                 {
-                    position = file.Path.LastIndexOf('\\');
-                    pathToFile = file.Path.Remove(position);
-                    count = pathToFile.Length + 1;
-                    relativeSourcePath = sourcePath.Remove(0, count);
+                    file.Path = file.Path.Remove(position + 1);
 
-                    targetFilePath = file.Path.Replace(oldNamespace, newNamespace);
-                    position = targetFilePath.LastIndexOf('\\');
-                    pathToFile = targetFilePath.Remove(position);
-                    count = pathToFile.Length + 1;
-                    relativeTargetPath = targetPath.Remove(0, count);
+                    int count1 = file.Path.IndexOf('\\');
+                    int count2 = sourcePath.IndexOf('\\');
 
-                    file.Content = file.Content.Replace(relativeSourcePath, relativeTargetPath);
-                }              
+                    if (count1 > 0 && count2 > 0)
+                    {
+                       path1 = file.Path.Remove(count1);
+                       path2 = sourcePath.Remove(count2);
+                    }
+
+                    while (count1 > 0 && count2 > 0 && path1 == path2)
+                    {
+                        file.Path = file.Path.Remove(0, count1);
+                        sourcePath = sourcePath.Remove(0, count2);
+
+                        if (path1 == path2)
+                        {
+                            targetPath = targetPath.Replace(path2.Replace(oldNamespace, newNamespace), "");
+                        }
+
+                        count1 = file.Path.IndexOf('\\');
+                        count2 = sourcePath.IndexOf('\\');
+
+                        if (count1 > 0 && count2 > 0)
+                        {
+                            path1 = file.Path.Remove(count1);
+                            path2 = sourcePath.Remove(count2);                            
+                        }
+                    }
+                }
+               
+                
+
+//                if(sourcePath.LastIndexOf('\\') >= file.Path.LastIndexOf('\\'))
+//                {
+//                    position = file.Path.LastIndexOf('\\');
+//                    pathToFile = file.Path.Remove(position);
+//                    count = pathToFile.Length + 1;
+//                    relativeSourcePath = sourcePath.Remove(0, count);
+//
+//                    targetFilePath = file.Path.Replace(oldNamespace, newNamespace);
+//                    position = targetFilePath.LastIndexOf('\\');
+//                    pathToFile = targetFilePath.Remove(position);
+//                    count = pathToFile.Length + 1;
+//                    relativeTargetPath = targetPath.Remove(0, count);
+//
+//                    file.Content = file.Content.Replace(relativeSourcePath, relativeTargetPath);
+//                }              
             }
         }
 
