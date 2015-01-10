@@ -40,8 +40,24 @@ namespace WpfCopyApplication
             var needUpdateList = PageAppearanceSection.GetConfiguration().needUpdateList.OfType<Add>().ToList();
             var x = new ReplaceNamespace(db);
 
+
+
             foreach (var item in Model.CollectionReplaceItems)
             {
+                if (x.source != "" && x.target != "")
+                {
+                    x.source = item.SourceDir;
+                    x.target = item.TargetDir;                    
+                }
+
+                x.AddHistory(new ReplaceRequest()
+                {
+                    NewNamespace = item.NewNamespace,
+                    OldNamespace = item.OldNamespace,
+                    BackupDir = item.TargetDir,
+                    SourceDir = item.SourceDir
+                });
+
                 await x.FillingList(item.SourceDir, needUpdateList);
                 if (x.IsBlankFolder(item.TargetDir))
                 {
@@ -58,13 +74,7 @@ namespace WpfCopyApplication
                     await x.DirectoryCopy(item.SourceDir, item.TargetDir, item.NewNamespace, item.OldNamespace, ignoreList, ignoreInnerReplacingList);
                 }
 
-                x.AddHistory(new ReplaceRequest()
-                {
-                    NewNamespace = item.NewNamespace,
-                    OldNamespace = item.OldNamespace,
-                    BackupDir = item.TargetDir,
-                    SourceDir = item.SourceDir
-                });
+
 
                 if (x.ConflictList.Any() && x.ConflictList.Last().MessageType != Types.delimiter)
                     x.ConflictList.Add(new Conflict()

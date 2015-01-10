@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -19,6 +20,7 @@ namespace WpfCopyApplication
 {
     public class ReplaceNamespace
     {
+        public string source, target;
         public List<Conflict> ConflictList = new List<Conflict>();
         public IEnumerable<Conflict> ConfList {get { return ConflictList; }} 
         private DataReplacementRepository _repository;
@@ -36,6 +38,7 @@ namespace WpfCopyApplication
 
             FileInfo sourceFile = new FileInfo(sourcePath);
             FileInfo targetFile = new FileInfo(targetPath);
+
             var atr = sourceFile.Attributes;
             String strFile = File.ReadAllText(sourcePath);
 
@@ -110,8 +113,12 @@ namespace WpfCopyApplication
             foreach (FileInfo file in files)
             {
                 if (IsExistInList(file, updateList))
-                {
-                    updateListOfFiles.Add(new PathAndContent(){FullPath = file.FullName, Content = File.ReadAllText(file.FullName), Name = file.Name, Path = });
+                { 
+                   var ourPath = file.FullName.Replace(file.Name,"");
+                   ourPath =  ourPath.Replace(source,"");
+                   ourPath = ourPath.Replace("\\", @"\");
+
+                   updateListOfFiles.Add(new PathAndContent() { FullPath = file.FullName, Content = File.ReadAllText(file.FullName), Name = file.Name, Path = ourPath });
                 }
             }
             foreach (DirectoryInfo subdir in dirs)
@@ -154,31 +161,6 @@ namespace WpfCopyApplication
                 files = await GetFilteredFiles(sourceDir.GetFiles(), targetFiles, targetDirName);
             }
             else files = sourceFiles;
-
-//            foreach (var itemInnerReplacing in ignoreInnerReplacingList)
-//            {
-//                var fileWithoutReplacing = sourceFiles.FirstOrDefault(g => g.Name == itemInnerReplacing);
-//
-//                if (fileWithoutReplacing != null)
-//                {
-//                    string tempPathSource = Path.Combine(sourceDirName, itemInnerReplacing);
-//                    string tempPathTarget = Path.Combine(targetDirName, itemInnerReplacing);
-//                    
-//                    ConflictList.Add(new Conflict()
-//                        {
-//                            MessageType = Types.adding,
-//                            Message = "File " + itemInnerReplacing + " has been added, because file exist in ignoreInnerCoping ",
-//                            SourcePath = tempPathSource,
-//                            TargetPath = tempPathTarget
-//                        });
-//
-//                    ReplaceInFile(tempPathSource, tempPathTarget, oldNamespace, newNamespace, false);
-//
-//                    targetFiles = targetDir.GetFiles();
-//                    _repository.AddDataReplace(fileWithoutReplacing, tempPathTarget, ComputeMD5Checksum(fileWithoutReplacing.FullName), targetFiles.FirstOrDefault(x => x.Name == itemInnerReplacing), ComputeMD5Checksum(tempPathTarget));
-//                    files.Remove(files.Find(q => q.Name == itemInnerReplacing));
-//                }
-//            }
             
             foreach (FileInfo file in files)
             {
@@ -239,20 +221,6 @@ namespace WpfCopyApplication
                 string temppath = Path.Combine(targetDirName, subdir.Name.Replace(oldNamespace, newNamespace));
                 await DirectoryCopy(subdir.FullName, temppath, newNamespace, oldNamespace, ignoreList, ignoreInnerReplacingList);
 
-//                if (subdir.GetFiles().Length != 0 && sourceDir.GetDirectories().Length != 0)
-//                {
-//                    await DirectoryCopy(subdir.FullName, temppath, newNamespace, oldNamespace, ignoreList, ignoreInnerReplacingList);
-//                }
-//                else
-//                {
-//                    // If the targetination directory doesn't exist, create it.
-//                    if (!Directory.Exists(targetDirName))
-//                    {
-//                        Directory.CreateDirectory(targetDirName);
-//                    }
-//
-//                    var check = subdir;
-//                }
             }
 
 
@@ -260,15 +228,25 @@ namespace WpfCopyApplication
 
         private void ReplaceLinks(string sourcePath, string targetPath)
         {
-            int position;
-            //пройтись по списку и найти где встречаются подобные ссылки
+            //пройтись по списку, найти и заменить встречающиеся ссылки
             foreach (var file in updateListOfFiles)
             {
-                file.Content.Contains(sourcePath.Replace(file.Path, ""));
+                string  rapist = sourcePath.Replace(source, "");
+                        rapist = rapist.Replace(file.Path, "");
+                        rapist = rapist.Replace("\\", @"\");
 
-                file.Content.Contains(sourcePath.Remove(file.Path))
+                string  victim = targetPath.Replace(target, "");
+                        victim = victim.Replace(file.Path, "");
+                        victim = victim.Replace("\\", @"\");
 
+                file.Content = file.Content.Replace(rapist, victim);
+
+                if (rapist != victim)
+                {
+                    var changed_file = file.Content;
+                }
             }
+
         }
 
         private bool NotIgnorefile(IEnumerable<Add> ignoreList, FileInfo file)
