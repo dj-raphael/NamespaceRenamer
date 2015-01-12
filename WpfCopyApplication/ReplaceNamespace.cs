@@ -127,6 +127,14 @@ namespace WpfCopyApplication
         {
             foreach (var file in updateListOfFiles)
             {
+                if (file.Path.Substring(file.Path.LastIndexOf('.'), 4) == ".sln")
+                {
+                    Regex nameOfProject = new Regex(@"\s*=\s*(\""([^\""]*)\"")");
+                    for (Match match = nameOfProject.Match(file.Content); match.Success; match = match.NextMatch())
+                    {
+                        file.Content = file.Content.Replace(match.Value, match.Value.Replace(oldNamespace, newNamespace));
+                    }
+                }
                 File.WriteAllText(file.Path.Replace(oldNamespace, newNamespace).Replace(source, target), file.Content, GetFileEncoding(file.Path));
             }
         }
