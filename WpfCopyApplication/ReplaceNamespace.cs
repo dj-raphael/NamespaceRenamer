@@ -238,48 +238,59 @@ namespace WpfCopyApplication
             foreach (var file in updateListOfFiles)
             {
                 //Deleting inner Target and Source folders
-                sourcePath = sourcePath.Replace(Source + "\\", "");
-                targetPath = targetPath.Replace(Target + "\\", "");
-                file.Path = file.Path.Replace(Source + "\\", "");
+                var sourcePathWork = sourcePath.Replace(Source + "\\", "");
+                var targetPathWork = targetPath.Replace(Target + "\\", "");
+                string filePath = file.Path;
+                filePath = filePath.Replace(Source + "\\", "");
 
                 //Get the part of Path before .config file.
-                int position = file.Path.LastIndexOf('\\');
+                int position = filePath.LastIndexOf('\\');
 
                 if (position > 0)
                 {
-                    file.Path = file.Path.Remove(position + 1);
-
-                    int count1 = file.Path.IndexOf('\\');
-                    int count2 = sourcePath.IndexOf('\\');
+                    filePath = position + 1 < filePath.Length ? filePath.Remove(position + 1) : "";
+                    
+                    int count1 = filePath.IndexOf('\\');
+                    int count2 = sourcePathWork.IndexOf('\\');
 
                     if (count1 > 0 && count2 > 0)
                     {
-                       path1 = file.Path.Remove(count1);
-                       path2 = sourcePath.Remove(count2);
+                        path1 = count1 + 1 < filePath.Length ? filePath.Remove(count1 + 1) : "";
+                        path2 = count2 + 1 < sourcePathWork.Length ? sourcePathWork.Remove(count2 + 1) : "";
                     }
 
-                    while (count1 > 0 && count2 > 0 && path1 == path2)
+                    while (count1 > 0 && count2 > 0 && path1 == path2 && path1 != "")
                     {
-                        file.Path = file.Path.Remove(0, count1);
-                        sourcePath = sourcePath.Remove(0, count2);
+                        filePath = filePath.Remove(0, count1 + 1);
+                        sourcePathWork = sourcePathWork.Remove(0, count2 + 1);
 
-                        if (path1 == path2)
+                        if (path1 == path2 && path1 != "")
                         {
-                            targetPath = targetPath.Replace(path2.Replace(oldNamespace, newNamespace), "");
+                            targetPathWork = targetPathWork.Replace(path2.Replace(oldNamespace, newNamespace), "");
                         }
 
-                        count1 = file.Path.IndexOf('\\');
-                        count2 = sourcePath.IndexOf('\\');
+                        count1 = filePath.IndexOf('\\');
+
+                        count2 = sourcePathWork.IndexOf('\\');
 
                         if (count1 > 0 && count2 > 0)
                         {
-                            path1 = file.Path.Remove(count1);
-                            path2 = sourcePath.Remove(count2);                            
+                            path1 = count1 + 1 < filePath.Length ? filePath.Remove(count1 + 1) : "";
+                            path2 = count2 + 1 < sourcePathWork.Length ? sourcePathWork.Remove(count2 + 1) : "";
                         }
                     }
+
+                    if (sourcePathWork != targetPathWork)
+                    {
+                        file.Content = file.Content.Replace(sourcePathWork, targetPathWork);
+                    }
+
                 }
-               
-                
+
+                if (sourcePathWork != targetPathWork)
+                {
+                    file.Content = file.Content.Replace(sourcePathWork, targetPathWork);
+                }
 
 //                if(sourcePath.LastIndexOf('\\') >= file.Path.LastIndexOf('\\'))
 //                {
@@ -294,8 +305,9 @@ namespace WpfCopyApplication
 //                    count = pathToFile.Length + 1;
 //                    relativeTargetPath = targetPath.Remove(0, count);
 //
-//                    file.Content = file.Content.Replace(relativeSourcePath, relativeTargetPath);
-//                }              
+//                    
+//                }       
+       
             }
         }
 
