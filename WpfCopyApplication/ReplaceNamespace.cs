@@ -134,6 +134,11 @@ namespace WpfCopyApplication
                     {
                         file.Content = file.Content.Replace(match.Value, match.Value.Replace(oldNamespace, newNamespace));
                     }
+                    Regex virtualFolder = new Regex(@"(\s*[=]\s*\""\w*\""\,\s\""\w*\"")");
+                    for (Match match = virtualFolder.Match(file.Content); match.Success; match = match.NextMatch())
+                    {
+                        file.Content = file.Content.Replace(match.Value, match.Value.Replace(oldNamespace, newNamespace));
+                    }
                 }
                 File.WriteAllText(file.Path.Replace(oldNamespace, newNamespace).Replace(source, target), file.Content, GetFileEncoding(file.Path));
             }
@@ -238,7 +243,7 @@ namespace WpfCopyApplication
         private void ReplaceLinks(string sourcePath, string targetPath, string newNamespace, string oldNamespace)
         {
             string partBeforeConfig, relativeSourcePath, relativeTargetPath, targetFilePath;
-            string path1 = " ", path2 = "";
+            string path1 = "", path2 = "";
             var paths = new List<string>();
             var ConfigFolders = new List<string>();
 
@@ -248,6 +253,7 @@ namespace WpfCopyApplication
                 //Deleting inner Target and Source folders
                 var sourcePathWork = sourcePath.Replace(Source + "\\", "");
                 var targetPathWork = targetPath.Replace(Target + "\\", "");
+
                 string filePath = file.Path;
                 filePath = filePath.Replace(Source + "\\", "");
 
@@ -256,7 +262,7 @@ namespace WpfCopyApplication
 
                 if (position > 0)
                 {
-                    filePath = position + 1 < filePath.Length ? filePath.Remove(position + 1) : "";
+//                    filePath = position + 1 < filePath.Length ? filePath.Remove(position + 1) : "";
                     
                     int count1 = filePath.IndexOf('\\');
                     int count2 = sourcePathWork.IndexOf('\\');
@@ -278,8 +284,9 @@ namespace WpfCopyApplication
                         }
 
                         count1 = filePath.IndexOf('\\');
-
                         count2 = sourcePathWork.IndexOf('\\');
+
+                        
 
                         if (count1 > 0 && count2 > 0)
                         {
@@ -294,6 +301,8 @@ namespace WpfCopyApplication
                     }
 
                 }
+
+
 
                 if (sourcePathWork != targetPathWork)
                 {
