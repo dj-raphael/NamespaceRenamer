@@ -179,3 +179,5 @@ FakesAssemblies/
 /AsyncTest.Wpf/bin
 /AsyncTest.Wpf/obj
 /packages
+WpfCopyApplication/bin/Debug/WpfCopyApplication.vshost.exe
+WpfCopyApplication/bin/Debug/WpfCopyApplication.vshost.exe

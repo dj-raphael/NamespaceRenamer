@@ -46,10 +46,6 @@
     <Reference Include="Gat.Controls.OpenDialog">
       <HintPath>..\packages\OpenDialog.1.1.1\lib\net45\Gat.Controls.OpenDialog.dll</HintPath>
     </Reference>
-    <Reference Include="NamespaceRenamer, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>App_Data\NamespaceRenamer.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
@@ -143,6 +139,12 @@
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NamespaceDLL\NamespaceRenamer\NamespaceRenamer\NamespaceRenamer.csproj">
+      <Project>{0120f4ac-a80b-4890-988b-ef13f0a5c03c}</Project>
+      <Name>NamespaceRenamer</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

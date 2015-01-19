@@ -4,17 +4,17 @@
 winexe
 C#
 .cs
-C:\Projects\WpfCopyApplication\WpfCopyApplication\obj\Debug\
+C:\Projects\NamespaceRenamer\WpfCopyApplication\obj\Debug\
 WpfCopyApplication
 none
 false
 DEBUG;TRACE
-C:\Projects\WpfCopyApplication\WpfCopyApplication\App.xaml
+C:\Projects\NamespaceRenamer\WpfCopyApplication\App.xaml
 2-1595606379
 
-13-1754097812
-24-405271313
+13-950668480
+21-1260411806
 MainWindow.xaml;MyUserControl.xaml;
 
-False
+True
 
