@@ -14,7 +14,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using WpfCopyApplication.Model;
 using UserControl = System.Windows.Controls.UserControl;
 
 namespace WpfCopyApplication

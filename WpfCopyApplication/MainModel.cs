@@ -6,7 +6,7 @@ using System.Windows;
 using System.Windows.Forms.VisualStyles;
 using System.Windows.Input;
 using System.Windows.Media;
-using WpfCopyApplication.Model;
+using NamespaceRenamer;
 
 namespace WpfCopyApplication
 {
@@ -49,38 +49,38 @@ namespace WpfCopyApplication
             set { SetValue(NewNamespaceProperty, value); }
         }
         public Command Add { get; set; }
-        public MainModel(PageAppearanceSection section, ReplaceContext db)
+        public MainModel(Renamer rename)
         {
-            var DefaultData = ConfigurationHelper.ReturnKeys();
-            OldNamespace = DefaultData.SourceNamespace;
-            NewNamespace = DefaultData.TargetNamespace;
-            SourceDir = DefaultData.SourceDirectory;
-            BackupDir = DefaultData.TargetDirectory;
+            OldNamespace = "";
+            NewNamespace = "";
+            SourceDir = "";
+            BackupDir = "";
             Add = new Command(AddItem);
 
             var replaceCollection = new ObservableCollection<ReplaceItem>();
-            if(!db.ReplaceRequests.Any())
+            //если config файл не существует...
+            if(!rename.projectsList.Any())
             {
                 replaceCollection.Add(new ReplaceItem()
                 {
-                    SourceDir = DefaultData.SourceDirectory,
-                    TargetDir = DefaultData.TargetDirectory,
-                    OldNamespace = DefaultData.SourceNamespace,
-                    NewNamespace = DefaultData.TargetNamespace,
+                    SourceDir = "",
+                    TargetDir = "",
+                    OldNamespace = "",
+                    NewNamespace = "",
                     Delete = new Command(Delete)
                 });
             }
             else
             {
-                foreach (var row in db.ReplaceRequests)
+                foreach (var val in rename.projectsList)
                 {
                     ReplaceItem newItem =
                     new ReplaceItem()
                     {
-                        SourceDir = row.SourceDir,
-                        TargetDir = row.BackupDir,
-                        OldNamespace = row.OldNamespace,
-                        NewNamespace = row.NewNamespace,
+                        SourceDir = val.SourceDirectory,
+                        TargetDir = val.TargetDirectory,
+                        OldNamespace = val.SourceNamespace,
+                        NewNamespace = val.TargetNamespace,
                         Delete = new Command(Delete)
                     };
                     replaceCollection.Add(newItem);

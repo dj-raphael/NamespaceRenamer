@@ -17,7 +17,7 @@ using System.Windows;
 //}
 
     
-namespace WpfCopyApplication.Model
+namespace WpfCopyApplication
 {
     public class ReplaceItem: DependencyObject
     {

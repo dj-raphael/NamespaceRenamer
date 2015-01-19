@@ -11,20 +11,23 @@ using System.Windows.Forms.VisualStyles;
 using System.Windows.Media;
 using Microsoft.Win32;
 using System.Windows.Input;
-using WpfCopyApplication.Model;
+using NamespaceRenamer.Model;
 using System.Windows.Forms;
+using NamespaceRenamer;
 
 namespace WpfCopyApplication
 {
     public partial class MainWindow : Window
     {
         private ReplaceContext db = new ReplaceContext();
-
+        private Renamer rename;
         public MainWindow()
         {
+            rename = new Renamer(db);
             db.Database.Initialize(true);
             InitializeComponent();
-            this.Model = new MainModel(PageAppearanceSection.GetConfiguration(), db);
+            rename.ReadXml("");
+            this.Model = new MainModel(rename);
             DataContext = Model;
         }
 
@@ -33,35 +36,23 @@ namespace WpfCopyApplication
 
         private async void Start_Click(object sender, RoutedEventArgs e)
         {
-            if (db.Database.Exists()) db.ReplaceRequests.RemoveRange(db.ReplaceRequests);
-
-            var ignoreList = PageAppearanceSection.GetConfiguration().IgnoreList.OfType<Add>().ToList();
-            var ignoreInnerReplacingList = PageAppearanceSection.GetConfiguration().IgnoreInnerReplacingList.OfType<Add>().ToList();
-            var needUpdateList = PageAppearanceSection.GetConfiguration().needUpdateList.OfType<Add>().ToList();
-            
-            var x = new ReplaceNamespace(db);
-
+            var ignoreList = rename.ignoreFilesList;
+            var mandatoryList = rename.mandatoryList;
+            var needUpdateList = rename.needUpdateList;
 
             foreach (var item in Model.CollectionReplaceItems)
             {
-
-                if (x.Source != "" && x.Target != "")
+                rename.projectsList.Add(new ProjectReplaceData()
                 {
-                    x.Source = item.SourceDir;
-                    x.Target = item.TargetDir;
-                }
-                
-                    x.AddHistory(new ReplaceRequest()
-                {
-                    NewNamespace = item.NewNamespace,
-                    OldNamespace = item.OldNamespace,
-                    BackupDir = item.TargetDir,
-                    SourceDir = item.SourceDir
+                    SourceDirectory = item.SourceDir,
+                    SourceNamespace = item.OldNamespace,
+                    TargetDirectory = item.TargetDir,
+                    TargetNamespace = item.NewNamespace
                 });
+                rename.AddToXMLConfig();
+                    await rename.FillingList(item.SourceDir, needUpdateList);
                 
-                    await x.FillingList(item.SourceDir, needUpdateList);
-                
-                    if (x.IsBlankFolder(item.TargetDir))
+                if (rename.IsBlankFolder(item.TargetDir))
                 {
                     string messageBoxText = "The folder is not empty";
                     string caption = "";
@@ -69,19 +60,19 @@ namespace WpfCopyApplication
                     System.Windows.Forms.MessageBoxIcon icon = MessageBoxIcon.Information;
                     DialogResult result = System.Windows.Forms.MessageBox.Show(messageBoxText, caption, button, icon);
                     if (result == System.Windows.Forms.DialogResult.Yes)
-                        await x.DirectoryCopy(item.SourceDir, item.TargetDir, item.NewNamespace, item.OldNamespace, ignoreList, ignoreInnerReplacingList);
+                        await rename.DirectoryCopy(item.SourceDir, item.TargetDir, item.NewNamespace, item.OldNamespace, ignoreList, mandatoryList, true);
                 }
                 else
                 {
-                    await x.DirectoryCopy(item.SourceDir, item.TargetDir, item.NewNamespace, item.OldNamespace, ignoreList, ignoreInnerReplacingList);
+                    await rename.DirectoryCopy(item.SourceDir, item.TargetDir, item.NewNamespace, item.OldNamespace, ignoreList, mandatoryList, true);
                 }
 
-                await x.SaveUpdateListOfFiles(item.OldNamespace, item.NewNamespace, item.SourceDir, item.TargetDir);
+                await rename.SaveUpdateListOfFiles(item.OldNamespace, item.NewNamespace, item.SourceDir, item.TargetDir);
 
 
 
-                if (x.ConflictList.Any() && x.ConflictList.Last().MessageType != Types.delimiter)
-                    x.ConflictList.Add(new Conflict()
+                if (rename.ConflictList.Any() && rename.ConflictList.Last().MessageType != Types.delimiter)
+                    rename.ConflictList.Add(new Conflict()
                     {
                         MessageType = Types.adding,
                         Message = "End of the project",
@@ -89,8 +80,8 @@ namespace WpfCopyApplication
                         TargetPath = null
                     });
             }
-            ListBox.ItemsSource = x.ConfList;
-            TempConflicts = x.ConflictList;
+            ListBox.ItemsSource = rename.ConfList;
+            TempConflicts = rename.ConflictList;
             //            Log.ItemsSource = ReplaceNamespace.Log;
 
         }
@@ -103,14 +94,13 @@ namespace WpfCopyApplication
 
         private void AddButton_Click(object sender, RoutedEventArgs routedEventArgs)
         {
-            var DefaultData = ConfigurationHelper.ReturnKeys();
             ReplaceItem newItem =
                 new ReplaceItem()
                 {
-                    SourceDir = DefaultData.SourceDirectory,
-                    TargetDir = DefaultData.TargetDirectory,
-                    OldNamespace = DefaultData.SourceNamespace,
-                    NewNamespace = DefaultData.TargetNamespace,
+                    SourceDir = "",
+                    TargetDir = "",
+                    OldNamespace = "",
+                    NewNamespace = "",
                     Delete = new Command(Model.Delete)
                 };
             Model.Add.Execute(newItem);

@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RenameData>
+  <projectsList>
+    <project sourceDirectory="C:\WPF\poject1" targetDirectory="C:\WPF\poject2" sourceNamespace="ITRetail" targetNamespace="Yumasoft" />
+    <project sourceDirectory="C:\WPF\poject1" targetDirectory="C:\WPF\poject2" sourceNamespace="ITRetail" targetNamespace="Yumasoft" />
+    <project sourceDirectory="C:\WPF\poject1" targetDirectory="C:\WPF\poject3" sourceNamespace="ITRetail" targetNamespace="Yumasoft" />
+  </projectsList>
+  <ignoreList>
+    <add value="\Bin\" isRegularExpression="False" />
+    <add value="\obj\" isRegularExpression="False" />
+    <add value="\.uSEr$" isRegularExpression="False" />
+    <add value="\.vspscc$" isRegularExpression="False" />
+    <add value="\.cashe$" isRegularExpression="False" />
+    <add value="\.vssscc$" isRegularExpression="False" />
+  </ignoreList>
+  <mandatoryList>
+    <add value="\.cs$" isRegularExpression="False" />
+  </mandatoryList>
+  <needUpdateList>
+    <add value="\.sln$" isRegularExpression="False" />
+    <add value="\.csproj$" isRegularExpression="False" />
+    <add value="\repositories.config$" isRegularExpression="False" />
+  </needUpdateList>
+</RenameData>
