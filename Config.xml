@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RenameData>
+  <property dataBase="C:\Projects\NamespaceRenamer\WpfCopyApplication\App_Data\data.sdf" />
+  <projectsList>
+    <project sourceDirectory="C:\WPF\Zevs" targetDirectory="C:\WPF\Zevs2" sourceNamespace="ITRetail" targetNamespace="Yumasoft" />
+    <project sourceDirectory="C:\WPF\Zevs" targetDirectory="C:\WPF\Zevs6" sourceNamespace="ITRetail" targetNamespace="Yumasoft" />
+    <project sourceDirectory="C:\WPF\Zevs" targetDirectory="C:\WPF\Zevs80" sourceNamespace="ITRetail2" targetNamespace="Yumasoft2" />
+    <project sourceDirectory="C:\WPF\Zevs" targetDirectory="C:\WPF\Zevs90" sourceNamespace="ITRetail2" targetNamespace="Yumasoft2" />
+    <project sourceDirectory="C:\WPF\Zevs" targetDirectory="C:\WPF\Zevs900" sourceNamespace="ITRetail2" targetNamespace="Yumasoft2" />
+  </projectsList>
+  <ignoreList>
+    <add value="\Bin\" isRegularExpression="False" />
+    <add value="\obj\" isRegularExpression="False" />
+    <add value="\.uSEr$" isRegularExpression="True" />
+    <add value="\.vspscc$" isRegularExpression="True" />
+    <add value="\.cashe$" isRegularExpression="True" />
+    <add value="\.vssscc$" isRegularExpression="True" />
+  </ignoreList>
+  <mandatoryList>
+    <add value="\.cs$" isRegularExpression="True" />
+  </mandatoryList>
+  <needUpdateList>
+    <add value="\.sln$" isRegularExpression="True" />
+    <add value="\.csproj$" isRegularExpression="True" />
+    <add value="\repositories.config$" isRegularExpression="True" />
+  </needUpdateList>
+</RenameData>

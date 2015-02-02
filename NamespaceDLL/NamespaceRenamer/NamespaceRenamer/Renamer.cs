@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Xml;
+using System.Windows.Forms;
 using NamespaceRenamer.Model;
 
 namespace NamespaceRenamer
@@ -19,11 +19,7 @@ namespace NamespaceRenamer
 
         public List<string> listIgnoreFiles = new List<string>();
         public List<PathAndContent> updateListOfFiles = new List<PathAndContent>();
-
-        public List<ProjectReplaceData> projectsList = new List<ProjectReplaceData>();
-        public List<ConfigFile> ignoreFilesList = new List<ConfigFile>();
-        public List<ConfigFile> mandatoryList = new List<ConfigFile>();
-        public List<ConfigFile> needUpdateList = new List<ConfigFile>();
+        public ConfigManager ConfigList = new ConfigManager();
 
         private string Source;
         private string Target;
@@ -31,13 +27,13 @@ namespace NamespaceRenamer
         public Renamer(ReplaceContext context)
         {
             _repository = new DataReplacementRepository(context);
-            if(!File.Exists(AppDomain.CurrentDomain.BaseDirectory.Substring(0,
-                    AppDomain.CurrentDomain.BaseDirectory.IndexOf("bin\\Debug\\")) + "Config.xml")) DefaultLists();
+            // if (!File.Exists("Config.xml")) ConfigList.DefaultLists();
         }
+
+        public Renamer() { }
 
         public void ReplaceInFile(string sourcePath, string targetPath, string oldNamespace, string newNamespace, bool NeedReplace)
         {
-
             FileInfo sourceFile = new FileInfo(sourcePath);
             FileInfo targetFile = new FileInfo(targetPath);
             var atr = sourceFile.Attributes;
@@ -50,7 +46,7 @@ namespace NamespaceRenamer
             }
             else
             {
-                File.Copy(sourcePath, targetPath);
+                File.Copy(sourcePath, targetPath, true);
             }
 
             targetFile.Attributes = atr;
@@ -136,11 +132,12 @@ namespace NamespaceRenamer
                         file.Content = file.Content.Replace(match.Value, match.Value.Replace(oldNamespace, newNamespace));
                     }
                 }
+
                 File.WriteAllText(file.Path.Replace(oldNamespace, newNamespace).Replace(source, target), file.Content, GetFileEncoding(file.Path));
             }
         }
 
-        public async Task DirectoryCopy(string sourceDirName, string targetDirName, string newNamespace, string oldNamespace, List<ConfigFile> ignoreList, List<ConfigFile> ignoreInnerReplacingList, bool FirstProcess)
+        public async Task DirectoryCopy(string sourceDirName, string targetDirName, string newNamespace, string oldNamespace, List<ConfigFile> ignoreList, List<ConfigFile> mandatoryList, bool FirstProcess)
         {
             // If the targetination directory doesn't exist, create it.
             if (!Directory.Exists(targetDirName))
@@ -193,22 +190,24 @@ namespace NamespaceRenamer
                         TargetPath = tempPath
                     });
                 }
-                else if (IsExistInList(file, ignoreInnerReplacingList))
+                else if (IsExistInList(file, mandatoryList))
                 {
                     string tempPathSource = Path.Combine(sourceDirName, file.Name);
 
                     ConflictList.Add(new Conflict()
                     {
                         MessageType = Types.adding,
-                        Message = "File " + file.Name + " has been added, because file exist in ignoreInnerCoping ",
+                        Message = "File " + file.Name + " has been added, because file exist in mandatoryList ",
                         SourcePath = tempPathSource,
                         TargetPath = tempPath
                     });
-                    //await Task.Delay(100);
+
                     ReplaceInFile(tempPathSource, tempPath, oldNamespace, newNamespace, false);
-                    targetFiles = targetDir.GetFiles();
-                    _repository.AddDataReplace(file, tempPath, ComputeMD5Checksum(file.FullName),
-                        targetFiles.FirstOrDefault(x => x.Name == file.Name.Replace(oldNamespace, newNamespace)), ComputeMD5Checksum(tempPath));
+                    
+                        targetFiles = targetDir.GetFiles();
+                        _repository.AddDataReplace(file, tempPath, ComputeMD5Checksum(file.FullName),
+                            targetFiles.FirstOrDefault(x => x.Name == file.Name.Replace(oldNamespace, newNamespace)), ComputeMD5Checksum(tempPath));
+                            
                     ReplaceLinks(tempPathSource, tempPath, newNamespace, oldNamespace);
                 }
                 else
@@ -221,33 +220,35 @@ namespace NamespaceRenamer
                             SourcePath = file.FullName,
                             TargetPath = tempPath
                         });
+
                     //добавить сообщение о переименовании файла file.Name.Replace(oldNamespace, newNamespace)
                     // file.CopyTo(tempPath, true);
                     ReplaceInFile(file.FullName, tempPath, oldNamespace, newNamespace, true);
-                    targetFiles = targetDir.GetFiles();
-                    _repository.AddDataReplace(file, tempPath, ComputeMD5Checksum(file.FullName),
-                        targetFiles.FirstOrDefault(x => x.Name == file.Name.Replace(oldNamespace, newNamespace)), ComputeMD5Checksum(tempPath));
+                    
+                        targetFiles = targetDir.GetFiles();
+                        _repository.AddDataReplace(file, tempPath, ComputeMD5Checksum(file.FullName),
+                            targetFiles.FirstOrDefault(x => x.Name == file.Name.Replace(oldNamespace, newNamespace)),
+                            ComputeMD5Checksum(tempPath));
+                    
                     ReplaceLinks(file.FullName, tempPath, newNamespace, oldNamespace);
                 }
             }
-
 
             // If copying subdirectories, copy them and their contents to new location.
             foreach (DirectoryInfo subdir in dirs)
             {
                 string temppath = Path.Combine(targetDirName, subdir.Name.Replace(oldNamespace, newNamespace));
-                await DirectoryCopy(subdir.FullName, temppath, newNamespace, oldNamespace, ignoreList, ignoreInnerReplacingList, false);
+                await DirectoryCopy(subdir.FullName, temppath, newNamespace, oldNamespace, ignoreList, mandatoryList, false);
             }
         }
 
         private void ReplaceLinks(string sourcePath, string targetPath, string newNamespace, string oldNamespace)
         {
-            string partBeforeConfig, relativeSourcePath, relativeTargetPath, targetFilePath;
             string path1 = "", path2 = "";
             var paths = new List<string>();
             var ConfigFolders = new List<string>();
 
-            //пройтись по списку и найти где встречаются подобные ссылки
+            // Пройтись по списку и найти где встречаются подобные ссылки
             foreach (var file in updateListOfFiles)
             {
                 //Deleting inner Target and Source folders
@@ -262,7 +263,7 @@ namespace NamespaceRenamer
 
                 if (position > 0)
                 {
-//                    filePath = position + 1 < filePath.Length ? filePath.Remove(position + 1) : "";
+                // filePath = position + 1 < filePath.Length ? filePath.Remove(position + 1) : "";
                     
                     int count1 = filePath.IndexOf('\\');
                     int count2 = sourcePathWork.IndexOf('\\');
@@ -297,14 +298,12 @@ namespace NamespaceRenamer
                     {
                         file.Content = file.Content.Replace(sourcePathWork, targetPathWork);
                     }
-
                 }
 
                 if (sourcePathWork != targetPathWork)
                 {
                     file.Content = file.Content.Replace(sourcePathWork, targetPathWork);
-                }      
-       
+                }        
             }
         }
 
@@ -312,8 +311,6 @@ namespace NamespaceRenamer
         {
             foreach (var ignoreItem in ignoreList)
             {
-
-
                 if (ignoreItem.IsRegularExpression)
                 {
                     Regex regex = new Regex(ignoreItem.XPath.ToLower());
@@ -416,6 +413,7 @@ namespace NamespaceRenamer
             return false;
             // return !Directory.EnumerateFileSystemEntries(targetDirName).Any();
         }
+
         private bool FileUpdated(FileInfo file, FileInfo targetFile)
         {
             if(_repository.GetFileByPaths(file.FullName, targetFile.FullName) == null) return false;
@@ -427,6 +425,7 @@ namespace NamespaceRenamer
             return true;
 
         }
+
         bool MergeFile(FileInfo file, FileInfo targetFile)
         {
             if (_repository.IsDbEmpty() && _repository.GetFileByPaths(file.FullName, targetFile.FullName) != null)
@@ -436,6 +435,7 @@ namespace NamespaceRenamer
             }
             return true;
         }
+
         public async Task<bool> NeedDelete(FileInfo file)
         {
             var FoundFile = await _repository.GetFileByTargetDirectory(file.FullName);
@@ -444,7 +444,7 @@ namespace NamespaceRenamer
             {
                 if (FoundFile.Hash == ComputeMD5Checksum(file.FullName))
                 {
-                    _repository.RemoveByHash(FoundFile.Hash);
+                    _repository.RemoveByHash(FoundFile.Hash, file.FullName);
 
                     return true;
                 }
@@ -452,6 +452,7 @@ namespace NamespaceRenamer
             }
             return false;
         }
+
         private string ComputeMD5Checksum(string path)
         {
             using (FileStream fs = System.IO.File.OpenRead(path))
@@ -464,6 +465,7 @@ namespace NamespaceRenamer
                 return result;
             }
         }
+
         bool Compare(bool isSourceFile, FileInfo file, DataReplacement foundFile)
         {
             if (isSourceFile)
@@ -492,172 +494,43 @@ namespace NamespaceRenamer
                 return false;
             }
         }
-        public void ReadXml(string configXmlPath)
+
+        public async void Process(ProjectReplaceData item)
         {
-            if (configXmlPath == "")
+            await FillingList(item.SourceDirectory, ConfigList.needUpdateList);
+
+            if (IsBlankFolder(item.TargetDirectory))
             {
-                configXmlPath = AppDomain.CurrentDomain.BaseDirectory.Substring(0, AppDomain.CurrentDomain.BaseDirectory.IndexOf("bin\\Debug\\")) + "Config.xml";               
+                string messageBoxText = "The folder is not empty";
+                string caption = "";
+                System.Windows.Forms.MessageBoxButtons button = MessageBoxButtons.YesNo;
+                System.Windows.Forms.MessageBoxIcon icon = MessageBoxIcon.Information;
+                DialogResult result = System.Windows.Forms.MessageBox.Show(messageBoxText, caption, button, icon);
+                if (result == System.Windows.Forms.DialogResult.Yes)
+                    await DirectoryCopy(item.SourceDirectory, item.TargetDirectory, item.TargetNamespace,
+                            item.SourceNamespace, ConfigList.ignoreFilesList, ConfigList.mandatoryList, true);
             }
-            if (File.Exists(configXmlPath))
+            else
             {
-                using (var reader = new XmlTextReader(configXmlPath))
+                await DirectoryCopy(item.SourceDirectory, item.TargetDirectory, item.TargetNamespace, item.SourceNamespace,
+                        ConfigList.ignoreFilesList, ConfigList.mandatoryList, true);
+            }
+
+            await SaveUpdateListOfFiles(item.SourceNamespace, item.TargetNamespace, item.SourceDirectory, item.TargetDirectory);
+
+            if (ConflictList.Any() && ConflictList.Last().MessageType != Types.delimiter)
+                ConflictList.Add(new Conflict()
                 {
-                    while (reader.Read())
-                    {
-                        if (reader.Name == "project")
-                        {
-                            reader.MoveToAttribute("sourceDirectory");
-                            string sourceDirectory = reader.Value;
-                            reader.MoveToAttribute("targetDirectory");
-                            string targetDirectory = reader.Value;
-                            reader.MoveToAttribute("sourceNamespace");
-                            string sourceNamespace = reader.Value;
-                            reader.MoveToAttribute("targetNamespace");
-                            string targetNamespace = reader.Value;
+                    MessageType = Types.adding,
+                    Message = "End of the project",
+                    SourcePath = null,
+                    TargetPath = null
+                });
 
-                            projectsList.Add(new ProjectReplaceData()
-                            {
-                                SourceDirectory = sourceDirectory,
-                                TargetDirectory = targetDirectory,
-                                SourceNamespace = sourceNamespace,
-                                TargetNamespace = targetNamespace
-                            });
-                        }
-
-                        if (reader.Name == "ignoreList") ReadList(reader);
-                        if (reader.Name == "mandatoryList") ReadList(reader);
-                        if (reader.Name == "needUpdateList") ReadList(reader);
-                    }
-                }
-            }
+            updateListOfFiles.Clear();
             
         }
 
-        public void ReadList(XmlTextReader reader)
-        {
-            string value = "";
-            bool isRegualarExpression = false;
-            reader.Read();
 
-            while (reader.Name != reader.Name)
-            {
-                if (reader.Name == "add")
-                {
-                    reader.MoveToElement();
-                    reader.MoveToAttribute("value");
-                    value = reader.Value;
-                    reader.MoveToAttribute("isRegularExpression");
-                    isRegualarExpression = reader.Value == "true";
-
-                    needUpdateList.Add(new ConfigFile()
-                    {
-                        XPath = value,
-                        IsRegularExpression = isRegualarExpression
-                    });
-                }
-
-                reader.Read();
-            }
-        } 
-
-        public void AddToXMLConfig()
-        {
-            string aplictionDirectory =
-                AppDomain.CurrentDomain.BaseDirectory.Substring(0,
-                    AppDomain.CurrentDomain.BaseDirectory.IndexOf("bin\\Debug\\")) + "Config.xml";
-            XmlTextWriter textWritter = new XmlTextWriter(aplictionDirectory, Encoding.UTF8);
-            textWritter.WriteStartDocument();
-            textWritter.WriteStartElement("RenameData");
-            textWritter.WriteEndElement();
-            textWritter.Close();
-
-            XmlDocument document = new XmlDocument();
-            document.Load(aplictionDirectory);
-
-            XmlNode projectListTag = AddSubElement(document, "projectsList", document.DocumentElement);
-            foreach (var project in projectsList)
-            {
-                AddSubElement(document, project, projectListTag);
-            }
-
-            XmlNode ignoreFilesListTag = AddSubElement(document, "ignoreList", document.DocumentElement);
-            foreach (var val in ignoreFilesList)
-            {
-                AddSubElement(document, val, ignoreFilesListTag);
-            }
-
-            XmlNode mandatoryListTag = AddSubElement(document, "mandatoryList", document.DocumentElement);
-            foreach (var val in mandatoryList)
-            {
-                AddSubElement(document, val, mandatoryListTag);
-            }
-
-            XmlNode needUpdateListTag = AddSubElement(document, "needUpdateList", document.DocumentElement);
-            foreach (var val in needUpdateList)
-            {
-                AddSubElement(document, val, needUpdateListTag);
-            }
-            document.Save(aplictionDirectory);
-        }
-
-        private void AddSubElement(XmlDocument document, ProjectReplaceData project, XmlNode parent)
-        {
-            XmlNode subElement = document.CreateElement("project"); // даём имя
-            parent.AppendChild(subElement); // и указываем кому принадлежит
-            XmlAttribute sourceDirectoryAtr = document.CreateAttribute("sourceDirectory");
-            sourceDirectoryAtr.Value = project.SourceDirectory;
-            subElement.Attributes.Append(sourceDirectoryAtr);
-            XmlAttribute targetDirectoryAtr = document.CreateAttribute("targetDirectory");
-            targetDirectoryAtr.Value = project.TargetDirectory;
-            subElement.Attributes.Append(targetDirectoryAtr);
-            XmlAttribute sourceNamespaceAtr = document.CreateAttribute("sourceNamespace");
-            sourceNamespaceAtr.Value = project.SourceNamespace;
-            subElement.Attributes.Append(sourceNamespaceAtr);
-            XmlAttribute targetNamespaceAtr = document.CreateAttribute("targetNamespace");
-            targetNamespaceAtr.Value = project.TargetNamespace;
-            subElement.Attributes.Append(targetNamespaceAtr);
-        }
-
-        private void AddSubElement(XmlDocument document, ConfigFile element, XmlNode parent)
-        {
-            XmlNode subElement = document.CreateElement("add"); // даём имя
-            parent.AppendChild(subElement); // и указываем кому принадлежит
-            XmlAttribute valueAtr = document.CreateAttribute("value");
-            valueAtr.Value = element.XPath;
-            subElement.Attributes.Append(valueAtr);
-            XmlAttribute isRegularExpressionAtr = document.CreateAttribute("isRegularExpression");
-            isRegularExpressionAtr.Value = element.IsRegularExpression.ToString();
-            subElement.Attributes.Append(isRegularExpressionAtr);
-        }
-
-        private XmlNode AddSubElement(XmlDocument document, string elementName, XmlNode parent)
-        {
-            XmlNode subElement = document.CreateElement(elementName); // даём имя
-            parent.AppendChild(subElement); // и указываем кому принадлежит
-            return subElement;
-        }
-
-        private void DefaultLists()
-        {
-            ignoreFilesList = new List<ConfigFile>()
-            {
-                new ConfigFile(){XPath = @"\Bin\", IsRegularExpression = false},
-                new ConfigFile(){XPath = @"\obj\", IsRegularExpression = false},
-                new ConfigFile(){XPath = @"\.uSEr$", IsRegularExpression = true},
-                new ConfigFile(){XPath = @"\.vspscc$", IsRegularExpression = true},
-                new ConfigFile(){XPath = @"\.cashe$", IsRegularExpression = true},
-                new ConfigFile(){XPath = @"\.vssscc$", IsRegularExpression = true}
-            };
-            mandatoryList = new List<ConfigFile>()
-            {
-                new ConfigFile(){XPath = @"\.cs$", IsRegularExpression = true}
-            };
-            needUpdateList = new List<ConfigFile>()
-            {
-                new ConfigFile(){XPath = @"\.sln$", IsRegularExpression = true},
-                new ConfigFile(){XPath = @"\.csproj$", IsRegularExpression = true},
-                new ConfigFile(){XPath = @"\repositories.config$", IsRegularExpression = true}
-            };
-        }
     }
 }

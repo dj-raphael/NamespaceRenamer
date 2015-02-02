@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.Data;
 using System.Data.Entity;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
 namespace NamespaceRenamer.Model
@@ -39,14 +37,14 @@ namespace NamespaceRenamer.Model
             return await _context.DataReplacements.FirstOrDefaultAsync(x => x.PathTargetDirectory == fileName);
         }
 
-        public void RemoveByHash(string hash)
+        public void RemoveByHash(string hash, string path)
         {
-            _context.DataReplacements.Remove(_context.DataReplacements.Find(hash));
+            _context.DataReplacements.RemoveRange(_context.DataReplacements.Where(x => x.Hash == hash && x.Path == path));
         }
 
         public bool ConsistRecords(string Path)
         {
-            var consist = (bool) _context.DataReplacements.Any(x => x.PathTargetDirectory.Contains(Path));
+            var consist = (bool)_context.DataReplacements.Any(x => x.PathTargetDirectory.Contains(Path));
 
             return consist;
         }

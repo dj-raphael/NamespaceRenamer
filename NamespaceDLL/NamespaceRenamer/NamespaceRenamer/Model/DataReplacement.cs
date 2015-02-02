@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
+
 
 namespace NamespaceRenamer.Model
 {
     public class DataReplacement
     {
+        [Key]
         public string Path { get; set; }
         public long Date { get; set; }
         public long Size { get; set; }

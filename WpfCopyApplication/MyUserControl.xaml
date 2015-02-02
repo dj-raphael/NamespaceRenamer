@@ -17,10 +17,10 @@
             <ColumnDefinition Width="32"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <TextBox Grid.Column="0" TextWrapping="Wrap" Text="{Binding OldNamespace}" />
-        <TextBox Grid.Column="1" TextWrapping="Wrap" Text="{Binding SourceDir}" />
+        <TextBox Grid.Column="1" TextWrapping="Wrap" Text="{Binding SourceDir}"  />
         <Button Grid.Column="2" Content=". . ." Click="BrowiseSource_Click"/>
         <TextBox Grid.Column="3" TextWrapping="Wrap" Text="{Binding NewNamespace}" />
-        <TextBox Grid.Column="4" TextWrapping="Wrap" Text="{Binding TargetDir}"/>
+        <TextBox Grid.Column="4" TextWrapping="Wrap" Text="{Binding TargetDir}" HorizontalAlignment="Left" Width="115"/>
         <Button Grid.Column="5" Content=". . . " Click="BrowiseTarget_Click" HorizontalContentAlignment="Center" />
         <Button Grid.Column="6" Height="24" Width="24" Click="DeleteButton_Click" HorizontalAlignment="Right" HorizontalContentAlignment="Center"  VerticalAlignment="Top">
                 <Image Source="delete.jpg" />

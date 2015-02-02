@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -15,42 +17,73 @@ using System.Windows;
 //        public string PathTarget { get; set; }
 //    }
 //}
+using WpfCopyApplication.Annotations;
 
-    
+
 namespace WpfCopyApplication
 {
-    public class ReplaceItem: DependencyObject
+    public class ReplaceItem: INotifyPropertyChanged
     {
-        public static readonly DependencyProperty OldNamespaceProperty = DependencyProperty.Register("OldNamespace", typeof (object), typeof (ReplaceItem), new PropertyMetadata(default(object)));
-        public static readonly DependencyProperty SourceDirProperty = DependencyProperty.Register("SourceDir", typeof (object), typeof (ReplaceItem), new PropertyMetadata(default(object)));
-        public static readonly DependencyProperty NewNamespaceProperty = DependencyProperty.Register("NewNamespace", typeof (object), typeof (ReplaceItem), new PropertyMetadata(default(object)));
-        public static readonly DependencyProperty TargetDirProperty = DependencyProperty.Register("TargetDir", typeof (object), typeof (ReplaceItem), new PropertyMetadata(default(object)));
+        private string _oldNamespace;
+        private string _sourceDir;
+        private string _newNamespace;
+        private string _targetDir;
 
         public string OldNamespace
         {
-            get { return (string)GetValue(OldNamespaceProperty); }
-            set { SetValue(OldNamespaceProperty, value); }
+            get { return _oldNamespace; }
+            set
+            {
+                if (value == _oldNamespace) return;
+                _oldNamespace = value;
+                OnPropertyChanged();
+            }
         }
 
         public string SourceDir
         {
-            get { return (string)GetValue(SourceDirProperty); }
-            set { SetValue(SourceDirProperty, value); }
+            get { return _sourceDir; }
+            set
+            {
+                if (value == _sourceDir) return;
+                _sourceDir = value;
+                OnPropertyChanged();
+            }
         }
 
         public string NewNamespace
         {
-            get { return (string)GetValue(NewNamespaceProperty); }
-            set { SetValue(NewNamespaceProperty, value); }
+            get { return _newNamespace; }
+            set
+            {
+                if (value == _newNamespace) return;
+                _newNamespace = value;
+                OnPropertyChanged();
+            }
         }
 
         public string TargetDir
         {
-            get { return (string) GetValue(TargetDirProperty); }
-            set { SetValue(TargetDirProperty, value); }
+            get { return _targetDir; }
+            set
+            {
+                if (value == _targetDir) return;
+                _targetDir = value;
+                OnPropertyChanged();
+            }
         }
 
         public Command Delete { get; set; }
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChangedEventHandler handler = PropertyChanged;
+            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        
     }
 }
 

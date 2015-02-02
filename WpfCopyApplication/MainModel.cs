@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
-using System.Windows.Forms.VisualStyles;
-using System.Windows.Input;
-using System.Windows.Media;
 using NamespaceRenamer;
+using WpfCopyApplication.Annotations;
 
 namespace WpfCopyApplication
 {
@@ -16,6 +13,7 @@ namespace WpfCopyApplication
         public static readonly DependencyProperty SourceDirProperty = DependencyProperty.Register("SourceDir",typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
         public static readonly DependencyProperty BackupDirProperty = DependencyProperty.Register("TargetDir",typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
         public static readonly DependencyProperty NewNamespaceProperty = DependencyProperty.Register("NewNamespace",typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
+        public static readonly DependencyProperty ConfigPathProperty = DependencyProperty.Register("ConfigPathProperty", typeof(string), typeof(MainModel), new PropertyMetadata(default(string)));
 
         public static readonly DependencyProperty _collectionReplaceItemsProperty = DependencyProperty.Register("collectionReplaceItems", typeof (ObservableCollection<ReplaceItem>),typeof (MyUserControl));
 
@@ -25,9 +23,15 @@ namespace WpfCopyApplication
             set { SetValue(_collectionReplaceItemsProperty, value); }
         }
 
+        public string ConfigPath
+        {
+            get { return (string)GetValue(ConfigPathProperty); }
+            set { SetValue(ConfigPathProperty, value); }            
+        }
+
         public string OldNamespace
         {
-            get { return (string) GetValue(OldNamespaceProperty); }
+            get { return (string)GetValue(OldNamespaceProperty); }
             set { SetValue(OldNamespaceProperty, value); }
         }
 
@@ -57,9 +61,13 @@ namespace WpfCopyApplication
             BackupDir = "";
             Add = new Command(AddItem);
 
+            // ReplaceItem.PropertyChanged = Add.CanExecute;
+
             var replaceCollection = new ObservableCollection<ReplaceItem>();
+            
+
             //если config файл не существует...
-            if(!rename.projectsList.Any())
+            if (!rename.ConfigList.projectsList.Any())
             {
                 replaceCollection.Add(new ReplaceItem()
                 {
@@ -72,7 +80,7 @@ namespace WpfCopyApplication
             }
             else
             {
-                foreach (var val in rename.projectsList)
+                foreach (var val in rename.ConfigList.projectsList)
                 {
                     ReplaceItem newItem =
                     new ReplaceItem()
@@ -85,7 +93,10 @@ namespace WpfCopyApplication
                     };
                     replaceCollection.Add(newItem);
                 }
-            }          
+            }
+
+            
+
             CollectionReplaceItems = replaceCollection;
         }
 
@@ -94,9 +105,19 @@ namespace WpfCopyApplication
             CollectionReplaceItems.Remove((ReplaceItem) param);
         }
 
+        public void DeleteAll()
+        {
+            CollectionReplaceItems.Clear();
+        }
+
         private void AddItem(object param)
         {
             CollectionReplaceItems.Add((ReplaceItem) param);
+        }
+
+        public void AddProjectInProjectList()
+        {
+            
         }
 
     }

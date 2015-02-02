@@ -26,7 +26,6 @@ namespace WpfCopyApplication
         public MyUserControl()
         {
             InitializeComponent();
-
         }
 
         public static readonly DependencyProperty ModelProperty = DependencyProperty.Register("Model", typeof(ReplaceItem), typeof(MyUserControl), new PropertyMetadata(default(object)));
@@ -53,6 +52,7 @@ namespace WpfCopyApplication
         {
             Model.Delete.Execute(Model);
         }
+
 
 
     }
