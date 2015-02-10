@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.Entity;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
-using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
-using NamespaceRenamer.Model;
 using System.Windows.Forms;
 using NamespaceRenamer;
 using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
@@ -20,6 +19,8 @@ namespace WpfCopyApplication
         public string configPath, dbPath;
         public Manage Manage = new Manage();
 
+
+        
         public MainWindow()
         {
             rename = new Renamer();
@@ -28,18 +29,21 @@ namespace WpfCopyApplication
             InitializeComponent();
             this.Model = new MainModel(rename);
             DataContext = Model;
+            AutoSroll.IsChecked = true;
         }
 
         public MainModel Model { get; set; }
-        public IEnumerable<Conflict> TempConflicts { get; set; }
+        // public IEnumerable<Conflict> TempConflicts { get; set; }
 
         private async void Start_Click(object sender, RoutedEventArgs e)
         {
+            Model.EventClear();
             rename.ConfigList.projectsList.Clear();
 
             var isCorrectData = true;
-            int rowNumber = 1;
+            int rowNumber = 1;  
 
+            
             foreach (var item in Model.CollectionReplaceItems)
             {
                 if (item.SourceDir == "" || item.TargetDir == "")
@@ -97,18 +101,33 @@ namespace WpfCopyApplication
                 rename.ConfigList.Validate();
                 rename.ConfigList.Save(configPath);
 
-                if (configPath != null)
+                Manage.OnAdd2 += Model.AddConflict;
+                Manage.OnAdd2 += ScrollLogBottom;
+                
+                if (configPath != null && Manage != null)
                 {
-                    if (Manage != null) Manage.Start(configPath);
+                    await Manage.Start(configPath);
                 }
                 else
                 {
-                    var trouble = true;
-                }
-            }
+                    rename.ConflictList.Clear();
+                    rename.ConflictList.Add(new Conflict()
+                    {
+                        MessageType = Types.conflict,
+                        Message = "System Error. System File wasn't found!",
+                        BackgroundColor = "Red",
+                        ForegroundColor = Brushes.White
 
-            ListBox.ItemsSource = rename.ConfList;
-            TempConflicts = rename.ConflictList;
+                    });
+                    
+                }
+
+             }
+        }
+
+        private void ScrollLogBottom(Conflict e)
+        {
+            if(Manage.IsSwitchedScroll) ListView.ScrollIntoView(ListView.Items[ListView.Items.Count - 1]);
         }
 
         private void ListBox_ScrollChanged(object sender, ScrollChangedEventArgs e)
@@ -140,14 +159,16 @@ namespace WpfCopyApplication
         private void ListBoxItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             ListBoxItem item = sender as ListBoxItem;
+            if (item != null && (!string.IsNullOrEmpty(((Conflict)item.Content).SourcePath)) && (!string.IsNullOrEmpty(((Conflict)item.Content).TargetPath)))
+            {
+                ProcessStartInfo pInfo = new ProcessStartInfo("TortoiseMerge.exe");
+                pInfo.WorkingDirectory = @"C:\Program Files\TortoiseSVN\bin";
+                pInfo.Arguments = "\"" + ((Conflict)item.Content).SourcePath + "\"" + " " + "\"" +
+                                  ((Conflict)item.Content).TargetPath + "\"" + " \\TortoiseMerge ";
+                Process p = Process.Start(pInfo);
 
-            ProcessStartInfo pInfo = new ProcessStartInfo("TortoiseMerge.exe");
-            pInfo.WorkingDirectory = @"C:\Program Files\TortoiseSVN\bin";
-            pInfo.Arguments = "\"" + ((Conflict)item.Content).SourcePath + "\"" + " " + "\"" +
-                              ((Conflict)item.Content).TargetPath + "\"" + " \\TortoiseMerge ";
-            Process p = Process.Start(pInfo);
-
-            p.WaitForExit();
+                p.WaitForExit();
+            }
         }
 
         private void ConfigButton_Click(object sender, RoutedEventArgs e)
@@ -224,7 +245,19 @@ namespace WpfCopyApplication
             }
         }
 
+        private void CheckBox_AutoScroll_Checked(object sender, RoutedEventArgs e)
+        {
+            var isChecked = ((ToggleButton) sender).IsChecked;
+            if (isChecked != null)
+                 Manage.IsSwitchedScroll = (bool) isChecked;
+            
+        }
 
+        private void CheckBox_OnlyCoflicts_Checked(object sender, RoutedEventArgs e)
+        {
+
+
+        }
     }
 
 }

@@ -6,7 +6,7 @@
         xmlns:wpfCopyApplication="clr-namespace:WpfCopyApplication"
         xmlns:model="clr-namespace:WpfCopyApplication"
         mc:Ignorable="d"
-        Title="MainWindow" Height="900" Width="1000" d:DataContext="{d:DesignInstance wpfCopyApplication:MainModel}">
+        Title="MainWindow" Height="950" Width="1020" d:DataContext="{d:DesignInstance wpfCopyApplication:MainModel}" HorizontalAlignment="Center" HorizontalContentAlignment="Center">
     <Window.Resources>
         <DataTemplate x:Key="fileItemTemplate">
             <StackPanel>
@@ -15,38 +15,69 @@
         </DataTemplate>
     </Window.Resources>
 
-    <Grid Margin="0,0,0,0">
+    <Grid Margin="0,0,0,0" HorizontalAlignment="Center">
         <Label Content="Namespace" HorizontalAlignment="Left" Margin="56,97,0,0" VerticalAlignment="Top" Width="77"/>
         <Label Content="Namespace" HorizontalAlignment="Left" Margin="494,97,0,0" VerticalAlignment="Top" Width="73"/>
         <Label Content="To" HorizontalAlignment="Left" Margin="718,97,0,0" VerticalAlignment="Top" Width="27" Height="28"/>
-        <Button Content="Stop" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="179" Margin="473,0,0,12" Height="34" Click="StopButton_Click"/>
-        <ListBox x:Name="ListBox" ItemsSource="{Binding}" HorizontalAlignment="Left" Height="269" Margin="17,528,0,0" VerticalAlignment="Top" Width="929" ItemTemplate="{StaticResource fileItemTemplate}">
-            <ListBox.ItemContainerStyle>
-                <Style TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource {x:Type ListBoxItem}}">
-                    <EventSetter Event="MouseDoubleClick" Handler="ListBoxItem_MouseDoubleClick"/>
+
+        <ListView HorizontalAlignment="Left" HorizontalContentAlignment="Stretch" Height="490" Margin="17,354,0,0" VerticalAlignment="Top" Width="929" Name="ListView" ItemsSource="{Binding Eventlist, IsAsync=True}" ItemTemplate="{StaticResource fileItemTemplate}" >
+            <ListView.ItemContainerStyle >
+                <Style TargetType="{x:Type ListBoxItem}"  BasedOn="{StaticResource {x:Type ListBoxItem}}"  >
+                    <EventSetter Event="MouseDoubleClick"  Handler="ListBoxItem_MouseDoubleClick" />
+                    <Setter Property="Background" Value="{Binding BackgroundColor }"  />
+                    <Setter Property="Foreground" Value="{Binding ForegroundColor }"  />
                 </Style>
-            </ListBox.ItemContainerStyle>
-        </ListBox>
-        <Button Height="50" Width="50" Click="AddButton_Click" HorizontalAlignment="Right" HorizontalContentAlignment="Center" Margin="0,72,63,0" VerticalAlignment="Top">
+
+            </ListView.ItemContainerStyle>
+
+        </ListView>
+
+        <!--        <ListView HorizontalAlignment="Left" HorizontalContentAlignment="Stretch" Height="150" Margin="17,700,0,0" VerticalAlignment="Top" Width="929" Name="ListView" ItemsSource="{Binding Eventlist, IsAsync=True}" ItemTemplate="{StaticResource fileItemTemplate}" >-->
+        <!--            <ListView.View >-->
+        <!--                <GridView>-->
+        <!--                    <GridViewColumn  Width="750">-->
+        <!--                        <TextBlock Text="{Binding }"></TextBlock>-->
+        <!--                    </GridViewColumn>-->
+        <!--                </GridView>-->
+        <!--            </ListView.View>-->
+        <!--        </ListView>-->
+
+        <!--        <ListView HorizontalAlignment="Left" Height="269" Margin="17,528,0,0" VerticalAlignment="Top" Width="929" Name="ListView" ItemsSource="{Binding CollectionConflictItems, IsAsync=True }" >-->
+        <!--            <ListView.View >-->
+        <!--                <GridView>-->
+        <!--                    <GridViewColumn  Width="750">-->
+        <!--                        <TextBlock Text="{Binding }"></TextBlock>-->
+        <!--                    </GridViewColumn>-->
+        <!--                </GridView>-->
+        <!--            </ListView.View>-->
+        <!--        </ListView>-->
+
+        <Button Height="50" Width="50" Click="AddButton_Click" HorizontalAlignment="Left" HorizontalContentAlignment="Center" Margin="895,72,0,0" VerticalAlignment="Top">
             <StackPanel>
                 <Image Source="add.jpg" />
             </StackPanel>
         </Button>
 
-        <Button Content="Start" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="179" Click="Start_Click" Margin="265,0,0,12" Height="34"/>
-        <Label Content=" From" HorizontalAlignment="Left" Margin="265,97,0,0" VerticalAlignment="Top" Width="45" Height="28"/>
+        <Label Content=" From" HorizontalAlignment="Left" VerticalAlignment="Top" Width="45" Height="28" Margin="265,97,0,0" />
 
-        <ListView Height="350" Margin="20,137,46,0" ItemsSource="{Binding Path=CollectionReplaceItems}" Name="ReplaceListView" VerticalAlignment="Top" HorizontalContentAlignment="Stretch">
-            <ListView.ItemTemplate >
-                <DataTemplate>
-                    <wpfCopyApplication:MyUserControl Model="{Binding}"/>
+        <ListView  Height="163" Margin="17,137,0,0" ItemsSource="{Binding Path=CollectionReplaceItems}" Width="928"  Name="ReplaceListView" VerticalAlignment="Top" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch">
+            <ListView.ItemTemplate  >
+                <DataTemplate >
+                    <wpfCopyApplication:MyUserControl Model="{Binding}" />
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
-        
+
         <TextBox HorizontalAlignment="Left" Height="23" Margin="286,38,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="322"  MouseDoubleClick="ConfigTextBox_TextChanged" Text="{Binding ConfigPath}" />
         <Button Content="Browse" HorizontalAlignment="Left" Margin="613,38,0,0" VerticalAlignment="Top" Width="97" Height="23" Click="ConfigButton_Click"/>
-        <Label Content="If it possible, choose your config.xml file here:" HorizontalAlignment="Left" Margin="20,35,0,0" VerticalAlignment="Top" Width="261"/>
-    </Grid>
+        <Label Content="If it's possible, choose your config.xml file here:" HorizontalAlignment="Left" Margin="20,35,0,0" VerticalAlignment="Top" Width="261"/>
+        <Image  Source="yumasoftlogo.png" Stretch="Fill" VerticalAlignment="Top"  HorizontalAlignment="Left" Width="210" Height="60" Margin="767,7,0,0" />
 
+        <Button Content="Stop" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="179" Margin="473,0,0,12" Height="34" Click="StopButton_Click"/>
+        <Button Content="Start" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="179" Click="Start_Click" Margin="265,0,0,12" Height="34"/>
+        <CheckBox Content="Autoscroll" Name="AutoSroll" HorizontalAlignment="Right" Height="33" Margin="0,321,32,0" VerticalAlignment="Top" Width="75" Checked="CheckBox_AutoScroll_Checked"/>
+        <CheckBox Content="Only Conflicts" HorizontalAlignment="Right" Height="33" Margin="0,321,112,0" VerticalAlignment="Top" Width="107" Checked="CheckBox_OnlyCoflicts_Checked"/>
+        <TextBox HorizontalAlignment="Left" Height="28" Margin="20,319,0,0" TextWrapping="Wrap" Text="Filter" VerticalAlignment="Top" Width="290"/>
+        <Button Content="Search" HorizontalAlignment="Left" Height="28" Margin="315,319,0,0" VerticalAlignment="Top" Width="68"/>
+    </Grid>
 </Window>

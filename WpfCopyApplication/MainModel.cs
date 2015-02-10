@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
+using System.Windows.Forms;
 using NamespaceRenamer;
 using WpfCopyApplication.Annotations;
 
@@ -9,18 +10,35 @@ namespace WpfCopyApplication
 {
     public class MainModel : DependencyObject
     {
+
+
         public static readonly DependencyProperty OldNamespaceProperty = DependencyProperty.Register("OldNamespace",typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
         public static readonly DependencyProperty SourceDirProperty = DependencyProperty.Register("SourceDir",typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
         public static readonly DependencyProperty BackupDirProperty = DependencyProperty.Register("TargetDir",typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
         public static readonly DependencyProperty NewNamespaceProperty = DependencyProperty.Register("NewNamespace",typeof (string), typeof (MainModel), new PropertyMetadata(default(string)));
         public static readonly DependencyProperty ConfigPathProperty = DependencyProperty.Register("ConfigPathProperty", typeof(string), typeof(MainModel), new PropertyMetadata(default(string)));
 
-        public static readonly DependencyProperty _collectionReplaceItemsProperty = DependencyProperty.Register("collectionReplaceItems", typeof (ObservableCollection<ReplaceItem>),typeof (MyUserControl));
+        public static readonly DependencyProperty _collectionReplaceItemsProperty = DependencyProperty.Register("CollectionReplaceItems", typeof(ObservableCollection<ReplaceItem>), typeof(MyUserControl));
+        public static readonly DependencyProperty _collectionConflictProperty = DependencyProperty.Register("CollectionConflictItems", typeof(ObservableCollection<Conflict>), typeof(Conflict));
+        public static readonly DependencyProperty EventlistProperty = DependencyProperty.Register("Eventlist", typeof(ObservableCollection<Conflict>), typeof(MainModel), new PropertyMetadata(default(ObservableCollection<Conflict>)));
+        
+
+        public ObservableCollection<Conflict> Eventlist
+        {
+            get { return (ObservableCollection<Conflict>)GetValue(EventlistProperty); }
+            set { SetValue(EventlistProperty, value); }
+        }
 
         public ObservableCollection<ReplaceItem> CollectionReplaceItems
         {
             get { return (ObservableCollection<ReplaceItem>) GetValue(_collectionReplaceItemsProperty); }
             set { SetValue(_collectionReplaceItemsProperty, value); }
+        }
+
+        public ObservableCollection<Conflict> CollectionConflictItems
+        {
+            get { return (ObservableCollection<Conflict>) GetValue(_collectionConflictProperty); }
+            set { SetValue(_collectionConflictProperty, value); }
         }
 
         public string ConfigPath
@@ -53,6 +71,8 @@ namespace WpfCopyApplication
             set { SetValue(NewNamespaceProperty, value); }
         }
         public Command Add { get; set; }
+
+
         public MainModel(Renamer rename)
         {
             OldNamespace = "";
@@ -60,13 +80,11 @@ namespace WpfCopyApplication
             SourceDir = "";
             BackupDir = "";
             Add = new Command(AddItem);
-
-            // ReplaceItem.PropertyChanged = Add.CanExecute;
-
-            var replaceCollection = new ObservableCollection<ReplaceItem>();
             
+            var replaceCollection = new ObservableCollection<ReplaceItem>();
+            CollectionConflictItems = new ObservableCollection<Conflict>();
+            Eventlist = new ObservableCollection<Conflict>();
 
-            //если config файл не существует...
             if (!rename.ConfigList.projectsList.Any())
             {
                 replaceCollection.Add(new ReplaceItem()
@@ -95,9 +113,8 @@ namespace WpfCopyApplication
                 }
             }
 
-            
-
             CollectionReplaceItems = replaceCollection;
+            
         }
 
         public void Delete(object param)
@@ -115,10 +132,22 @@ namespace WpfCopyApplication
             CollectionReplaceItems.Add((ReplaceItem) param);
         }
 
-        public void AddProjectInProjectList()
+        public void AddConflict(object param)
         {
-            
+            CollectionConflictItems.Add((Conflict)param);
+            Eventlist.Add((Conflict)param);
         }
+        
+        public void EventClear()
+        {
+            Eventlist.Clear();
+        }
+
+        public void CheckItem(Conflict conflict)
+        {
+
+        }
+
 
     }
 }

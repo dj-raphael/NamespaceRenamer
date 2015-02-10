@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using NamespaceRenamer.Model;
@@ -14,42 +16,116 @@ namespace NamespaceRenamer
     public class Renamer
     {
         public List<Conflict> ConflictList = new List<Conflict>();
-        public IEnumerable<Conflict> ConfList {get { return ConflictList; }} 
+        public IEnumerable<Conflict> ConfList {get { return ConflictList; } } 
         private DataReplacementRepository _repository;
 
         public List<string> listIgnoreFiles = new List<string>();
         public List<PathAndContent> updateListOfFiles = new List<PathAndContent>();
         public ConfigManager ConfigList = new ConfigManager();
 
+        public delegate void MethodContainer( Conflict e);
+        public event MethodContainer OnAdd = delegate {};
+
         private string Source;
         private string Target;
         
+        
         public Renamer(ReplaceContext context)
         {
-            _repository = new DataReplacementRepository(context);
-            // if (!File.Exists("Config.xml")) ConfigList.DefaultLists();
+            _repository = new DataReplacementRepository(context); 
         }
 
         public Renamer() { }
 
-        public void ReplaceInFile(string sourcePath, string targetPath, string oldNamespace, string newNamespace, bool NeedReplace)
+        public async Task ReplaceInFile(string sourcePath, string targetPath, string oldNamespace, string newNamespace, bool needReplace)
         {
-            FileInfo sourceFile = new FileInfo(sourcePath);
-            FileInfo targetFile = new FileInfo(targetPath);
+            var sourceFile = new FileInfo(sourcePath);
+            var targetFile = new FileInfo(targetPath);
             var atr = sourceFile.Attributes;
-            String strFile = File.ReadAllText(sourcePath);
+            var strFile = await ReadFile(sourcePath);
 
-            if (!NeedReplace)
+            if (!needReplace)
             {
                 strFile = strFile.Replace(oldNamespace, newNamespace);
-                File.WriteAllText(targetPath, strFile, GetFileEncoding(sourcePath));
+                await WriteFile(targetPath, strFile, GetFileEncoding(sourcePath));
+                // File.WriteAllText(targetPath, strFile, GetFileEncoding(sourcePath));
             }
             else
             {
-                File.Copy(sourcePath, targetPath, true);
+                await WriteFile(targetPath, strFile, GetFileEncoding(sourcePath));
+                // File.Copy(sourcePath, targetPath, true);
             }
 
             targetFile.Attributes = atr;
+
+            
+        }
+
+        private async Task FileCopy(string sourcePath, string targetPath)
+        {
+            // UnicodeEncoding uniencoding = new UnicodeEncoding();
+            // byte[] result = GetFileEncoding(file).GetBytes(file);
+
+            var uniencoding = GetFileEncoding(sourcePath);
+            var text = ReadFile(sourcePath).ToString();
+            byte[] result = uniencoding.GetBytes(text);
+
+            using (FileStream SourceStream = File.Open(targetPath, FileMode.OpenOrCreate))
+            {
+                SourceStream.Seek(0, SeekOrigin.End);
+                await SourceStream.WriteAsync(result, 0, result.Length);
+            }
+        }
+
+        private async Task<string> ReadFile(string sourcePath)
+        {
+            int count=0;
+
+            using (FileStream sourceStream = new FileStream(sourcePath,FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 4096, useAsync: true))
+            {
+                StringBuilder sb = new StringBuilder();
+                var fileEncoding = GetFileEncoding(sourcePath);
+
+                byte[] buffer = new byte[0x1000];
+                int numRead;
+
+                try
+                {
+                    while ((numRead = await sourceStream.ReadAsync(buffer, 0, buffer.Length)) != 0)
+                    {
+                        var text = GetFileEncoding(sourcePath).GetString(buffer, 0, numRead);
+                        sb.Append(text);
+                    }
+                }
+                catch (FileNotFoundException)
+                {
+                    var check = sourceStream;
+                }
+
+                return sb.ToString();
+            }
+        }
+
+        private async Task WriteFile(string file, string text, Encoding uniencoding)
+        {
+            // UnicodeEncoding uniencoding = new UnicodeEncoding();
+            // byte[] result = GetFileEncoding(file).GetBytes(file);
+//
+//            byte[] zeroBytes = uniencoding.GetBytes("");
+//
+//            using (FileStream SourceStream = File.Open(file, FileMode.OpenOrCreate))
+//            {
+//                SourceStream.Seek(0, SeekOrigin.Begin);
+//                await SourceStream.FlushAsync();
+//            }
+
+            byte[] result = uniencoding.GetBytes(text);
+
+            using (FileStream SourceStream = File.Open(file, FileMode.OpenOrCreate))
+            {
+                SourceStream.Seek(0, SeekOrigin.Begin);
+                await SourceStream.WriteAsync(result, 0, result.Length);
+            }
         }
 
         public static Encoding GetFileEncoding(String FileName)
@@ -106,7 +182,7 @@ namespace NamespaceRenamer
             {
                 if (IsExistInList(file, updateList))
                 {
-                    updateListOfFiles.Add(new PathAndContent(){Path = file.FullName, Content = File.ReadAllText(file.FullName) });
+                    updateListOfFiles.Add(new PathAndContent(){Path = file.FullName, Content = await ReadFile(file.FullName) });
                 }
             }
             foreach (DirectoryInfo subdir in dirs)
@@ -133,7 +209,8 @@ namespace NamespaceRenamer
                     }
                 }
 
-                File.WriteAllText(file.Path.Replace(oldNamespace, newNamespace).Replace(source, target), file.Content, GetFileEncoding(file.Path));
+                await WriteFile(file.Path.Replace(oldNamespace, newNamespace).Replace(source, target), file.Content, GetFileEncoding(file.Path));
+                // File.WriteAllText(file.Path.Replace(oldNamespace, newNamespace).Replace(source, target), file.Content, GetFileEncoding(file.Path));
             }
         }
 
@@ -149,6 +226,7 @@ namespace NamespaceRenamer
                 Source = sourceDirName;
                 Target = targetDirName;
             }
+
             // Get the subdirectories for the specified directory.
             DirectoryInfo sourceDir = new DirectoryInfo(sourceDirName);
             DirectoryInfo targetDir = new DirectoryInfo(targetDirName);
@@ -182,56 +260,67 @@ namespace NamespaceRenamer
 
                 if (!NotIgnorefile(ignoreList, file))
                 {
-                    ConflictList.Add(new Conflict()
+                    var conflict = new Conflict()
                     {
                         MessageType = Types.adding,
-                        Message = "File " + file.Name + " has been ignored, because file exist in ignore List",
-                        SourcePath = file.FullName,
-                        TargetPath = tempPath
-                    });
+                        Message = "File " + file.Name + " has been ignored, because file exist in ignore list",
+                        BackgroundColor  = "Yellow",
+                        ForegroundColor = Brushes.Black 
+                    };
+
+                    ConflictList.Add(conflict); 
+                    OnAdd(conflict); 
                 }
                 else if (IsExistInList(file, mandatoryList))
                 {
                     string tempPathSource = Path.Combine(sourceDirName, file.Name);
 
-                    ConflictList.Add(new Conflict()
+                    var conflict = new Conflict()
                     {
                         MessageType = Types.adding,
-                        Message = "File " + file.Name + " has been added, because file exist in mandatoryList ",
-                        SourcePath = tempPathSource,
-                        TargetPath = tempPath
-                    });
+                        Message = "File " + file.Name + " has been added, because file exist in mandatory list",
+                        ForegroundColor = Brushes.Black
+                    };
 
-                    ReplaceInFile(tempPathSource, tempPath, oldNamespace, newNamespace, false);
+                    ConflictList.Add(conflict);
+                    OnAdd(conflict); 
+
+                    await ReplaceInFile(tempPathSource, tempPath, oldNamespace, newNamespace, false);
                     
-                        targetFiles = targetDir.GetFiles();
-                        _repository.AddDataReplace(file, tempPath, ComputeMD5Checksum(file.FullName),
+                    targetFiles = targetDir.GetFiles();
+                    _repository.AddDataReplace(file, tempPath, ComputeMD5Checksum(file.FullName),
                             targetFiles.FirstOrDefault(x => x.Name == file.Name.Replace(oldNamespace, newNamespace)), ComputeMD5Checksum(tempPath));
                             
-                    ReplaceLinks(tempPathSource, tempPath, newNamespace, oldNamespace);
+                    await ReplaceLinks(tempPathSource, tempPath, newNamespace, oldNamespace);
                 }
                 else
                 {
                     if (!notEmptyDirectory)
-                        ConflictList.Add(new Conflict()
+                    {
+                        var conflict = new Conflict()
                         {
                             MessageType = Types.adding,
                             Message = "File " + file.Name + " has been added",
-                            SourcePath = file.FullName,
-                            TargetPath = tempPath
-                        });
+                            ForegroundColor = Brushes.Black
+                        };
+
+                            ConflictList.Add(conflict);
+                            OnAdd(conflict);
+                            
+                        }
 
                     //добавить сообщение о переименовании файла file.Name.Replace(oldNamespace, newNamespace)
                     // file.CopyTo(tempPath, true);
-                    ReplaceInFile(file.FullName, tempPath, oldNamespace, newNamespace, true);
+                    await ReplaceInFile(file.FullName, tempPath, oldNamespace, newNamespace, true);
                     
                         targetFiles = targetDir.GetFiles();
                         _repository.AddDataReplace(file, tempPath, ComputeMD5Checksum(file.FullName),
                             targetFiles.FirstOrDefault(x => x.Name == file.Name.Replace(oldNamespace, newNamespace)),
                             ComputeMD5Checksum(tempPath));
                     
-                    ReplaceLinks(file.FullName, tempPath, newNamespace, oldNamespace);
+                    await ReplaceLinks(file.FullName, tempPath, newNamespace, oldNamespace);
                 }
+
             }
 
             // If copying subdirectories, copy them and their contents to new location.
@@ -242,11 +331,9 @@ namespace NamespaceRenamer
             }
         }
 
-        private void ReplaceLinks(string sourcePath, string targetPath, string newNamespace, string oldNamespace)
+        private async Task ReplaceLinks(string sourcePath, string targetPath, string newNamespace, string oldNamespace)
         {
             string path1 = "", path2 = "";
-            var paths = new List<string>();
-            var ConfigFolders = new List<string>();
 
             // Пройтись по списку и найти где встречаются подобные ссылки
             foreach (var file in updateListOfFiles)
@@ -370,11 +457,26 @@ namespace NamespaceRenamer
                 }
                 else if (MergeFile(file, targetFiles.FirstOrDefault(x => x.Name == file.Name)))
                 {
-                    ConflictList.Add(new Conflict() { MessageType = Types.conflict, Message = "File " + file.Name + " need to merge", SourcePath = file.FullName, TargetPath = Path.Combine(targetDirName, file.Name) });
+                    ConflictList.Add(new Conflict()
+                    {
+                        MessageType = Types.conflict,
+                        Message = "File " + file.Name + " need to merge",
+                        SourcePath = file.FullName,
+                        TargetPath = Path.Combine(targetDirName, file.Name),
+                        BackgroundColor = "Red",
+                        ForegroundColor = Brushes.White
+                    });
                 }
                 else if (FileUpdated(file, targetFiles.FirstOrDefault(x => x.Name == file.Name)))
                 {
-                    ConflictList.Add(new Conflict() { MessageType = Types.warning, Message = "File " + file.Name + " was modified in " + targetDirName, SourcePath = file.FullName, TargetPath = Path.Combine(targetDirName, file.Name) });
+                    ConflictList.Add(new Conflict()
+                    {
+                        MessageType = Types.warning,
+                        Message = "File " + file.Name + " was modified in " + targetDirName,
+//                        ForegroundColor = Brushes.Black 
+                        BackgroundColor = "Red",
+                        ForegroundColor = Brushes.White
+                    });
                 }
             }
 
@@ -386,7 +488,12 @@ namespace NamespaceRenamer
                     if (await NeedDelete(file))
                     {
                         file.Delete();
-                        ConflictList.Add(new Conflict() { MessageType = Types.warning, Message = "Warning! File " + file.FullName + " was deleted, because file already removed...", SourcePath = file.FullName, TargetPath = Path.Combine(targetDirName, file.Name) });
+                        ConflictList.Add(new Conflict()
+                        {
+                            MessageType = Types.warning,
+                            Message = "Warning! File " + file.FullName + " was deleted, because file already removed...",
+                            ForegroundColor = Brushes.Black 
+                        });
                     }
                 }
             }
@@ -495,7 +602,7 @@ namespace NamespaceRenamer
             }
         }
 
-        public async void Process(ProjectReplaceData item)
+        public async Task Process(ProjectReplaceData item)
         {
             await FillingList(item.SourceDirectory, ConfigList.needUpdateList);
 
@@ -521,13 +628,12 @@ namespace NamespaceRenamer
             if (ConflictList.Any() && ConflictList.Last().MessageType != Types.delimiter)
                 ConflictList.Add(new Conflict()
                 {
-                    MessageType = Types.adding,
+                    MessageType = Types.warning,
                     Message = "End of the project",
-                    SourcePath = null,
-                    TargetPath = null
+                    ForegroundColor = Brushes.Black 
                 });
 
-            updateListOfFiles.Clear();
+             updateListOfFiles.Clear();
             
         }
 
