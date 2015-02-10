@@ -262,7 +262,7 @@ namespace NamespaceRenamer
                 {
                     var conflict = new Conflict()
                     {
-                        MessageType = Types.adding,
+                        MessageType = Types.warning,
                         Message = "File " + file.Name + " has been ignored, because file exist in ignore list",
                         BackgroundColor  = "Yellow",
                         ForegroundColor = Brushes.Black 

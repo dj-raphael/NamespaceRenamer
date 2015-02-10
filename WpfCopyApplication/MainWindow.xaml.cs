@@ -1,11 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Tracing;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Forms;
 using NamespaceRenamer;
@@ -30,6 +32,8 @@ namespace WpfCopyApplication
             this.Model = new MainModel(rename);
             DataContext = Model;
             AutoSroll.IsChecked = true;
+
+
         }
 
         public MainModel Model { get; set; }
@@ -43,7 +47,6 @@ namespace WpfCopyApplication
             var isCorrectData = true;
             int rowNumber = 1;  
 
-            
             foreach (var item in Model.CollectionReplaceItems)
             {
                 if (item.SourceDir == "" || item.TargetDir == "")
@@ -205,6 +208,8 @@ namespace WpfCopyApplication
                         Model.Add.Execute(newItem);
                     }
                 }
+
+//                Model.Eventlist.
             }
         }
 
@@ -245,15 +250,23 @@ namespace WpfCopyApplication
             }
         }
 
-        private void CheckBox_AutoScroll_Checked(object sender, RoutedEventArgs e)
+        private void CheckBox_AutoScroll(object sender, RoutedEventArgs e)
         {
             var isChecked = ((ToggleButton) sender).IsChecked;
             if (isChecked != null)
                  Manage.IsSwitchedScroll = (bool) isChecked;
             
+
         }
 
-        private void CheckBox_OnlyCoflicts_Checked(object sender, RoutedEventArgs e)
+        private void CheckBox_OnlyCoflicts(object sender, RoutedEventArgs e)
+        {
+            var isChecked = ((ToggleButton)sender).IsChecked;
+            if (isChecked != null)
+                ListView.ItemsSource = isChecked == true ? Model.Eventlist.Where(w => w.MessageType == Types.warning) : Model.Eventlist;
+        }   
+
+        private void Search_Button_Click(object sender, RoutedEventArgs e)
         {
 
 

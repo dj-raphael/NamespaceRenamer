@@ -60,7 +60,7 @@
 
         <Label Content=" From" HorizontalAlignment="Left" VerticalAlignment="Top" Width="45" Height="28" Margin="265,97,0,0" />
 
-        <ListView  Height="163" Margin="17,137,0,0" ItemsSource="{Binding Path=CollectionReplaceItems}" Width="928"  Name="ReplaceListView" VerticalAlignment="Top" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch">
+        <ListView Height="163" Margin="17,137,0,0" ItemsSource="{Binding Path=CollectionReplaceItems}" Width="928"  Name="ReplaceListView" VerticalAlignment="Top" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch">
             <ListView.ItemTemplate  >
                 <DataTemplate >
                     <wpfCopyApplication:MyUserControl Model="{Binding}" />
@@ -68,16 +68,18 @@
             </ListView.ItemTemplate>
         </ListView>
 
-        <TextBox HorizontalAlignment="Left" Height="23" Margin="286,38,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="322"  MouseDoubleClick="ConfigTextBox_TextChanged" Text="{Binding ConfigPath}" />
+        <TextBox HorizontalAlignment="Left" Height="23" Margin="285,38,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="322"  MouseDoubleClick="ConfigTextBox_TextChanged" Text="{Binding ConfigPath}" />
         <Button Content="Browse" HorizontalAlignment="Left" Margin="613,38,0,0" VerticalAlignment="Top" Width="97" Height="23" Click="ConfigButton_Click"/>
         <Label Content="If it's possible, choose your config.xml file here:" HorizontalAlignment="Left" Margin="20,35,0,0" VerticalAlignment="Top" Width="261"/>
         <Image  Source="yumasoftlogo.png" Stretch="Fill" VerticalAlignment="Top"  HorizontalAlignment="Left" Width="210" Height="60" Margin="767,7,0,0" />
 
         <Button Content="Stop" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="179" Margin="473,0,0,12" Height="34" Click="StopButton_Click"/>
         <Button Content="Start" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="179" Click="Start_Click" Margin="265,0,0,12" Height="34"/>
-        <CheckBox Content="Autoscroll" Name="AutoSroll" HorizontalAlignment="Right" Height="33" Margin="0,321,32,0" VerticalAlignment="Top" Width="75" Checked="CheckBox_AutoScroll_Checked"/>
-        <CheckBox Content="Only Conflicts" HorizontalAlignment="Right" Height="33" Margin="0,321,112,0" VerticalAlignment="Top" Width="107" Checked="CheckBox_OnlyCoflicts_Checked"/>
-        <TextBox HorizontalAlignment="Left" Height="28" Margin="20,319,0,0" TextWrapping="Wrap" Text="Filter" VerticalAlignment="Top" Width="290"/>
-        <Button Content="Search" HorizontalAlignment="Left" Height="28" Margin="315,319,0,0" VerticalAlignment="Top" Width="68"/>
+        
+        <CheckBox Content="Autoscroll" Name="AutoSroll" HorizontalAlignment="Right" Height="33" Margin="0,321,32,0" VerticalAlignment="Top" Width="75" Unchecked="CheckBox_AutoScroll" Checked="CheckBox_AutoScroll"/>
+        <CheckBox Content="Only Conflicts" HorizontalAlignment="Right" Height="33" Margin="0,321,107,0" VerticalAlignment="Top" Width="107" Unchecked="CheckBox_OnlyCoflicts" Checked="CheckBox_OnlyCoflicts"/>
+       
+        <TextBox HorizontalAlignment="Left" Height="28" Margin="17,319,0,0" TextWrapping="Wrap" Text="Filter" VerticalAlignment="Top" Width="290"/>
+        <Button Content="Search" HorizontalAlignment="Left" Height="28" Margin="312,319,0,0" VerticalAlignment="Top" Width="68" Click="Search_Button_Click"/>
     </Grid>
 </Window>

@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
+using System.Windows.Data;
 using System.Windows.Forms;
 using NamespaceRenamer;
 using WpfCopyApplication.Annotations;
@@ -85,6 +86,7 @@ namespace WpfCopyApplication
             CollectionConflictItems = new ObservableCollection<Conflict>();
             Eventlist = new ObservableCollection<Conflict>();
 
+
             if (!rename.ConfigList.projectsList.Any())
             {
                 replaceCollection.Add(new ReplaceItem()
@@ -134,7 +136,6 @@ namespace WpfCopyApplication
 
         public void AddConflict(object param)
         {
-            CollectionConflictItems.Add((Conflict)param);
             Eventlist.Add((Conflict)param);
         }
         
