@@ -32,7 +32,7 @@ namespace WpfCopyApplication
             this.Model = new MainModel(rename);
             DataContext = Model;
             AutoSroll.IsChecked = true;
-
+            Model.Eventlist.Clear();
 
         }
 
@@ -268,8 +268,24 @@ namespace WpfCopyApplication
 
         private void Search_Button_Click(object sender, RoutedEventArgs e)
         {
+//            var csv = (CollectionView)CollectionViewSource.GetDefaultView(Model.Eventlist);
+//            var search = sender;
+//
+//            csv.Filter += CollectionViewSource_Filter;
+//            
+        }
 
+        private bool CollectionViewSource_Filter(object obj)
+        {
+//            var csv = (CollectionView)CollectionViewSource.GetDefaultView(Model.Eventlist);
+//
+//            return csv.CanFilter;
+            return true;
+        }
 
+        private void CollectionViewSource_Filter(object sender, FilterEventArgs e)
+        {
+//            if (e.Item != null) e.Accepted = ((string)e.Item).Contains("added");
         }
     }
 

@@ -6,13 +6,16 @@
         xmlns:wpfCopyApplication="clr-namespace:WpfCopyApplication"
         xmlns:model="clr-namespace:WpfCopyApplication"
         mc:Ignorable="d"
-        Title="MainWindow" Height="950" Width="1020" d:DataContext="{d:DesignInstance wpfCopyApplication:MainModel}" HorizontalAlignment="Center" HorizontalContentAlignment="Center">
+        Title="MainWindow" Height="950" Width="1020" d:DataContext="{d:DesignInstance model:MainModel}" HorizontalAlignment="Center" HorizontalContentAlignment="Center">
     <Window.Resources>
         <DataTemplate x:Key="fileItemTemplate">
             <StackPanel>
                 <TextBlock Text="{Binding Message}"/>
             </StackPanel>
         </DataTemplate>
+
+
+
     </Window.Resources>
 
     <Grid Margin="0,0,0,0" HorizontalAlignment="Center">
@@ -20,7 +23,7 @@
         <Label Content="Namespace" HorizontalAlignment="Left" Margin="494,97,0,0" VerticalAlignment="Top" Width="73"/>
         <Label Content="To" HorizontalAlignment="Left" Margin="718,97,0,0" VerticalAlignment="Top" Width="27" Height="28"/>
 
-        <ListView HorizontalAlignment="Left" HorizontalContentAlignment="Stretch" Height="490" Margin="17,354,0,0" VerticalAlignment="Top" Width="929" Name="ListView" ItemsSource="{Binding Eventlist, IsAsync=True}" ItemTemplate="{StaticResource fileItemTemplate}" >
+        <ListView HorizontalAlignment="Left" HorizontalContentAlignment="Stretch" Height="490" Margin="17,354,0,0" VerticalAlignment="Top" Width="929" Name="ListView" ItemsSource="{Binding Source=Eventlist, IsAsync=True}" ItemTemplate="{StaticResource fileItemTemplate}" >
             <ListView.ItemContainerStyle >
                 <Style TargetType="{x:Type ListBoxItem}"  BasedOn="{StaticResource {x:Type ListBoxItem}}"  >
                     <EventSetter Event="MouseDoubleClick"  Handler="ListBoxItem_MouseDoubleClick" />
@@ -81,5 +84,8 @@
        
         <TextBox HorizontalAlignment="Left" Height="28" Margin="17,319,0,0" TextWrapping="Wrap" Text="Filter" VerticalAlignment="Top" Width="290"/>
         <Button Content="Search" HorizontalAlignment="Left" Height="28" Margin="312,319,0,0" VerticalAlignment="Top" Width="68" Click="Search_Button_Click"/>
-    </Grid>
+        
+     </Grid>
+
+
 </Window>
