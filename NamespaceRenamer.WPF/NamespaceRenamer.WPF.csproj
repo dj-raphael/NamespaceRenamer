@@ -43,9 +43,6 @@
     <Reference Include="EntityFramework.SqlServerCompact">
       <HintPath>..\packages\EntityFramework.SqlServerCompact.6.1.1\lib\net45\EntityFramework.SqlServerCompact.dll</HintPath>
     </Reference>
-    <Reference Include="Gat.Controls.OpenDialog">
-      <HintPath>..\packages\OpenDialog.1.1.1\lib\net45\Gat.Controls.OpenDialog.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.QualityTools.Testing.Fakes, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -143,9 +140,9 @@
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NamespaceDLL\NamespaceRenamer\NamespaceRenamer\NamespaceRenamer.csproj">
+    <ProjectReference Include="..\NamespaceRenamer.Core\NamespaceRenamer\NamespaceRenamer.Core.csproj">
       <Project>{0120f4ac-a80b-4890-988b-ef13f0a5c03c}</Project>
-      <Name>NamespaceRenamer</Name>
+      <Name>NamespaceRenamer.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

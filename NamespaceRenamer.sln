@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.30723.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WpfCopyApplication", "WpfCopyApplication\WpfCopyApplication.csproj", "{09CDE14E-03FE-46C8-B2EF-0A616AE983F2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NamespaceRenamer.WPF", "NamespaceRenamer.WPF\NamespaceRenamer.WPF.csproj", "{09CDE14E-03FE-46C8-B2EF-0A616AE983F2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NamespaceRenamer", "NamespaceDLL\NamespaceRenamer\NamespaceRenamer\NamespaceRenamer.csproj", "{0120F4AC-A80B-4890-988B-EF13F0A5C03C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NamespaceRenamer.Core", "NamespaceRenamer.Core\NamespaceRenamer\NamespaceRenamer.Core.csproj", "{0120F4AC-A80B-4890-988B-EF13F0A5C03C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleRenamer", "ConsoleRenamer\ConsoleRenamer.csproj", "{DCD3F09C-2D4A-487A-A784-6918689FC8B9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NamespaceRenamer.Console", "NamespaceRenamer.Console\NamespaceRenamer.Console.csproj", "{DCD3F09C-2D4A-487A-A784-6918689FC8B9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
