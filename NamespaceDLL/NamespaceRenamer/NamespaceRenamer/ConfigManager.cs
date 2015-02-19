@@ -280,11 +280,15 @@ namespace NamespaceRenamer
 
             var dbNodes = conf.SelectSingleNode("//RenameData/property");
 
-            if (dbNodes != null && dbNodes.Attributes != null) DbPath = dbNodes.Attributes["dataBase"].Value;
-            else
+            if (dbNodes != null && dbNodes.Attributes != null)
+            {
+                DbPath = dbNodes.Attributes["dataBase"].Value;
+            }
+
+            if (DbPath != "")
             {
                 DbPath = AppDomain.CurrentDomain.BaseDirectory.Substring(0,
-                         AppDomain.CurrentDomain.BaseDirectory.IndexOf("bin\\Debug\\")) + "App_Data\\data.sdf";
+                         AppDomain.CurrentDomain.BaseDirectory.IndexOf("bin\\Debug\\", System.StringComparison.Ordinal)) + "App_Data\\data.sdf";
             }
 
         }

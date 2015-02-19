@@ -14,8 +14,6 @@
             </StackPanel>
         </DataTemplate>
 
-
-
     </Window.Resources>
 
     <Grid Margin="0,0,0,0" HorizontalAlignment="Center">
@@ -23,7 +21,7 @@
         <Label Content="Namespace" HorizontalAlignment="Left" Margin="494,97,0,0" VerticalAlignment="Top" Width="73"/>
         <Label Content="To" HorizontalAlignment="Left" Margin="718,97,0,0" VerticalAlignment="Top" Width="27" Height="28"/>
 
-        <ListView HorizontalAlignment="Left" HorizontalContentAlignment="Stretch" Height="490" Margin="17,354,0,0" VerticalAlignment="Top" Width="929" Name="ListView" ItemsSource="{Binding Source=Eventlist, IsAsync=True}" ItemTemplate="{StaticResource fileItemTemplate}" >
+        <ListView HorizontalAlignment="Left" HorizontalContentAlignment="Stretch" Height="490" Margin="17,354,0,0" VerticalAlignment="Top" Width="929" Name="ListView" ItemsSource="{Binding Eventlist, IsAsync=True}" ItemTemplate="{StaticResource fileItemTemplate}" >
             <ListView.ItemContainerStyle >
                 <Style TargetType="{x:Type ListBoxItem}"  BasedOn="{StaticResource {x:Type ListBoxItem}}"  >
                     <EventSetter Event="MouseDoubleClick"  Handler="ListBoxItem_MouseDoubleClick" />

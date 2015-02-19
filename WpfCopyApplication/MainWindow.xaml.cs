@@ -20,8 +20,6 @@ namespace WpfCopyApplication
         private Renamer rename;
         public string configPath, dbPath;
         public Manage Manage = new Manage();
-
-
         
         public MainWindow()
         {

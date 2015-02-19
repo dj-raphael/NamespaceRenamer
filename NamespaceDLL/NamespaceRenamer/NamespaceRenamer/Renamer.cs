@@ -29,7 +29,6 @@ namespace NamespaceRenamer
         private string Source;
         private string Target;
         
-        
         public Renamer(ReplaceContext context)
         {
             _repository = new DataReplacementRepository(context); 
@@ -208,8 +207,11 @@ namespace NamespaceRenamer
                         file.Content = file.Content.Replace(match.Value, match.Value.Replace(oldNamespace, newNamespace));
                     }
                 }
+                
+                file.Path = file.Path.Replace(source, target);
+                file.Path = file.Path.Replace(oldNamespace, newNamespace);
 
-                await WriteFile(file.Path.Replace(oldNamespace, newNamespace).Replace(source, target), file.Content, GetFileEncoding(file.Path));
+                await WriteFile(file.Path, file.Content, GetFileEncoding(file.Path));
                 // File.WriteAllText(file.Path.Replace(oldNamespace, newNamespace).Replace(source, target), file.Content, GetFileEncoding(file.Path));
             }
         }
@@ -221,6 +223,7 @@ namespace NamespaceRenamer
             {
                 Directory.CreateDirectory(targetDirName);
             }
+
             if (FirstProcess)
             {
                 Source = sourceDirName;
@@ -457,7 +460,8 @@ namespace NamespaceRenamer
                 }
                 else if (MergeFile(file, targetFiles.FirstOrDefault(x => x.Name == file.Name)))
                 {
-                    ConflictList.Add(new Conflict()
+
+                    var conflict = new Conflict()
                     {
                         MessageType = Types.conflict,
                         Message = "File " + file.Name + " need to merge",
@@ -465,18 +469,25 @@ namespace NamespaceRenamer
                         TargetPath = Path.Combine(targetDirName, file.Name),
                         BackgroundColor = "Red",
                         ForegroundColor = Brushes.White
-                    });
+                    };
+
+                    ConflictList.Add(conflict);
+                    OnAdd(conflict); 
+
                 }
                 else if (FileUpdated(file, targetFiles.FirstOrDefault(x => x.Name == file.Name)))
                 {
-                    ConflictList.Add(new Conflict()
+
+                    var conflict = new Conflict()
                     {
                         MessageType = Types.warning,
                         Message = "File " + file.Name + " was modified in " + targetDirName,
-//                        ForegroundColor = Brushes.Black 
-                        BackgroundColor = "Red",
-                        ForegroundColor = Brushes.White
-                    });
+                        ForegroundColor = Brushes.Black
+
+                    };
+
+                    ConflictList.Add(conflict);
+                    OnAdd(conflict); 
                 }
             }
 
@@ -488,12 +499,18 @@ namespace NamespaceRenamer
                     if (await NeedDelete(file))
                     {
                         file.Delete();
-                        ConflictList.Add(new Conflict()
+
+                        var conflict = new Conflict()
                         {
                             MessageType = Types.warning,
                             Message = "Warning! File " + file.FullName + " was deleted, because file already removed...",
-                            ForegroundColor = Brushes.Black 
-                        });
+                            ForegroundColor = Brushes.Black,
+                            BackgroundColor = "Yellow"
+                            
+                        };
+
+                        ConflictList.Add(conflict);
+                        OnAdd(conflict); 
                     }
                 }
             }
@@ -626,12 +643,20 @@ namespace NamespaceRenamer
             await SaveUpdateListOfFiles(item.SourceNamespace, item.TargetNamespace, item.SourceDirectory, item.TargetDirectory);
 
             if (ConflictList.Any() && ConflictList.Last().MessageType != Types.delimiter)
-                ConflictList.Add(new Conflict()
+            {
+                var conflict = new Conflict()
                 {
                     MessageType = Types.warning,
                     Message = "End of the project",
-                    ForegroundColor = Brushes.Black 
-                });
+                    ForegroundColor = Brushes.White,
+                    BackgroundColor = "Black"
+
+                };
+
+                ConflictList.Add(conflict);
+                OnAdd(conflict);
+                
+            }
 
              updateListOfFiles.Clear();
             
