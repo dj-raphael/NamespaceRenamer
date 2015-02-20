@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Data.Entity.Infrastructure;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using NamespaceRenamer;
 
@@ -14,8 +17,7 @@ namespace ConsoleRenamer
         {
             string pathConfig = "";
             
-            if (args.Count() > 1) Console.WriteLine("Too many arguments was specified. Please write only 1 argument - path of a config file. ");
-            else pathConfig = args.Any() ? args[0] : Environment.CurrentDirectory + "\\config.xml";
+             pathConfig = args.Any() ? args[0] : Environment.CurrentDirectory + "\\config.xml";
 
             try
             {
@@ -34,9 +36,16 @@ namespace ConsoleRenamer
                 Console.WriteLine();
                 Console.WriteLine("=====================================");
 
-                Task.WaitAll(Manage.Start(pathConfig));
+                try
+                {
+                    Task.WaitAll(Manage.Start(pathConfig));
+                }
+                catch (Exception)
+                {
+                    return -1;
+                }
                 
-                var q = Console.ReadLine();
+                
                 ConfigList.Save(pathConfig);
             }
             else
@@ -44,10 +53,26 @@ namespace ConsoleRenamer
                 Console.WriteLine(!args.Any()
                     ? "Please write argument: path to config file."
                     : "Config file doesn't contain data of replacing projects. Please choose correct config file.");
+
+                return -1;
             }
 
+            Console.WriteLine("=====================================");
+            
+            Console.WriteLine("Renaming completed. " +  Manage.rename.ConflictList.Count(x => x.Merge == true) + " conflicts occured.");
+
+            var count = 0;
+
+            foreach (var conflict in  Manage.rename.ConflictList.Where(x => x.Merge == true))
+            {
+                Console.WriteLine(count + " " + conflict.Message);
+                count++;
+            }
+            
+            var q = Console.ReadLine();
+
             return 0;
-        }
+       }
 
 
         private static void WriteLog(Conflict e)

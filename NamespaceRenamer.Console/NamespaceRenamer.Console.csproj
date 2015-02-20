@@ -80,7 +80,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NamespaceRenamer.Core\NamespaceRenamer\NamespaceRenamer.Core.csproj">
+    <ProjectReference Include="..\NamespaceRenamer.Core\NamespaceRenamer.Core.csproj">
       <Project>{0120f4ac-a80b-4890-988b-ef13f0a5c03c}</Project>
       <Name>NamespaceRenamer.Core</Name>
     </ProjectReference>
