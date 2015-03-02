@@ -1,11 +1,11 @@
-﻿<UserControl x:Class="WpfCopyApplication.MyUserControl"
+﻿<UserControl x:Class="NamespaceRenamer.WPF.MyUserControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:wpfCopyApplication="clr-namespace:WpfCopyApplication"
+             xmlns:wpf="clr-namespace:NamespaceRenamer.WPF"
              mc:Ignorable="d" 
-             d:DesignHeight="25" d:DesignWidth="900" d:DataContext="{d:DesignInstance wpfCopyApplication:ReplaceItem}">
+             d:DesignHeight="25" d:DesignWidth="900" d:DataContext="{d:DesignInstance wpf:ReplaceItem}">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="190*"></ColumnDefinition>

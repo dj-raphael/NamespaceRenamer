@@ -1,6 +1,6 @@
 ﻿using System.Data.Entity.ModelConfiguration;
 
-namespace NamespaceRenamer.Model
+namespace NamespaceRenamer.Core.Model
 {
     internal class DataReplacementMap: EntityTypeConfiguration<DataReplacement>
     {

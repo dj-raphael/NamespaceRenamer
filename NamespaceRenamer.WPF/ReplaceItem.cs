@@ -1,7 +1,4 @@
-﻿using System.ComponentModel;
-using System.Runtime.CompilerServices;
-
-//namespace WpfCopyApplication.Model
+﻿//namespace WpfCopyApplication.Model
 //{
 //    public class ReplaceItem
 //    {
@@ -11,9 +8,11 @@ using System.Runtime.CompilerServices;
 //        public string PathTarget { get; set; }
 //    }
 //}
-using WpfCopyApplication.Annotations;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using NamespaceRenamer.WPF.Properties;
 
-namespace WpfCopyApplication
+namespace NamespaceRenamer.WPF
 {
     public class ReplaceItem: INotifyPropertyChanged
     {

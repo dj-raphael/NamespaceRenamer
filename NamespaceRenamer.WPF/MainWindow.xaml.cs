@@ -1,19 +1,16 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.Tracing;
+﻿using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
-using System.Windows.Input;
 using System.Windows.Forms;
-using NamespaceRenamer;
+using System.Windows.Input;
+using NamespaceRenamer.Core;
 using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
 
-namespace WpfCopyApplication
+namespace NamespaceRenamer.WPF
 {
     public partial class MainWindow : Window
     {
@@ -78,15 +75,7 @@ namespace WpfCopyApplication
                 }
 
                 rowNumber++;
-
-                var test =
-                rename.ConfigList.projectsList.Any(
-                    checkitem =>
-                            checkitem.SourceDirectory == item.SourceDir &&
-                            checkitem.TargetDirectory == item.TargetDir);
-
-                if (!test)
-                {
+                
                     rename.ConfigList.projectsList.Add(new ProjectReplaceData()
                     {
                         SourceDirectory = item.SourceDir,
@@ -94,7 +83,6 @@ namespace WpfCopyApplication
                         TargetDirectory = item.TargetDir,
                         TargetNamespace = item.NewNamespace
                     });
-                }
             }
 
             if (isCorrectData)

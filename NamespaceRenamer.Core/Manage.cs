@@ -1,9 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using NamespaceRenamer.Model;
+﻿using System.Threading.Tasks;
+using NamespaceRenamer.Core.Model;
 
-namespace NamespaceRenamer
+namespace NamespaceRenamer.Core
 {
     public class Manage
     {
@@ -20,17 +18,41 @@ namespace NamespaceRenamer
 
             rename.OnAdd += AddConflict;
             configPath = rename.ConfigList.Load(configPath);
+//            foreach (var item in rename.ConfigList.projectsList)
+//            {
+//                var allConfigFilesList = rename.updateListOfFiles;
+//                rename.updateListOfFiles.Clear();
+//
+//                await rename.FillingList(item.SourceDirectory, rename.ConfigList.needUpdateList);
+//                var configFilesList = rename.updateListOfFiles;
+//
+//                rename.RenameRootNamespaceAndAssemblyNameInCsproj(item.SourceNamespace, item.TargetNamespace);
+//
+//                rename.updateListOfFiles = allConfigFilesList;
+//                rename.updateListOfFiles.AddRange(configFilesList);
+//            }
 
+//            rename.RenameProjectReferencesInCsproj();
+
+
+            foreach (var item in rename.ConfigList.projectsList)
+            {
+                await rename.FillingListOfSln(item.SourceDirectory, rename.ConfigList.needUpdateList, item);
+            }
+            
             foreach (var item in rename.ConfigList.projectsList)
             {
                 await rename.Process(item);
             }
+
+            await rename.SaveUpdateListOfCsproj();
+            await rename.SaveUpdateListOfSln();
+
         }
 
         public void AddConflict(Conflict conflict)
         {
             OnAdd2(conflict);
-
         }
 
     }

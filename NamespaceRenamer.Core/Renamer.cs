@@ -1,17 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.Remoting.Lifetime;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
+using System.Web.UI;
+using System.Web.UI.WebControls;
 using System.Windows.Forms;
-using NamespaceRenamer.Model;
+using System.Xml;
+using System.Xml.Linq;
+using NamespaceRenamer.Core.Model;
 
-namespace NamespaceRenamer
+namespace NamespaceRenamer.Core
 {
     public class Renamer
     {
@@ -21,6 +26,9 @@ namespace NamespaceRenamer
 
         public List<string> listIgnoreFiles = new List<string>();
         public List<PathAndContent> updateListOfFiles = new List<PathAndContent>();
+        public List<PathAndContent> updateListOfCsproj = new List<PathAndContent>();
+        public List<PathAndContent> updateListOfSln = new List<PathAndContent>();
+
         public ConfigManager ConfigList = new ConfigManager();
 
         public delegate void MethodContainer( Conflict e);
@@ -76,10 +84,16 @@ namespace NamespaceRenamer
             }
         }
 
+        private async Task<XmlDocument> XmlReadFile(string fullName)
+        {
+            var xmlFile = new XmlDocument();
+            xmlFile.Load(fullName);
+
+            return xmlFile;
+        }
+
         private async Task<string> ReadFile(string sourcePath)
         {
-            int count=0;
-
             using (FileStream sourceStream = new FileStream(sourcePath,FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 4096, useAsync: true))
             {
                 StringBuilder sb = new StringBuilder();
@@ -107,17 +121,6 @@ namespace NamespaceRenamer
 
         private async Task WriteFile(string file, string text, Encoding uniencoding)
         {
-            // UnicodeEncoding uniencoding = new UnicodeEncoding();
-            // byte[] result = GetFileEncoding(file).GetBytes(file);
-//
-//            byte[] zeroBytes = uniencoding.GetBytes("");
-//
-//            using (FileStream SourceStream = File.Open(file, FileMode.OpenOrCreate))
-//            {
-//                SourceStream.Seek(0, SeekOrigin.Begin);
-//                await SourceStream.FlushAsync();
-//            }
-
             byte[] result = uniencoding.GetBytes(text);
 
             using (FileStream SourceStream = File.Open(file, FileMode.OpenOrCreate))
@@ -125,6 +128,14 @@ namespace NamespaceRenamer
                 SourceStream.Seek(0, SeekOrigin.Begin);
                 await SourceStream.WriteAsync(result, 0, result.Length);
             }
+        }
+
+
+        private async Task XmlWriteFile(string path, XmlDocument xmlContent, Encoding getFileEncoding, string oldNamespace, string newNamespace)
+        {
+            var x = xmlContent.NamespaceURI;
+
+            xmlContent.Save(path);
         }
 
         public static Encoding GetFileEncoding(String FileName)
@@ -172,49 +183,166 @@ namespace NamespaceRenamer
         }
 
         //метод для обхода по всем файлам и заполнения updateListOfFiles
-        public async Task FillingList(string sourceDirName, List<ConfigFile> updateList)
+        public async Task FillingList(string sourceDirName, List<ConfigFile> updateList,  ProjectReplaceData projectReplace)
         {
             DirectoryInfo sourceDir = new DirectoryInfo(sourceDirName);
             DirectoryInfo[] dirs = sourceDir.GetDirectories();
             List<FileInfo> files = sourceDir.GetFiles().ToList();
+
             foreach (FileInfo file in files)
             {
                 if (IsExistInList(file, updateList))
                 {
-                    updateListOfFiles.Add(new PathAndContent(){Path = file.FullName, Content = await ReadFile(file.FullName) });
+                    bool isCsproj;
+                    try
+                    {
+                        isCsproj = file.FullName.Substring(file.FullName.LastIndexOf('.'), 7) == ".csproj";
+                    }
+                    catch (Exception)
+                    {
+                        isCsproj = false;
+                    }
+
+                    if (isCsproj)
+                    {
+                        var xmlContent = await XmlReadFile(file.FullName);
+                        var replacedFileName = file.Name.Replace(projectReplace.SourceNamespace, projectReplace.TargetNamespace);
+
+                        bool isReplaced = file.Name.Replace(projectReplace.SourceNamespace, projectReplace.TargetNamespace) != file.Name;
+                        
+                        if (isReplaced)
+                        {
+                            xmlContent = RenameRootNamespaceAndAssemblyNameInCsproj(xmlContent, projectReplace.SourceNamespace, projectReplace.TargetNamespace);
+                            ReplaceCsprojNameInSln(file.Name.Replace(".csproj", ""), replacedFileName.Replace(".csproj", ""));
+                            await ReplaceLinksInSln(file.FullName, file.FullName.Replace(projectReplace.SourceNamespace,projectReplace.TargetNamespace), projectReplace.TargetNamespace, projectReplace.SourceNamespace);
+                        }
+
+                        updateListOfCsproj.Add(new PathAndContent() { Path = file.FullName, XmlContent = xmlContent, ProjectReplace = projectReplace });
+                    }
+                    else
+                    {
+                        bool isSln;
+                        try
+                        { 
+                            isSln = file.FullName.Substring(file.FullName.LastIndexOf('.'), 4) == ".sln";
+                        }
+                        catch (Exception)
+                        {
+                            isSln = false;
+                        }
+
+                        if (!isSln)
+//                            updateListOfSln.Add(new PathAndContent() { Path = file.FullName, Content = await ReadFile(file.FullName), ProjectReplace = projectReplace });
+//                        else
+                            updateListOfFiles.Add(new PathAndContent() { Path = file.FullName, Content = await ReadFile(file.FullName) });
+                    }
                 }
             }
             foreach (DirectoryInfo subdir in dirs)
             {
-                await FillingList(subdir.FullName, updateList);
+                await FillingList(subdir.FullName, updateList, projectReplace);
             }
+
         }
 
-        public async Task SaveUpdateListOfFiles( string oldNamespace, string newNamespace, string source, string target)
+        //метод для обхода по всем файлам и заполнения updateListOfFiles
+        public async Task FillingListOfSln(string sourceDirName, List<ConfigFile> updateList, ProjectReplaceData projectReplace)
         {
-            foreach (var file in updateListOfFiles)
+            DirectoryInfo sourceDir = new DirectoryInfo(sourceDirName);
+            DirectoryInfo[] dirs = sourceDir.GetDirectories();
+            List<FileInfo> files = sourceDir.GetFiles().ToList();
+
+            try
             {
-                if (file.Path.Substring(file.Path.LastIndexOf('.'), 4) == ".sln")
+                files = sourceDir.GetFiles().Where(x => (x.FullName.Count() >4 && x.FullName.Remove(0, x.FullName.Count() - 4) == ".sln")).ToList();
+            }
+            catch (Exception)
+            {
+                files = null;
+            }
+
+            if (files != null) 
+                foreach (FileInfo file in files)
                 {
+                    updateListOfSln.Add(new PathAndContent() { Path = file.FullName, Content = await ReadFile(file.FullName), ProjectReplace = projectReplace });
+                }
+
+            foreach (DirectoryInfo subdir in dirs)
+            {
+                 await  FillingListOfSln(subdir.FullName, updateList, projectReplace);
+            }
+
+        }
+
+
+        public void ReplaceCsprojNameInSln(string oldName, string newName)
+        {
+            foreach (var file in updateListOfSln)
+            {
                     Regex nameOfProject = new Regex(@"\s*=\s*(\""([^\""]*)\"")");
                     for (Match match = nameOfProject.Match(file.Content); match.Success; match = match.NextMatch())
                     {
-                        file.Content = file.Content.Replace(match.Value, match.Value.Replace(oldNamespace, newNamespace));
+                        file.Content = file.Content.Replace(match.Value, match.Value.Replace(oldName, newName));
                     }
                     Regex virtualFolder = new Regex(@"(\s*[=]\s*\""\w*\""\,\s\""\w*\"")");
                     for (Match match = virtualFolder.Match(file.Content); match.Success; match = match.NextMatch())
                     {
-                        file.Content = file.Content.Replace(match.Value, match.Value.Replace(oldNamespace, newNamespace));
+                        file.Content = file.Content.Replace(match.Value, match.Value.Replace(oldName, newName));
                     }
-                }
-                
-                file.Path = file.Path.Replace(source, target);
-                file.Path = file.Path.Replace(oldNamespace, newNamespace);
-
-                await WriteFile(file.Path, file.Content, GetFileEncoding(file.Path));
-                // File.WriteAllText(file.Path.Replace(oldNamespace, newNamespace).Replace(source, target), file.Content, GetFileEncoding(file.Path));
             }
         }
+
+        public async Task SaveUpdateListOfSln()
+        {
+            foreach (var file in updateListOfSln)
+            {
+                file.Path = file.Path.Replace(file.ProjectReplace.SourceDirectory, file.ProjectReplace.TargetDirectory);
+                file.Path = file.Path.Replace(file.ProjectReplace.SourceNamespace, file.ProjectReplace.TargetNamespace);
+
+                await WriteFile(file.Path, file.Content, GetFileEncoding(file.Path));
+            }
+        }
+
+        public async Task SaveUpdateListOfCsproj()
+        {
+            CheckCsprojName();
+
+            foreach (var csproj in updateListOfCsproj)
+            {
+                csproj.Path = csproj.Path.Replace(csproj.ProjectReplace.SourceDirectory, csproj.ProjectReplace.TargetDirectory);
+                var source = csproj.Path;
+                var resultCsproj = new PathAndContent();
+                csproj.Path = csproj.Path.Replace(csproj.ProjectReplace.SourceNamespace, csproj.ProjectReplace.TargetNamespace);
+
+                resultCsproj = source != csproj.Path ? RenameProjectReferencesInCsproj(csproj) : csproj;
+                csproj.XmlContent = resultCsproj.XmlContent;
+
+                XmlNamespaceManager nsmgr = new XmlNamespaceManager(csproj.XmlContent.NameTable);
+                nsmgr.AddNamespace("ab", "http://schemas.microsoft.com/developer/msbuild/2003");
+
+                var nodeListOfCompiles = resultCsproj.XmlContent.SelectNodes("//ab:Project/ab:ItemGroup/ab:Compile", nsmgr);
+
+                if (nodeListOfCompiles != null)
+                    foreach (XmlElement node in nodeListOfCompiles)
+                    {
+                        node.Attributes["Include"].Value = node.Attributes["Include"].Value.Replace(resultCsproj.ProjectReplace.SourceNamespace, resultCsproj.ProjectReplace.TargetNamespace);
+                    }
+
+                await XmlWriteFile(resultCsproj.Path, resultCsproj.XmlContent, GetFileEncoding(resultCsproj.Path), resultCsproj.ProjectReplace.SourceNamespace, resultCsproj.ProjectReplace.TargetNamespace);
+            }
+        }
+
+        public async Task SaveUpdateListOfFiles()
+        {
+            foreach (var file in updateListOfFiles)
+            {
+                file.Path = file.Path.Replace(file.ProjectReplace.SourceDirectory, file.ProjectReplace.TargetDirectory);
+                file.Path = file.Path.Replace(file.ProjectReplace.SourceNamespace, file.ProjectReplace.TargetNamespace);
+
+                await WriteFile(file.Path, file.Content, GetFileEncoding(file.Path));
+            }
+        }
+
 
         public async Task DirectoryCopy(string sourceDirName, string targetDirName, string newNamespace, string oldNamespace, List<ConfigFile> ignoreList, List<ConfigFile> mandatoryList, bool FirstProcess)
         {
@@ -293,8 +421,9 @@ namespace NamespaceRenamer
                     targetFiles = targetDir.GetFiles();
                     _repository.AddDataReplace(file, tempPath, ComputeMD5Checksum(file.FullName),
                             targetFiles.FirstOrDefault(x => x.Name == file.Name.Replace(oldNamespace, newNamespace)), ComputeMD5Checksum(tempPath));
-                            
-                    await ReplaceLinks(tempPathSource, tempPath, newNamespace, oldNamespace);
+
+                    await ReplaceLinksInConfigFiles(tempPathSource, tempPath, newNamespace, oldNamespace);
+                    await ReplaceLinksInSln(tempPathSource, tempPath, newNamespace, oldNamespace);
                 }
                 else
                 {
@@ -320,8 +449,9 @@ namespace NamespaceRenamer
                         _repository.AddDataReplace(file, tempPath, ComputeMD5Checksum(file.FullName),
                             targetFiles.FirstOrDefault(x => x.Name == file.Name.Replace(oldNamespace, newNamespace)),
                             ComputeMD5Checksum(tempPath));
-                    
-                    await ReplaceLinks(file.FullName, tempPath, newNamespace, oldNamespace);
+
+                        await ReplaceLinksInConfigFiles(file.FullName, tempPath, newNamespace, oldNamespace);
+                        await ReplaceLinksInSln(file.FullName, tempPath, newNamespace, oldNamespace);
                 }
 
             }
@@ -334,7 +464,7 @@ namespace NamespaceRenamer
             }
         }
 
-        private async Task ReplaceLinks(string sourcePath, string targetPath, string newNamespace, string oldNamespace)
+        private async Task ReplaceLinksInConfigFiles(string sourcePath, string targetPath, string newNamespace, string oldNamespace)
         {
             string path1 = "", path2 = "";
 
@@ -345,6 +475,8 @@ namespace NamespaceRenamer
                 var sourcePathWork = sourcePath.Replace(Source + "\\", "");
                 var targetPathWork = targetPath.Replace(Target + "\\", "");
 
+                var isCsproj = false;
+
                 string filePath = file.Path;
                 filePath = filePath.Replace(Source + "\\", "");
 
@@ -353,8 +485,118 @@ namespace NamespaceRenamer
 
                 if (position > 0)
                 {
-                // filePath = position + 1 < filePath.Length ? filePath.Remove(position + 1) : "";
+                    // filePath = position + 1 < filePath.Length ? filePath.Remove(position + 1) : "";
                     
+                    int count1 = filePath.IndexOf('\\');
+                    int count2 = sourcePathWork.IndexOf('\\');
+
+                    if (count1 > 0 && count2 > 0)
+                    {
+                        path1 = count1 + 1 < filePath.Length ? filePath.Remove(count1 + 1) : "";
+                        path2 = count2 + 1 < sourcePathWork.Length ? sourcePathWork.Remove(count2 + 1) : "";
+                    }
+
+                    while (count1 > 0 && count2 > 0 && path1 == path2 && path1 != "")
+                    {
+                        filePath = filePath.Remove(0, count1 + 1);
+                        sourcePathWork = sourcePathWork.Remove(0, count2 + 1);
+
+                        if (path1 == path2 && path1 != "")
+                        {
+                            targetPathWork = targetPathWork.Replace(path2.Replace(oldNamespace, newNamespace), "");
+                        }
+
+                        count1 = filePath.IndexOf('\\');
+                        count2 = sourcePathWork.IndexOf('\\');
+
+                        if (count1 > 0 && count2 > 0)
+                        {
+                            path1 = count1 + 1 < filePath.Length ? filePath.Remove(count1 + 1) : "";
+                            path2 = count2 + 1 < sourcePathWork.Length ? sourcePathWork.Remove(count2 + 1) : "";
+                        }
+                    }
+
+                    try
+                    {
+                        isCsproj = file.Path.Substring(file.Path.LastIndexOf('.'), 7) != ".csproj";
+                    }
+                    catch (Exception)
+                    {
+                        isCsproj = false;
+                    }
+
+                    if (isCsproj)
+                    {
+                        if (sourcePathWork != targetPathWork)
+                        {
+                            file.Content = file.Content.Replace(sourcePathWork, targetPathWork);
+                        }
+
+//                        var doc = new XmlDocument();
+//                        doc.Load(file.Path);
+//
+//                        XmlNamespaceManager nsmgr = new XmlNamespaceManager(doc.NameTable);
+//                        nsmgr.AddNamespace("ab", "http://schemas.microsoft.com/developer/msbuild/2003");
+//
+//                        var node = doc.SelectSingleNode("//ab:Project", nsmgr);
+//
+//                        replacingChildNodes(node, sourcePathWork, targetPathWork, file);
+                    }
+                }
+
+                    try
+                    {
+                        isCsproj = file.Path.Substring(file.Path.LastIndexOf('.'), 7) != ".csproj";
+                    }
+                    catch (Exception)
+                    {
+                        isCsproj = false;
+                    }
+
+                    if (isCsproj)
+                    {
+                        if (sourcePathWork != targetPathWork)
+                        {
+                            file.Content = file.Content.Replace(sourcePathWork, targetPathWork);
+                        }
+
+//                        var doc = new XmlDocument();
+//                        doc.Load(file.Path);
+//
+//                        XmlNamespaceManager nsmgr = new XmlNamespaceManager(doc.NameTable);
+//                        nsmgr.AddNamespace("ab", "http://schemas.microsoft.com/developer/msbuild/2003");
+//
+//                        var node = doc.SelectSingleNode("//ab:Project", nsmgr);
+//
+//                        replacingChildNodes(node, sourcePathWork, targetPathWork, file);
+                    }
+
+              }
+        }
+
+        private async Task ReplaceLinksInSln(string sourcePath, string targetPath, string newNamespace, string oldNamespace)
+        {
+            string path1 = "", path2 = "";
+
+            // Пройтись по списку и найти где встречаются подобные ссылки
+            foreach (var file in updateListOfSln)
+            {
+                //Deleting inner Target and Source folders
+                var sourcePathWork = sourcePath.Replace(Source + "\\", "");
+                var targetPathWork = targetPath.Replace(Target + "\\", "");
+
+                var isCsproj = false;
+
+                string filePath = file.Path;
+                filePath = filePath.Replace(Source + "\\", "");
+
+                //Get the part of Path before .config file.
+                int position = filePath.LastIndexOf('\\');
+
+                if (position > 0)
+                {
+                    // filePath = position + 1 < filePath.Length ? filePath.Remove(position + 1) : "";
+
                     int count1 = filePath.IndexOf('\\');
                     int count2 = sourcePathWork.IndexOf('\\');
 
@@ -390,11 +632,28 @@ namespace NamespaceRenamer
                     }
                 }
 
-                if (sourcePathWork != targetPathWork)
-                {
-                    file.Content = file.Content.Replace(sourcePathWork, targetPathWork);
-                }        
             }
+        }
+
+        private void replacingChildNodes(XmlNode node, string sourcePathWork, string targetPathWork, PathAndContent file)
+        {
+            node.Value = node.Value.Replace(sourcePathWork, targetPathWork);
+
+            XmlNodeList nodes = null;
+            if (node.HasChildNodes)
+                nodes = node.ChildNodes;
+
+            if (node.Attributes != null)
+                foreach (XmlAttribute attr in node.Attributes)
+                {
+                   attr.Value = attr.Value.Replace(sourcePathWork, targetPathWork);
+                }
+            
+            if (nodes != null)
+                foreach (var item in nodes)
+                {
+                    replacingChildNodes(node, sourcePathWork, targetPathWork, file);
+                }
         }
 
         private bool NotIgnorefile(IEnumerable<ConfigFile> ignoreList, FileInfo file)
@@ -621,7 +880,8 @@ namespace NamespaceRenamer
 
         public async Task Process(ProjectReplaceData item)
         {
-            await FillingList(item.SourceDirectory, ConfigList.needUpdateList);
+
+            await FillingList(item.SourceDirectory, ConfigList.needUpdateList, item);
 
             if (IsBlankFolder(item.TargetDirectory))
             {
@@ -640,7 +900,7 @@ namespace NamespaceRenamer
                         ConfigList.ignoreFilesList, ConfigList.mandatoryList, true);
             }
 
-            await SaveUpdateListOfFiles(item.SourceNamespace, item.TargetNamespace, item.SourceDirectory, item.TargetDirectory);
+            await SaveUpdateListOfFiles();
 
             if (ConflictList.Any() && ConflictList.Last().MessageType != Types.delimiter)
             {
@@ -650,18 +910,97 @@ namespace NamespaceRenamer
                     Message = "End of the project",
                     ForegroundColor = Brushes.White,
                     BackgroundColor = "Black"
-
                 };
 
                 ConflictList.Add(conflict);
                 OnAdd(conflict);
-                
             }
 
              updateListOfFiles.Clear();
             
         }
+        
+        public XmlDocument RenameRootNamespaceAndAssemblyNameInCsproj(XmlDocument xmlDocument, string sourceNamespace, string targetNamespace)
+        {
+                XmlNamespaceManager nsmgr = new XmlNamespaceManager(xmlDocument.NameTable);
+                nsmgr.AddNamespace("ab", "http://schemas.microsoft.com/developer/msbuild/2003");
+
+                var rootNamespace = xmlDocument.SelectSingleNode("//ab:Project/ab:PropertyGroup/ab:RootNamespace", nsmgr);
+                    if (rootNamespace != null)
+                        rootNamespace.InnerText = rootNamespace.InnerText.Replace(sourceNamespace, targetNamespace);
+
+                var assemblyName = xmlDocument.SelectSingleNode("//ab:Project/ab:PropertyGroup/ab:AssemblyName", nsmgr);
+                    if (assemblyName != null)
+                        assemblyName.InnerText = assemblyName.InnerText.Replace(sourceNamespace, targetNamespace);
+
+            return xmlDocument;
+        }
 
 
+        public PathAndContent RenameProjectReferencesInCsproj(PathAndContent csproj)
+        {
+
+            XmlNamespaceManager nsmgr = new XmlNamespaceManager(csproj.XmlContent.NameTable);
+                nsmgr.AddNamespace("ab", "http://schemas.microsoft.com/developer/msbuild/2003");
+
+            var nameCsproj = csproj.Path.Replace(csproj.ProjectReplace.TargetDirectory, "");
+            nameCsproj = nameCsproj.Replace(".csproj", "");
+
+            if (nameCsproj.Contains('\\'))
+            {
+                int index = nameCsproj.LastIndexOf('\\');
+
+                if (index + 1 < nameCsproj.Length)
+                    nameCsproj = nameCsproj.Remove(0, index + 1);
+            }
+
+            nameCsproj = nameCsproj.Replace(csproj.ProjectReplace.TargetNamespace, csproj.ProjectReplace.SourceNamespace);
+
+            foreach (var innerCsproj in updateListOfCsproj)
+            {
+                var nodeListOfProjectReferences = innerCsproj.XmlContent.SelectNodes("//ab:Project/ab:ItemGroup/ab:ProjectReference", nsmgr);
+                int q = 0;
+                if (nodeListOfProjectReferences != null)
+                    foreach (XmlElement node in nodeListOfProjectReferences)
+                    {
+                        q++;
+                        var nameReference = node.SelectSingleNode("./ab:Name", nsmgr);
+                        if (nameReference != null && nameReference.InnerText == nameCsproj)
+                        {
+                            
+                            nameReference.InnerText =
+                                nameReference.InnerText.Replace(csproj.ProjectReplace.SourceNamespace,
+                                    csproj.ProjectReplace.TargetNamespace);
+                            node.Attributes["Include"].Value =
+                                node.Attributes["Include"].Value.Replace(csproj.ProjectReplace.SourceNamespace,
+                                    csproj.ProjectReplace.TargetNamespace);
+
+                            if (nodeListOfProjectReferences.Count == q)
+                            {
+                                var check = csproj.XmlContent;
+                                var check2 = innerCsproj.XmlContent;
+                            }
+                        }
+                    }
+             }
+
+            return csproj;
+        }
+
+        public void CheckCsprojName()
+        {
+            foreach (var csproj in updateListOfCsproj)
+            {
+                csproj.Path = csproj.Path.Replace(csproj.ProjectReplace.SourceDirectory,
+                    csproj.ProjectReplace.TargetDirectory);
+                var source = csproj.Path;
+                
+                csproj.Path = csproj.Path.Replace(csproj.ProjectReplace.SourceNamespace,
+                    csproj.ProjectReplace.TargetNamespace);
+
+                var resultCsproj = source != csproj.Path ? RenameProjectReferencesInCsproj(csproj) : csproj;
+                csproj.XmlContent = resultCsproj.XmlContent;
+            }
+        }
     }
 }

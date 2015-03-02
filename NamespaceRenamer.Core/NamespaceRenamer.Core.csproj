@@ -7,8 +7,8 @@
     <ProjectGuid>{0120F4AC-A80B-4890-988B-EF13F0A5C03C}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>NamespaceRenamer</RootNamespace>
-    <AssemblyName>NamespaceRenamer</AssemblyName>
+    <RootNamespace>NamespaceRenamer.Core</RootNamespace>
+    <AssemblyName>NamespaceRenamer.Core</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

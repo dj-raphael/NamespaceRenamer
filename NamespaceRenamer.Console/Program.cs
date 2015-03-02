@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data.Entity.Infrastructure;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using NamespaceRenamer;
+using NamespaceRenamer.Core;
 
-namespace ConsoleRenamer
+namespace NamespaceRenamer.Console
 {
     class Program
     {
@@ -22,19 +19,19 @@ namespace ConsoleRenamer
             try
             {
                ConfigList.Load(pathConfig);
-               Console.WriteLine(pathConfig);
+               System.Console.WriteLine(pathConfig);
             }
             catch (Exception xmlException)
             {
-                Console.WriteLine(xmlException);
+                System.Console.WriteLine(xmlException);
             }
 
             if (ConfigList.projectsList.Count != 0)
             {
                 Manage.OnAdd2 += WriteLog;
 
-                Console.WriteLine();
-                Console.WriteLine("=====================================");
+                System.Console.WriteLine();
+                System.Console.WriteLine("=====================================");
 
                 try
                 {
@@ -50,26 +47,26 @@ namespace ConsoleRenamer
             }
             else
             {
-                Console.WriteLine(!args.Any()
+                System.Console.WriteLine(!args.Any()
                     ? "Please write argument: path to config file."
                     : "Config file doesn't contain data of replacing projects. Please choose correct config file.");
 
                 return -1;
             }
 
-            Console.WriteLine("=====================================");
+            System.Console.WriteLine("=====================================");
             
-            Console.WriteLine("Renaming completed. " +  Manage.rename.ConflictList.Count(x => x.Merge == true) + " conflicts occured.");
+            System.Console.WriteLine("Renaming completed. " +  Manage.rename.ConflictList.Count(x => x.Merge == true) + " conflicts occured.");
 
             var count = 0;
 
             foreach (var conflict in  Manage.rename.ConflictList.Where(x => x.Merge == true))
             {
-                Console.WriteLine(count + " " + conflict.Message);
+                System.Console.WriteLine(count + " " + conflict.Message);
                 count++;
             }
             
-            var q = Console.ReadLine();
+            var q = System.Console.ReadLine();
 
             return 0;
        }
@@ -77,7 +74,7 @@ namespace ConsoleRenamer
 
         private static void WriteLog(Conflict e)
         {
-           Console.WriteLine(e.Message);           
+           System.Console.WriteLine(e.Message);           
         }
     }
 }

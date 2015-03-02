@@ -6,7 +6,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Xml;
 
-namespace NamespaceRenamer
+namespace NamespaceRenamer.Core
 {
     public class ConfigManager
     {
@@ -20,15 +20,20 @@ namespace NamespaceRenamer
                 {
                 new ConfigFile(){XPath = @"\Bin\", IsRegularExpression = false},
                 new ConfigFile(){XPath = @"\obj\", IsRegularExpression = false},
+                new ConfigFile(){XPath = @"\packages\", IsRegularExpression = false},
                 new ConfigFile(){XPath = @"\.uSEr$", IsRegularExpression = true},
                 new ConfigFile(){XPath = @"\.vspscc$", IsRegularExpression = true},
                 new ConfigFile(){XPath = @"\.cashe$", IsRegularExpression = true},
                 new ConfigFile(){XPath = @"\.vssscc$", IsRegularExpression = true}
+
             };
 
         public List<ConfigFile> DefaultMandatoryList = new List<ConfigFile>()
             {
-                new ConfigFile(){XPath = @"\.cs$", IsRegularExpression = true}
+                new ConfigFile(){XPath = @"\.cs$", IsRegularExpression = true},
+                new ConfigFile(){XPath = @"\.tt$", IsRegularExpression = true},
+                new ConfigFile(){XPath = @"\packages.config$", IsRegularExpression = true}
+                
             };
 
         public List<ConfigFile> DefaultNeedUpdateList = new List<ConfigFile>()
@@ -160,42 +165,57 @@ namespace NamespaceRenamer
             string aplictionDirectory = "Config.xml";
 
             if (!string.IsNullOrEmpty(path)) aplictionDirectory = path;
-            
-            XmlTextWriter textWritter = new XmlTextWriter(aplictionDirectory, Encoding.UTF8);
-            textWritter.WriteStartDocument();
-            textWritter.WriteStartElement("RenameData");
-            textWritter.WriteEndElement();
-            textWritter.Close();
 
-            XmlDocument document = new XmlDocument();
-            document.Load(aplictionDirectory);
-            
-            XmlNode propertyTag = AddSubElement(document, "property", document.DocumentElement);
-            XmlAttribute dataBase = document.CreateAttribute("dataBase");
-            dataBase.Value = DbPath;
-            propertyTag.Attributes.Append(dataBase);
+            try
+            {
+                XmlTextWriter textWritter = new XmlTextWriter(aplictionDirectory, Encoding.UTF8);
+                textWritter.WriteStartDocument();
+                textWritter.WriteStartElement("RenameData");
+                textWritter.WriteEndElement();
+                textWritter.Close();
 
-            XmlNode projectListTag = AddSubElement(document, "projectsList", document.DocumentElement);
-            if (projectsList.Count != 0) 
-                foreach (var project in projectsList) 
-                    AddSubElement(document, project, projectListTag);
+                XmlDocument document = new XmlDocument();
+                document.Load(aplictionDirectory);
 
-            XmlNode ignoreFilesListTag = AddSubElement(document, "ignoreList", document.DocumentElement);
-            if (ignoreFilesList.Count != 0) 
-                foreach (var val in ignoreFilesList) 
-                    AddSubElement(document, val, ignoreFilesListTag);
+                XmlNode propertyTag = AddSubElement(document, "property", document.DocumentElement);
+                XmlAttribute dataBase = document.CreateAttribute("dataBase");
+                dataBase.Value = DbPath;
+                propertyTag.Attributes.Append(dataBase);
 
-            XmlNode mandatoryListTag = AddSubElement(document, "mandatoryList", document.DocumentElement);
-            if (mandatoryList.Count != 0)
-                foreach (var val in mandatoryList) 
-                    AddSubElement(document, val, mandatoryListTag);
-            
-            XmlNode needUpdateListTag = AddSubElement(document, "needUpdateList", document.DocumentElement);
-            if (needUpdateList.Count != 0)
-                foreach (var val in needUpdateList) 
-                    AddSubElement(document, val, needUpdateListTag);
-            
+                XmlNode projectListTag = AddSubElement(document, "projectsList", document.DocumentElement);
+                if (projectsList.Count != 0)
+                    foreach (var project in projectsList)
+                        AddSubElement(document, project, projectListTag);
+
+                XmlNode ignoreFilesListTag = AddSubElement(document, "ignoreList", document.DocumentElement);
+                if (ignoreFilesList.Count != 0)
+                    foreach (var val in ignoreFilesList)
+                        AddSubElement(document, val, ignoreFilesListTag);
+
+                XmlNode mandatoryListTag = AddSubElement(document, "mandatoryList", document.DocumentElement);
+                if (mandatoryList.Count != 0)
+                    foreach (var val in mandatoryList)
+                        AddSubElement(document, val, mandatoryListTag);
+
+                XmlNode needUpdateListTag = AddSubElement(document, "needUpdateList", document.DocumentElement);
+                if (needUpdateList.Count != 0)
+                    foreach (var val in needUpdateList)
+                        AddSubElement(document, val, needUpdateListTag);
+
                 document.Save(aplictionDirectory);
+            }
+            catch (System.UnauthorizedAccessException exception)
+            {
+                string messageBoxText = "The config file hasn't been saved: " + exception.Message;
+                string caption = "";
+                System.Windows.Forms.MessageBoxButtons button = MessageBoxButtons.OK;
+                System.Windows.Forms.MessageBoxIcon icon = MessageBoxIcon.Warning;
+                DialogResult resultConfig = System.Windows.Forms.MessageBox.Show(messageBoxText, caption, button, icon);
+                
+            }
+
+
+
         }
 
         private void AddSubElement(XmlDocument document, ProjectReplaceData project, XmlNode parent)
@@ -285,7 +305,7 @@ namespace NamespaceRenamer
                 DbPath = dbNodes.Attributes["dataBase"].Value;
             }
 
-            if (DbPath != "")
+            if (DbPath == "")
             {
                 DbPath = AppDomain.CurrentDomain.BaseDirectory.Substring(0,
                          AppDomain.CurrentDomain.BaseDirectory.IndexOf("bin\\Debug\\", System.StringComparison.Ordinal)) + "App_Data\\data.sdf";

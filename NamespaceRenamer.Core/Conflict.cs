@@ -1,8 +1,6 @@
-﻿using System;
-using System.Drawing;
-using System.Windows.Forms;
+﻿using System.Drawing;
 
-namespace NamespaceRenamer
+namespace NamespaceRenamer.Core
 {
     public class Conflict
     {

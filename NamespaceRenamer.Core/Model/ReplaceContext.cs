@@ -1,6 +1,6 @@
 ﻿using System.Data.Entity;
 
-namespace NamespaceRenamer.Model
+namespace NamespaceRenamer.Core.Model
 {
     public class ReplaceContext: DbContext
     {

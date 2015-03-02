@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace NamespaceRenamer.Model
+namespace NamespaceRenamer.Core.Model
 {
     public class DataReplacementRepository 
     {

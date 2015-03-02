@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Xml;
 
-namespace NamespaceRenamer
+namespace NamespaceRenamer.Core
 {
     public class PathAndContent
     {
         public string Path { get; set; }
         public string Content { get; set; }
+        public XmlDocument XmlContent { get; set; }
+        public ProjectReplaceData ProjectReplace { get; set; }
     }
 }

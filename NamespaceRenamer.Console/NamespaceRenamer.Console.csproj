@@ -7,8 +7,8 @@
     <ProjectGuid>{DCD3F09C-2D4A-487A-A784-6918689FC8B9}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ConsoleRenamer</RootNamespace>
-    <AssemblyName>ConsoleRenamer</AssemblyName>
+    <RootNamespace>NamespaceRenamer.Console</RootNamespace>
+    <AssemblyName>NamespaceRenamer.Console</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <PublishUrl>publish\</PublishUrl>

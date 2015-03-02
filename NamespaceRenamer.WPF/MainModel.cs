@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Data;
-using System.Windows.Forms;
-using NamespaceRenamer;
-using WpfCopyApplication.Annotations;
+using NamespaceRenamer.Core;
 
-namespace WpfCopyApplication
+namespace NamespaceRenamer.WPF
 {
     public class MainModel : DependencyObject
     {
